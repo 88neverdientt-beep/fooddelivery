@@ -11,8 +11,10 @@ import lombok.RequiredArgsConstructor;
 import vn.gaugaugau.fooddelivery.model.Customer;
 import vn.gaugaugau.fooddelivery.model.dto.CustomerRequestDTO;
 import vn.gaugaugau.fooddelivery.model.dto.CustomerResponseDTO;
+import vn.gaugaugau.fooddelivery.model.dto.CustomerUpdateRequestDTO;
 import vn.gaugaugau.fooddelivery.repository.CustomerRepository;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceAlreadyExistsException;
+import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 
 @Service
 @RequiredArgsConstructor
@@ -39,8 +41,7 @@ public class CustomerService {
         Customer customer = new Customer();
         customer.setName(request.getName());
         customer.setEmail(request.getEmail());
-        String hashPassword = this.passwordEncoder.encode(request.getPassword());
-        customer.setPassword(hashPassword);
+        customer.setPassword(this.passwordEncoder.encode(request.getPassword()));
         customer.setPhoneNumber(request.getPhoneNumber());
         customer.setAddress(request.getAddress());
         customer.setCreatedAt(LocalDateTime.now());
@@ -53,6 +54,33 @@ public class CustomerService {
                 .map(customer -> customerToCustomerResponseDTO(customer))
                 .collect(Collectors.toList());
         return customers;
+    }
+
+    public CustomerResponseDTO getCustomerById(Long customerId) {
+        Customer customer = customerRepository.findById(customerId).orElse(null);
+        if (customer == null) {
+            throw new ResourceNotFoundException("Customer not found with ID: " + customerId);
+        }
+        return customerToCustomerResponseDTO(customer);
+    }
+
+    public CustomerResponseDTO updateCustomerById(Long customerId, CustomerUpdateRequestDTO request) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
+
+        customer.setName(request.getName());
+        customer.setPhoneNumber(request.getPhoneNumber());
+        customer.setAddress(request.getAddress());
+
+        Customer updatedCustomer = customerRepository.save(customer);
+        return customerToCustomerResponseDTO(updatedCustomer);
+    }
+
+    public CustomerResponseDTO deleteCustomerById(Long customerId) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
+        this.customerRepository.delete(customer);
+        return customerToCustomerResponseDTO(customer);
     }
 
 }
