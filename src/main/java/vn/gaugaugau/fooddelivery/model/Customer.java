@@ -1,5 +1,10 @@
 package vn.gaugaugau.fooddelivery.model;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.hibernate.annotations.CreationTimestamp;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -12,10 +17,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.CreationTimestamp;
-
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Entity
 @Table(name = "customers")
@@ -26,33 +27,33 @@ import java.util.List;
 @Builder
 public class Customer {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "customer_id")
-    private Long customerId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "customer_id")
+	private Long customerId;
 
-    @Column(name = "name", nullable = false, length = 100)
-    private String name;
+	@Column(name = "name", nullable = false, length = 100)
+	private String name;
 
-    @Column(name = "email", nullable = false, unique = true, length = 255)
-    private String email;
+	@Column(name = "email", nullable = false, unique = true, length = 255)
+	private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
-    private String password;
+	@Column(name = "password", nullable = false, length = 255)
+	private String password;
 
-    @Column(name = "phone_number", nullable = false, length = 15)
-    private String phoneNumber;
+	@Column(name = "phone_number", nullable = false, length = 15)
+	private String phoneNumber;
 
-    @Column(name = "address", nullable = false, length = 255)
-    private String address;
+	@Column(name = "address", nullable = false, length = 255)
+	private String address;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+	@CreationTimestamp
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createdAt;
 
-    @OneToMany(mappedBy = "customer")
-    private List<Order> orders;
+	@OneToMany(mappedBy = "customer")
+	private List<Order> orders;
 
-    @OneToMany(mappedBy = "customer")
-    private List<Rating> ratings;
+	@OneToMany(mappedBy = "customer")
+	private List<Rating> ratings;
 }

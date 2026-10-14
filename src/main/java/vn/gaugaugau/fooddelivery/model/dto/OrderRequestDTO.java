@@ -1,7 +1,6 @@
 package vn.gaugaugau.fooddelivery.model.dto;
 
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -13,7 +12,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Getter
@@ -23,18 +21,12 @@ import java.util.List;
 @Builder
 public class OrderRequestDTO {
 
-    @NotNull(message = "Customer ID cannot be null")
-    private Long customerId;
-
     @NotNull(message = "Restaurant ID cannot be null")
     private Long restaurantId;
 
     @NotBlank(message = "Delivery address cannot be blank")
     @Size(max = 255, message = "Delivery address must not exceed 255 characters")
     private String deliveryAddress;
-
-    @DecimalMin(value = "0.0", inclusive = true, message = "Shipping fee must be greater than or equal to 0")
-    private BigDecimal shippingFee;
 
     @NotEmpty(message = "Order details cannot be empty")
     @Valid
