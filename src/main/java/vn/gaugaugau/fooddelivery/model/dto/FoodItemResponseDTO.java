@@ -22,7 +22,7 @@ public class FoodItemResponseDTO {
     private String category;
     private BigDecimal price;
     private Boolean isAvailable;
-    private List<RestaurantOutputDTO> restaurants;
+    private RestaurantOutputDTO restaurant;
     private List<RatingOutputDTO> ratings;
 
     @Getter

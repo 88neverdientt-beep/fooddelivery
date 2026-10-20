@@ -48,6 +48,6 @@ public class OrderDetail {
     private Order order;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "food_item_id")
-    private FoodItem foodItem;
+    @JoinColumn(name = "restaurant_food_item_id")
+    private RestaurantFoodItem restaurantFoodItem;
 }

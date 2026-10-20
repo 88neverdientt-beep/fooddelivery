@@ -5,10 +5,6 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.JoinTable;
-import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -60,11 +56,10 @@ public class Restaurant {
     @OneToMany(mappedBy = "restaurant")
     private List<Order> orders;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JoinTable(
-        name = "restaurant_food_items",
-        joinColumns = @JoinColumn(name = "restaurant_id"),
-        inverseJoinColumns = @JoinColumn(name = "item_id")
-    )
-    private List<FoodItem> foodItems;
+    @OneToMany(mappedBy = "restaurant")
+    private List<Cart> carts;
+
+    @OneToMany(mappedBy = "restaurant")
+    private List<RestaurantFoodItem> restaurantFoodItems;
+
 }
