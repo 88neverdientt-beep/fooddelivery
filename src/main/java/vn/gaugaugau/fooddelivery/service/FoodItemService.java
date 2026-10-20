@@ -30,7 +30,7 @@ public class FoodItemService {
 
     public FoodItemResponseDTO createFoodItem(FoodItemRequestDTO request) {
         if (this.foodItemRepository.existsByName(request.getName().toUpperCase())) {
-            throw new ResourceAlreadyExistsException("name already exists!");
+            throw new ResourceAlreadyExistsException("Food item name already exists!");
         }
         FoodItem foodItem = FoodItem.builder()
                 .name(request.getName().toUpperCase())
