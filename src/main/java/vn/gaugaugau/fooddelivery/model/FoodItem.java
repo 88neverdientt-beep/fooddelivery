@@ -39,8 +39,5 @@ public class FoodItem {
     private String description;
 
     @OneToMany(mappedBy = "foodItem")
-    private List<Rating> ratings;
-
-    @OneToMany(mappedBy = "foodItem")
     private List<RestaurantFoodItem> restaurantFoodItems;
 }

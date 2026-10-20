@@ -7,11 +7,10 @@ import org.springframework.stereotype.Service;
 
 import lombok.RequiredArgsConstructor;
 import vn.gaugaugau.fooddelivery.model.FoodItem;
-import vn.gaugaugau.fooddelivery.model.Rating;
-import vn.gaugaugau.fooddelivery.model.Restaurant;
 import vn.gaugaugau.fooddelivery.model.dto.FoodItemRequestDTO;
 import vn.gaugaugau.fooddelivery.model.dto.FoodItemResponseDTO;
 import vn.gaugaugau.fooddelivery.repository.FoodItemRepository;
+import vn.gaugaugau.fooddelivery.utils.exception.ResourceAlreadyExistsException;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 
 @Service
@@ -20,39 +19,30 @@ public class FoodItemService {
 
     private final FoodItemRepository foodItemRepository;
 
-    public FoodItemResponseDTO.RestaurantOutputDTO restaurantToDTO(Restaurant restaurant) {
-        if (restaurant == null) {
-            return null;
-        }
-
-        return FoodItemResponseDTO.RestaurantOutputDTO.builder()
-                .restaurantId(restaurant.getRestaurantId())
-                .name(restaurant.getName())
-                .address(restaurant.getAddress())
-                .build();
-    }
-
-    public FoodItemResponseDTO.RatingOutputDTO ratingToDTO(Rating rating) {
-        return FoodItemResponseDTO.RatingOutputDTO.builder()
-                .ratingId(rating.getRatingId())
-                .ratingScore(rating.getRatingScore())
-                .comment(rating.getComment())
-                .createdAt(rating.getCreatedAt())
-                .build();
-    }
-
-    public FoodItemResponseDTO foodItemToFoodItemResponseDTO(FoodItem foodItem) {
+    private FoodItemResponseDTO foodItemToFoodItemResponseDTO(FoodItem foodItem) {
         return FoodItemResponseDTO.builder()
                 .itemId(foodItem.getItemId())
                 .name(foodItem.getName())
                 .category(foodItem.getCategory())
+                .description(foodItem.getDescription())
                 .build();
     }
 
+    public FoodItemResponseDTO createFoodItem(FoodItemRequestDTO request) {
+        if (this.foodItemRepository.existsByName(request.getName().toUpperCase())) {
+            throw new ResourceAlreadyExistsException("name already exists!");
+        }
+        FoodItem foodItem = FoodItem.builder()
+                .name(request.getName().toUpperCase())
+                .category(request.getCategory())
+                .description(request.getDescription())
+                .build();
+        return foodItemToFoodItemResponseDTO(this.foodItemRepository.save(foodItem));
+    }
+
     public List<FoodItemResponseDTO> getAllFoodItems() {
-        return this.foodItemRepository.findAll().stream()
-                .map(foodItem -> foodItemToFoodItemResponseDTO(foodItem))
-                .collect(Collectors.toList());
+        List<FoodItem> foodItems = this.foodItemRepository.findAll();
+        return foodItems.stream().map(this::foodItemToFoodItemResponseDTO).collect(Collectors.toList());
     }
 
     public FoodItemResponseDTO getFoodItemById(Long itemId) {
@@ -64,10 +54,13 @@ public class FoodItemService {
     public FoodItemResponseDTO updateFoodItemById(Long itemId, FoodItemRequestDTO request) {
         FoodItem foodItem = this.foodItemRepository.findById(itemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Food item not found with ID: " + itemId));
-        foodItem.builder()
-                .name(request.getName())
-                .category(request.getCategory())
-                .build();
+
+        if (this.foodItemRepository.existsByNameAndItemIdNot(request.getName().trim().toUpperCase(), itemId)) {
+            throw new ResourceAlreadyExistsException("Food item name already exists!");
+        }
+        foodItem.setName(request.getName().toUpperCase());
+        foodItem.setCategory(request.getCategory());
+        foodItem.setDescription(request.getDescription());
         return foodItemToFoodItemResponseDTO(this.foodItemRepository.save(foodItem));
     }
 

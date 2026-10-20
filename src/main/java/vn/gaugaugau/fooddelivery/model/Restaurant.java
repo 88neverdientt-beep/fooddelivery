@@ -62,4 +62,6 @@ public class Restaurant {
     @OneToMany(mappedBy = "restaurant")
     private List<RestaurantFoodItem> restaurantFoodItems;
 
+    @OneToMany(mappedBy = "restaurant")
+    private List<Rating> ratings;
 }

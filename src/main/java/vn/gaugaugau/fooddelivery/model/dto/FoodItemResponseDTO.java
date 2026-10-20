@@ -6,10 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.util.List;
-
 @Getter
 @Setter
 @NoArgsConstructor
@@ -20,31 +16,6 @@ public class FoodItemResponseDTO {
     private Long itemId;
     private String name;
     private String category;
-    private BigDecimal price;
-    private Boolean isAvailable;
-    private RestaurantOutputDTO restaurant;
-    private List<RatingOutputDTO> ratings;
+    private String description;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class RestaurantOutputDTO {
-        private Long restaurantId;
-        private String name;
-        private String address;
-    }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class RatingOutputDTO {
-        private Long ratingId;
-        private Integer ratingScore;
-        private String comment;
-        private LocalDateTime createdAt;
-    }
 }

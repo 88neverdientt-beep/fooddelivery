@@ -47,6 +47,6 @@ public class Rating {
     private Customer customer;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_id")
-    private FoodItem foodItem;
+    @JoinColumn(name = "restaurant_id")
+    private Restaurant restaurant;
 }

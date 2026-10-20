@@ -8,4 +8,7 @@ import vn.gaugaugau.fooddelivery.model.FoodItem;
 @Repository
 public interface FoodItemRepository extends JpaRepository<FoodItem, Long> {
 
+    boolean existsByName(String name);
+
+    boolean existsByNameAndItemIdNot(String name, Long itemId);
 }
