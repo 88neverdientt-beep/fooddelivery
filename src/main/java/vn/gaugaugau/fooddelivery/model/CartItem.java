@@ -9,6 +9,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -29,6 +31,8 @@ public class CartItem {
     @Column(name = "cart_item_id")
     private Long cartItemId;
 
+    @NotNull(message = "Quantity cannot be null")
+    @Positive(message = "Quantity must be greater than 0")
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
