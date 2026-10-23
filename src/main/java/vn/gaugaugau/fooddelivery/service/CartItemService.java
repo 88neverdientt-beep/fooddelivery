@@ -1,10 +1,13 @@
 package vn.gaugaugau.fooddelivery.service;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import vn.gaugaugau.fooddelivery.model.Cart;
 import vn.gaugaugau.fooddelivery.model.CartItem;
@@ -12,6 +15,7 @@ import vn.gaugaugau.fooddelivery.model.Customer;
 import vn.gaugaugau.fooddelivery.model.RestaurantFoodItem;
 import vn.gaugaugau.fooddelivery.model.dto.CartItemRequestDTO;
 import vn.gaugaugau.fooddelivery.model.dto.CartItemResponseDTO;
+import vn.gaugaugau.fooddelivery.model.dto.CartItemUpdateRequestDTO;
 import vn.gaugaugau.fooddelivery.repository.CartItemRepository;
 import vn.gaugaugau.fooddelivery.repository.CartRepository;
 import vn.gaugaugau.fooddelivery.repository.CustomerRepository;
@@ -20,6 +24,7 @@ import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class CartItemService {
 
     private final CartItemRepository cartItemRepository;
@@ -56,14 +61,36 @@ public class CartItemService {
                 .findById(request.getRestaurantFoodItemId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Restaurant food item not found with ID: " + request.getRestaurantFoodItemId()));
-        CartItem cartItem = new CartItem();
-        cartItem.builder()
+        cart.setRestaurant(restaurantFoodItem.getRestaurant());
+        this.cartRepository.save(cart);
+        CartItem cartItem = CartItem.builder()
                 .quantity(request.getQuantity())
                 .note(request.getNote())
                 .cart(cart)
                 .restaurantFoodItem(restaurantFoodItem)
                 .build();
         return convertToCartItemResponseDTO(this.cartItemRepository.save(cartItem));
+    }
+
+    public List<CartItemResponseDTO> getAllCartItems(Long cartId) {
+        return this.cartItemRepository.findByCart_CartId(cartId)
+                .stream()
+                .map(this::convertToCartItemResponseDTO)
+                .collect(Collectors.toList());
+    }
+
+    public CartItemResponseDTO updateCartItem(Long cartItemId, CartItemUpdateRequestDTO request) {
+        CartItem cartItem = this.cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart item not found with ID: " + cartItemId));
+        cartItem.setQuantity(request.getQuantity());
+        cartItem.setNote(request.getNote());
+        return convertToCartItemResponseDTO(this.cartItemRepository.save(cartItem));
+    }
+
+    public void deleteCartItem(Long cartItemId) {
+        CartItem cartItem = this.cartItemRepository.findById(cartItemId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart item not found with ID: " + cartItemId));
+        this.cartItemRepository.delete(cartItem);
     }
 
 }

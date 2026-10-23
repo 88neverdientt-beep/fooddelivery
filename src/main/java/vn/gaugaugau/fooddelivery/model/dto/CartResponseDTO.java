@@ -32,19 +32,4 @@ public class CartResponseDTO {
         private Long restaurantId;
         private String name;
     }
-
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class CartItemResponseDTO {
-        private Long cartItemId;
-        private Long restaurantFoodItemId;
-        private String foodItemName;
-        private Integer quantity;
-        private String note;
-        private BigDecimal unitPrice;
-        private BigDecimal subtotal;
-    }
 }

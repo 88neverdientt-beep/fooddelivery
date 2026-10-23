@@ -34,7 +34,7 @@ public class CartItem {
     @NotNull(message = "Quantity cannot be null")
     @Positive(message = "Quantity must be greater than 0")
     @Column(name = "quantity", nullable = false)
-    private Integer quantity;
+    private Integer quantity = 1;
 
     @Column(name = "note", length = 255)
     private String note;
