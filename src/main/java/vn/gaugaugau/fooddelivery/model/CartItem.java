@@ -34,6 +34,7 @@ public class CartItem {
     @NotNull(message = "Quantity cannot be null")
     @Positive(message = "Quantity must be greater than 0")
     @Column(name = "quantity", nullable = false)
+    @Builder.Default
     private Integer quantity = 1;
 
     @Column(name = "note", length = 255)

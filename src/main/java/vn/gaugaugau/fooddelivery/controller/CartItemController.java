@@ -23,7 +23,7 @@ public class CartItemController {
 
     private final CartItemService cartItemService;
 
-    @PostMapping("/cart-items/{cartItemId}")
+    @PostMapping("/{customerId}/cart-items")
     public ResponseEntity<ApiResponse<CartItemResponseDTO>> addCartItemToCart(@PathVariable Long customerId,
             @Valid @RequestBody CartItemRequestDTO request) {
         CartItemResponseDTO cartItemResponseDTO = this.cartItemService.addCartItemToCart(customerId, request);

@@ -1,5 +1,6 @@
 package vn.gaugaugau.fooddelivery.model;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -42,6 +43,9 @@ public class Order {
     @Column(name = "delivery_address", nullable = false, length = 255)
     private String deliveryAddress;
 
+    @Column(name = "subtotal", precision = 12, scale = 2)
+    private BigDecimal subtotal;
+
     @Column(name = "shipping_fee", precision = 12, scale = 2)
     private BigDecimal shippingFee;
 
@@ -64,7 +68,7 @@ public class Order {
     @JoinColumn(name = "restaurant_id")
     private Restaurant restaurant;
 
-    @OneToMany(mappedBy = "order")
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderDetail> orderDetails;
 
     @OneToOne(mappedBy = "order", fetch = FetchType.LAZY)

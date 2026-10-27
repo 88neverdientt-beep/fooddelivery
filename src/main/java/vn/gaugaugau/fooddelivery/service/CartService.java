@@ -35,7 +35,7 @@ public class CartService {
 				.orElseThrow(() -> new ResourceNotFoundException("Customer doesn't have a cart!"));
 
 		CartResponseDTO.RestaurantResponseDTO restaurant = convertToRestaurantResponseDTO(cart.getRestaurant());
-		List<CartItemResponseDTO> cartItems = this.cartItemService.getAllCartItems(cart.getCartId());
+		List<CartItemResponseDTO> cartItems = this.cartItemService.getAllCartItems(customerId);
 
 		BigDecimal subtotal = cartItems.stream()
 				.map(CartItemResponseDTO::getSubtotal)

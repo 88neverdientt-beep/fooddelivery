@@ -61,8 +61,13 @@ public class CartItemService {
                 .findById(request.getRestaurantFoodItemId())
                 .orElseThrow(() -> new ResourceNotFoundException(
                         "Restaurant food item not found with ID: " + request.getRestaurantFoodItemId()));
+        if (!restaurantFoodItem.getIsAvailable()) {
+            throw new ResourceNotFoundException("Food item is not available");
+        }
+
         cart.setRestaurant(restaurantFoodItem.getRestaurant());
         this.cartRepository.save(cart);
+
         CartItem cartItem = CartItem.builder()
                 .quantity(request.getQuantity())
                 .note(request.getNote())
@@ -72,8 +77,11 @@ public class CartItemService {
         return convertToCartItemResponseDTO(this.cartItemRepository.save(cartItem));
     }
 
-    public List<CartItemResponseDTO> getAllCartItems(Long cartId) {
-        return this.cartItemRepository.findByCart_CartId(cartId)
+    public List<CartItemResponseDTO> getAllCartItems(Long customerId) {
+        Cart cart = this.cartRepository.findByCustomer_CustomerId(customerId)
+                .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+
+        return this.cartItemRepository.findByCart_CartId(cart.getCartId())
                 .stream()
                 .map(this::convertToCartItemResponseDTO)
                 .collect(Collectors.toList());

@@ -10,4 +10,5 @@ import vn.gaugaugau.fooddelivery.model.CartItem;
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItem, Long> {
     List<CartItem> findByCart_CartId(Long cartId);
+
 }
