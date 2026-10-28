@@ -26,28 +26,28 @@ import java.math.BigDecimal;
 @Builder
 public class OrderDetail {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_detail_id")
-    private Long orderDetailId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "order_detail_id")
+	private Long orderDetailId;
 
-    @Column(name = "quantity", nullable = false)
-    private Integer quantity;
+	@Column(name = "quantity", nullable = false)
+	private Integer quantity;
 
-    @Column(name = "unit_price", precision = 12, scale = 2)
-    private BigDecimal unitPrice;
+	@Column(name = "unit_price", precision = 12, scale = 2)
+	private BigDecimal unitPrice;
 
-    @Column(name = "subtotal", precision = 12, scale = 2)
-    private BigDecimal subtotal;
+	@Column(name = "subtotal", precision = 12, scale = 2)
+	private BigDecimal subtotal;
 
-    @Column(name = "note", length = 255)
-    private String note;
+	@Column(name = "note", length = 255)
+	private String note;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "order_id")
+	private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_food_item_id")
-    private RestaurantFoodItem restaurantFoodItem;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "restaurant_food_item_id")
+	private RestaurantFoodItem restaurantFoodItem;
 }

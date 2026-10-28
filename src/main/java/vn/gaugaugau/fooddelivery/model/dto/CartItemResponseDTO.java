@@ -13,11 +13,11 @@ import lombok.Setter;
 @Setter
 @Builder
 public class CartItemResponseDTO {
-    private Long cartItemId;
-    private Long restaurantFoodItemId;
-    private String foodItemName;
-    private Integer quantity;
-    private String note;
-    private BigDecimal unitPrice;
-    private BigDecimal subtotal;
+	private Long cartItemId;
+	private Long restaurantFoodItemId;
+	private String foodItemName;
+	private Integer quantity;
+	private String note;
+	private BigDecimal unitPrice;
+	private BigDecimal subtotal;
 }

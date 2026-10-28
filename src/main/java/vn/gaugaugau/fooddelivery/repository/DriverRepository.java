@@ -7,5 +7,5 @@ import vn.gaugaugau.fooddelivery.model.Driver;
 
 @Repository
 public interface DriverRepository extends JpaRepository<Driver, Long> {
-    boolean existsByEmail(String email);
+	boolean existsByEmail(String email);
 }

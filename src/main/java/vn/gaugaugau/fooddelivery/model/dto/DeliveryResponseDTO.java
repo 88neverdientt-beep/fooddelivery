@@ -18,34 +18,34 @@ import java.time.LocalDateTime;
 @Builder
 public class DeliveryResponseDTO {
 
-    private Long deliveryId;
-    private LocalDateTime pickupTime;
-    private LocalDateTime deliveredTime;
-    private DeliveryStatus deliveryStatus;
-    private OrderOutputDTO order;
-    private DriverOutputDTO driver;
+	private Long deliveryId;
+	private LocalDateTime pickupTime;
+	private LocalDateTime deliveredTime;
+	private DeliveryStatus deliveryStatus;
+	private OrderOutputDTO order;
+	private DriverOutputDTO driver;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class OrderOutputDTO {
-        private Long orderId;
-        private String deliveryAddress;
-        private BigDecimal totalAmount;
-        private OrderStatus orderStatus;
-    }
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class OrderOutputDTO {
+		private Long orderId;
+		private String deliveryAddress;
+		private BigDecimal totalAmount;
+		private OrderStatus orderStatus;
+	}
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class DriverOutputDTO {
-        private Long driverId;
-        private String name;
-        private String phoneNumber;
-        private String licensePlate;
-    }
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class DriverOutputDTO {
+		private Long driverId;
+		private String name;
+		private String phoneNumber;
+		private String licensePlate;
+	}
 }

@@ -15,20 +15,20 @@ import lombok.Setter;
 @Builder
 public class DriverUpdateRequestDTO {
 
-    @NotBlank(message = "Name cannot be blank")
-    @Size(max = 100, message = "Name must not exceed 100 characters")
-    private String name;
+	@NotBlank(message = "Name cannot be blank")
+	@Size(max = 100, message = "Name must not exceed 100 characters")
+	private String name;
 
-    @NotBlank(message = "Phone number cannot be blank")
-    @Size(max = 15, message = "Phone number must not exceed 15 characters")
-    private String phoneNumber;
+	@NotBlank(message = "Phone number cannot be blank")
+	@Size(max = 15, message = "Phone number must not exceed 15 characters")
+	private String phoneNumber;
 
-    @NotBlank(message = "Address cannot be blank")
-    @Size(max = 255, message = "Address must not exceed 255 characters")
-    private String address;
+	@NotBlank(message = "Address cannot be blank")
+	@Size(max = 255, message = "Address must not exceed 255 characters")
+	private String address;
 
-    @Size(max = 20, message = "License plate must not exceed 20 characters")
-    private String licensePlate;
+	@Size(max = 20, message = "License plate must not exceed 20 characters")
+	private String licensePlate;
 
-    private Boolean driveStatus;
+	private Boolean driveStatus;
 }

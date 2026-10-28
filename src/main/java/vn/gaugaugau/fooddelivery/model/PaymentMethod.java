@@ -24,17 +24,17 @@ import java.util.List;
 @Builder
 public class PaymentMethod {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "method_id")
-    private Long methodId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "method_id")
+	private Long methodId;
 
-    @Column(name = "method_name", nullable = false, length = 50)
-    private String methodName;
+	@Column(name = "method_name", nullable = false, length = 50)
+	private String methodName;
 
-    @Column(name = "method_code", nullable = false, unique = true, length = 30)
-    private String methodCode;
+	@Column(name = "method_code", nullable = false, unique = true, length = 30)
+	private String methodCode;
 
-    @OneToMany(mappedBy = "paymentMethod")
-    private List<Payment> payments;
+	@OneToMany(mappedBy = "paymentMethod")
+	private List<Payment> payments;
 }

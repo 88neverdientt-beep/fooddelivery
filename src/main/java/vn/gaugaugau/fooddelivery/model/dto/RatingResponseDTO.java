@@ -15,30 +15,30 @@ import java.time.LocalDateTime;
 @Builder
 public class RatingResponseDTO {
 
-    private Long ratingId;
-    private Integer ratingScore;
-    private String comment;
-    private LocalDateTime createdAt;
-    private CustomerOutputDTO customer;
-    private FoodItemOutputDTO foodItem;
+	private Long ratingId;
+	private Integer ratingScore;
+	private String comment;
+	private LocalDateTime createdAt;
+	private CustomerOutputDTO customer;
+	private FoodItemOutputDTO foodItem;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class CustomerOutputDTO {
-        private Long customerId;
-        private String name;
-    }
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class CustomerOutputDTO {
+		private Long customerId;
+		private String name;
+	}
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class FoodItemOutputDTO {
-        private Long itemId;
-        private String name;
-    }
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class FoodItemOutputDTO {
+		private Long itemId;
+		private String name;
+	}
 }

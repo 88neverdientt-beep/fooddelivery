@@ -17,9 +17,9 @@ import lombok.Setter;
 @Builder
 public class RestaurantFoodItemUpdateDTO {
 
-    @NotNull(message = "Price cannot be null")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
-    private BigDecimal price;
+	@NotNull(message = "Price cannot be null")
+	@DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
+	private BigDecimal price;
 
-    private Boolean isAvailable;
+	private Boolean isAvailable;
 }

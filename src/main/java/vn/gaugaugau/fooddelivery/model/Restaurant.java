@@ -26,42 +26,42 @@ import java.util.List;
 @Builder
 public class Restaurant {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "restaurant_id")
-    private Long restaurantId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "restaurant_id")
+	private Long restaurantId;
 
-    @Column(name = "name", nullable = false, length = 150)
-    private String name;
+	@Column(name = "name", nullable = false, length = 150)
+	private String name;
 
-    @Column(name = "email", nullable = false, unique = true, length = 255)
-    private String email;
+	@Column(name = "email", nullable = false, unique = true, length = 255)
+	private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
-    private String password;
+	@Column(name = "password", nullable = false, length = 255)
+	private String password;
 
-    @Column(name = "phone_number", nullable = false, length = 15)
-    private String phoneNumber;
+	@Column(name = "phone_number", nullable = false, length = 15)
+	private String phoneNumber;
 
-    @Column(name = "address", nullable = false, length = 255)
-    private String address;
+	@Column(name = "address", nullable = false, length = 255)
+	private String address;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+	@CreationTimestamp
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createdAt;
 
-    @Column(name = "restaurant_status")
-    private Boolean restaurantStatus;
+	@Column(name = "restaurant_status")
+	private Boolean restaurantStatus;
 
-    @OneToMany(mappedBy = "restaurant")
-    private List<Order> orders;
+	@OneToMany(mappedBy = "restaurant")
+	private List<Order> orders;
 
-    @OneToMany(mappedBy = "restaurant")
-    private List<Cart> carts;
+	@OneToMany(mappedBy = "restaurant")
+	private List<Cart> carts;
 
-    @OneToMany(mappedBy = "restaurant")
-    private List<RestaurantFoodItem> restaurantFoodItems;
+	@OneToMany(mappedBy = "restaurant")
+	private List<RestaurantFoodItem> restaurantFoodItems;
 
-    @OneToMany(mappedBy = "restaurant")
-    private List<Rating> ratings;
+	@OneToMany(mappedBy = "restaurant")
+	private List<Rating> ratings;
 }

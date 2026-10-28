@@ -15,12 +15,12 @@ import java.time.LocalDateTime;
 @Builder
 public class RestaurantResponseDTO {
 
-    private Long restaurantId;
-    private String name;
-    private String email;
-    private String phoneNumber;
-    private String address;
-    private Boolean restaurantStatus;
-    private LocalDateTime createdAt;
+	private Long restaurantId;
+	private String name;
+	private String email;
+	private String phoneNumber;
+	private String address;
+	private Boolean restaurantStatus;
+	private LocalDateTime createdAt;
 
 }

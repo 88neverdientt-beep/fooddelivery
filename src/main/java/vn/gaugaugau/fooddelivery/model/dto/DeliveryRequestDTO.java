@@ -17,14 +17,14 @@ import java.time.LocalDateTime;
 @Builder
 public class DeliveryRequestDTO {
 
-    @NotNull(message = "Order ID cannot be null")
-    private Long orderId;
+	@NotNull(message = "Order ID cannot be null")
+	private Long orderId;
 
-    private Long driverId;
+	private Long driverId;
 
-    private LocalDateTime pickupTime;
+	private LocalDateTime pickupTime;
 
-    private LocalDateTime deliveredTime;
+	private LocalDateTime deliveredTime;
 
-    private DeliveryStatus deliveryStatus;
+	private DeliveryStatus deliveryStatus;
 }

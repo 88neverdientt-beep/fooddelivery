@@ -20,67 +20,67 @@ import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 @RequiredArgsConstructor
 public class CustomerService {
 
-    private final CustomerRepository customerRepository;
-    private final PasswordEncoder passwordEncoder;
+	private final CustomerRepository customerRepository;
+	private final PasswordEncoder passwordEncoder;
 
-    private CustomerResponseDTO customerToCustomerResponseDTO(Customer customer) {
-        CustomerResponseDTO response = new CustomerResponseDTO();
-        response.setCustomerId(customer.getCustomerId());
-        response.setName(customer.getName());
-        response.setEmail(customer.getEmail());
-        response.setPhoneNumber(customer.getPhoneNumber());
-        response.setAddress(customer.getAddress());
-        response.setCreatedAt(customer.getCreatedAt());
-        return response;
-    }
+	private CustomerResponseDTO customerToCustomerResponseDTO(Customer customer) {
+		CustomerResponseDTO response = new CustomerResponseDTO();
+		response.setCustomerId(customer.getCustomerId());
+		response.setName(customer.getName());
+		response.setEmail(customer.getEmail());
+		response.setPhoneNumber(customer.getPhoneNumber());
+		response.setAddress(customer.getAddress());
+		response.setCreatedAt(customer.getCreatedAt());
+		return response;
+	}
 
-    public CustomerResponseDTO createCustomer(CustomerRequestDTO request) {
-        if (customerRepository.existsByEmail(request.getEmail())) {
-            throw new ResourceAlreadyExistsException("Email already exists!");
-        }
-        Customer customer = new Customer();
-        customer.setName(request.getName());
-        customer.setEmail(request.getEmail());
-        customer.setPassword(this.passwordEncoder.encode(request.getPassword()));
-        customer.setPhoneNumber(request.getPhoneNumber());
-        customer.setAddress(request.getAddress());
-        customer.setCreatedAt(LocalDateTime.now());
-        Customer savedCustomer = customerRepository.save(customer);
-        return customerToCustomerResponseDTO(savedCustomer);
-    }
+	public CustomerResponseDTO createCustomer(CustomerRequestDTO request) {
+		if (customerRepository.existsByEmail(request.getEmail())) {
+			throw new ResourceAlreadyExistsException("Email already exists!");
+		}
+		Customer customer = new Customer();
+		customer.setName(request.getName());
+		customer.setEmail(request.getEmail());
+		customer.setPassword(this.passwordEncoder.encode(request.getPassword()));
+		customer.setPhoneNumber(request.getPhoneNumber());
+		customer.setAddress(request.getAddress());
+		customer.setCreatedAt(LocalDateTime.now());
+		Customer savedCustomer = customerRepository.save(customer);
+		return customerToCustomerResponseDTO(savedCustomer);
+	}
 
-    public List<CustomerResponseDTO> getAllCustomers() {
-        List<CustomerResponseDTO> customers = this.customerRepository.findAll().stream()
-                .map(customer -> customerToCustomerResponseDTO(customer))
-                .collect(Collectors.toList());
-        return customers;
-    }
+	public List<CustomerResponseDTO> getAllCustomers() {
+		List<CustomerResponseDTO> customers = this.customerRepository.findAll().stream()
+				.map(customer -> customerToCustomerResponseDTO(customer))
+				.collect(Collectors.toList());
+		return customers;
+	}
 
-    public CustomerResponseDTO getCustomerById(Long customerId) {
-        Customer customer = customerRepository.findById(customerId).orElse(null);
-        if (customer == null) {
-            throw new ResourceNotFoundException("Customer not found with ID: " + customerId);
-        }
-        return customerToCustomerResponseDTO(customer);
-    }
+	public CustomerResponseDTO getCustomerById(Long customerId) {
+		Customer customer = customerRepository.findById(customerId).orElse(null);
+		if (customer == null) {
+			throw new ResourceNotFoundException("Customer not found with ID: " + customerId);
+		}
+		return customerToCustomerResponseDTO(customer);
+	}
 
-    public CustomerResponseDTO updateCustomerById(Long customerId, CustomerUpdateRequestDTO request) {
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
+	public CustomerResponseDTO updateCustomerById(Long customerId, CustomerUpdateRequestDTO request) {
+		Customer customer = customerRepository.findById(customerId)
+				.orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
 
-        customer.setName(request.getName());
-        customer.setPhoneNumber(request.getPhoneNumber());
-        customer.setAddress(request.getAddress());
+		customer.setName(request.getName());
+		customer.setPhoneNumber(request.getPhoneNumber());
+		customer.setAddress(request.getAddress());
 
-        Customer updatedCustomer = customerRepository.save(customer);
-        return customerToCustomerResponseDTO(updatedCustomer);
-    }
+		Customer updatedCustomer = customerRepository.save(customer);
+		return customerToCustomerResponseDTO(updatedCustomer);
+	}
 
-    public CustomerResponseDTO deleteCustomerById(Long customerId) {
-        Customer customer = customerRepository.findById(customerId)
-                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
-        this.customerRepository.delete(customer);
-        return customerToCustomerResponseDTO(customer);
-    }
+	public CustomerResponseDTO deleteCustomerById(Long customerId) {
+		Customer customer = customerRepository.findById(customerId)
+				.orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
+		this.customerRepository.delete(customer);
+		return customerToCustomerResponseDTO(customer);
+	}
 
 }

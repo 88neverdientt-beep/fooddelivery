@@ -9,6 +9,6 @@ import vn.gaugaugau.fooddelivery.model.Cart;
 
 @Repository
 public interface CartRepository extends JpaRepository<Cart, Long> {
-    Optional<Cart> findByCustomer_CustomerId(Long customerId);
+	Optional<Cart> findByCustomer_CustomerId(Long customerId);
 
 }

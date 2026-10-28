@@ -15,10 +15,10 @@ import java.math.BigDecimal;
 @Builder
 public class OrderDetailResponseDTO {
 
-    private Long orderDetailId;
-    private String foodItemName;
-    private Integer quantity;
-    private BigDecimal unitPrice;
-    private BigDecimal subtotalItem;
-    private String note;
+	private Long orderDetailId;
+	private String foodItemName;
+	private Integer quantity;
+	private BigDecimal unitPrice;
+	private BigDecimal subtotalItem;
+	private String note;
 }

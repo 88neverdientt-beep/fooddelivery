@@ -17,15 +17,15 @@ import lombok.Setter;
 @Builder
 public class RestaurantFoodItemRequestDTO {
 
-    @NotNull(message = "Price cannot be null")
-    @DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
-    private BigDecimal price;
+	@NotNull(message = "Price cannot be null")
+	@DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")
+	private BigDecimal price;
 
-    private Boolean isAvailable;
+	private Boolean isAvailable;
 
-    @NotNull(message = "Restaurant ID cannot be null")
-    private Long restaurantId;
+	@NotNull(message = "Restaurant ID cannot be null")
+	private Long restaurantId;
 
-    @NotNull(message = "Food item ID cannot be null")
-    private Long foodItemId;
+	@NotNull(message = "Food item ID cannot be null")
+	private Long foodItemId;
 }

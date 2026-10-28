@@ -23,37 +23,37 @@ import vn.gaugaugau.fooddelivery.utils.ApiResponse;
 @RequiredArgsConstructor
 public class DriverController {
 
-    private final DriverService driverService;
+	private final DriverService driverService;
 
-    @PostMapping("/drivers")
-    public ResponseEntity<ApiResponse<DriverResponseDTO>> createDriver(
-            @Valid @RequestBody DriverRequestDTO request) {
-        DriverResponseDTO response = this.driverService.createDriver(request);
-        return ApiResponse.created(response);
-    }
+	@PostMapping("/drivers")
+	public ResponseEntity<ApiResponse<DriverResponseDTO>> createDriver(
+			@Valid @RequestBody DriverRequestDTO request) {
+		DriverResponseDTO response = this.driverService.createDriver(request);
+		return ApiResponse.created(response);
+	}
 
-    @GetMapping("/drivers")
-    public ResponseEntity<ApiResponse<List<DriverResponseDTO>>> getAllDrivers() {
-        List<DriverResponseDTO> response = this.driverService.getAllDrivers();
-        return ApiResponse.success(response);
-    }
+	@GetMapping("/drivers")
+	public ResponseEntity<ApiResponse<List<DriverResponseDTO>>> getAllDrivers() {
+		List<DriverResponseDTO> response = this.driverService.getAllDrivers();
+		return ApiResponse.success(response);
+	}
 
-    @GetMapping("/drivers/{driverId}")
-    public ResponseEntity<ApiResponse<DriverResponseDTO>> getDriverById(@PathVariable Long driverId) {
-        DriverResponseDTO response = this.driverService.getDriverById(driverId);
-        return ApiResponse.success(response);
-    }
+	@GetMapping("/drivers/{driverId}")
+	public ResponseEntity<ApiResponse<DriverResponseDTO>> getDriverById(@PathVariable Long driverId) {
+		DriverResponseDTO response = this.driverService.getDriverById(driverId);
+		return ApiResponse.success(response);
+	}
 
-    @PutMapping("/drivers/{driverId}")
-    public ResponseEntity<ApiResponse<DriverResponseDTO>> updateDriverById(@PathVariable Long driverId,
-            @Valid @RequestBody DriverUpdateRequestDTO request) {
-        DriverResponseDTO response = this.driverService.updateDriverById(driverId, request);
-        return ApiResponse.success(response);
-    }
+	@PutMapping("/drivers/{driverId}")
+	public ResponseEntity<ApiResponse<DriverResponseDTO>> updateDriverById(@PathVariable Long driverId,
+			@Valid @RequestBody DriverUpdateRequestDTO request) {
+		DriverResponseDTO response = this.driverService.updateDriverById(driverId, request);
+		return ApiResponse.success(response);
+	}
 
-    @DeleteMapping("/drivers/{driverId}")
-    public ResponseEntity<ApiResponse<String>> deleteDriverById(@PathVariable Long driverId) {
-        this.driverService.deleteDriverById(driverId);
-        return ApiResponse.success("delete succesful");
-    }
+	@DeleteMapping("/drivers/{driverId}")
+	public ResponseEntity<ApiResponse<String>> deleteDriverById(@PathVariable Long driverId) {
+		this.driverService.deleteDriverById(driverId);
+		return ApiResponse.success("delete succesful");
+	}
 }

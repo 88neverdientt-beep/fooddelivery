@@ -22,7 +22,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "restaurant_food_items", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "restaurant_id", "item_id" })
+		@UniqueConstraint(columnNames = { "restaurant_id", "item_id" })
 })
 @Getter
 @Setter
@@ -31,30 +31,30 @@ import java.util.List;
 @Builder
 public class RestaurantFoodItem {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "restaurant_food_item_id")
-    private Long restaurantFoodItemId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "restaurant_food_item_id")
+	private Long restaurantFoodItemId;
 
-    @Column(name = "price", nullable = false, precision = 12, scale = 2)
-    private BigDecimal price;
+	@Column(name = "price", nullable = false, precision = 12, scale = 2)
+	private BigDecimal price;
 
-    @Column(name = "is_available", nullable = false)
-    @Builder.Default
-    private Boolean isAvailable = true;
+	@Column(name = "is_available", nullable = false)
+	@Builder.Default
+	private Boolean isAvailable = true;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "restaurant_id", nullable = false)
-    private Restaurant restaurant;
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "restaurant_id", nullable = false)
+	private Restaurant restaurant;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "item_id", nullable = false)
-    private FoodItem foodItem;
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "item_id", nullable = false)
+	private FoodItem foodItem;
 
-    @OneToMany(mappedBy = "restaurantFoodItem")
-    private List<CartItem> cartItems;
+	@OneToMany(mappedBy = "restaurantFoodItem")
+	private List<CartItem> cartItems;
 
-    @OneToMany(mappedBy = "restaurantFoodItem")
-    private List<OrderDetail> orderDetails;
+	@OneToMany(mappedBy = "restaurantFoodItem")
+	private List<OrderDetail> orderDetails;
 
 }

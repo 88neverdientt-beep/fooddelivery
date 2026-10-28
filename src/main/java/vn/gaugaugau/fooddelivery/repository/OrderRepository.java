@@ -9,7 +9,7 @@ import vn.gaugaugau.fooddelivery.model.Order;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    List<Order> findByCustomer_CustomerId(Long customerId);
+	List<Order> findByCustomer_CustomerId(Long customerId);
 
-    List<Order> findByRestaurant_RestaurantId(Long restaurantId);
+	List<Order> findByRestaurant_RestaurantId(Long restaurantId);
 }

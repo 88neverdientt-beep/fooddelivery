@@ -13,11 +13,11 @@ import vn.gaugaugau.fooddelivery.utils.ApiResponse;
 @RestController
 @RequiredArgsConstructor
 public class CartController {
-    private final CartService cartService;
+	private final CartService cartService;
 
-    @GetMapping("/cart/{customerId}")
-    public ResponseEntity<ApiResponse<CartResponseDTO>> getAllCartItems(@PathVariable Long customerId) {
-        CartResponseDTO responseDTO = this.cartService.getAllCartItems(customerId);
-        return ApiResponse.success(responseDTO);
-    }
+	@GetMapping("/cart/{customerId}")
+	public ResponseEntity<ApiResponse<CartResponseDTO>> getAllCartItems(@PathVariable Long customerId) {
+		CartResponseDTO responseDTO = this.cartService.getAllCartItems(customerId);
+		return ApiResponse.success(responseDTO);
+	}
 }

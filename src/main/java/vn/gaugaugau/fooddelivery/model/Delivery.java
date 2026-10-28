@@ -30,26 +30,26 @@ import java.time.LocalDateTime;
 @Builder
 public class Delivery {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "delivery_id")
-    private Long deliveryId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "delivery_id")
+	private Long deliveryId;
 
-    @Column(name = "pickup_time")
-    private LocalDateTime pickupTime;
+	@Column(name = "pickup_time")
+	private LocalDateTime pickupTime;
 
-    @Column(name = "delivered_time")
-    private LocalDateTime deliveredTime;
+	@Column(name = "delivered_time")
+	private LocalDateTime deliveredTime;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "delivery_status", length = 20)
-    private DeliveryStatus deliveryStatus;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "delivery_status", length = 20)
+	private DeliveryStatus deliveryStatus;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order;
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "order_id")
+	private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "driver_id")
-    private Driver driver;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "driver_id")
+	private Driver driver;
 }

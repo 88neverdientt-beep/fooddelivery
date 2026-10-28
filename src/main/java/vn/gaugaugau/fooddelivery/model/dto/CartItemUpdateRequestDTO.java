@@ -16,10 +16,10 @@ import lombok.Setter;
 @Builder
 public class CartItemUpdateRequestDTO {
 
-    @NotNull(message = "Quantity cannot be null")
-    @Positive(message = "Quantity must be greater than 0")
-    private Integer quantity;
+	@NotNull(message = "Quantity cannot be null")
+	@Positive(message = "Quantity must be greater than 0")
+	private Integer quantity;
 
-    @Size(max = 255, message = "Note cannot exceed 255 characters")
-    private String note;
+	@Size(max = 255, message = "Note cannot exceed 255 characters")
+	private String note;
 }

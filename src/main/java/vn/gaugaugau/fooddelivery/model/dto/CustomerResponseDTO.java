@@ -15,11 +15,11 @@ import java.time.LocalDateTime;
 @Builder
 public class CustomerResponseDTO {
 
-    private Long customerId;
-    private String name;
-    private String email;
-    private String phoneNumber;
-    private String address;
-    private LocalDateTime createdAt;
+	private Long customerId;
+	private String name;
+	private String email;
+	private String phoneNumber;
+	private String address;
+	private LocalDateTime createdAt;
 
 }

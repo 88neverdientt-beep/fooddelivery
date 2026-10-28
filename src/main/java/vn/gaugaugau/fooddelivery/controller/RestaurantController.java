@@ -23,37 +23,37 @@ import vn.gaugaugau.fooddelivery.utils.ApiResponse;
 @RequiredArgsConstructor
 public class RestaurantController {
 
-    private final RestaurantService restaurantService;
+	private final RestaurantService restaurantService;
 
-    @PostMapping("/restaurants")
-    public ResponseEntity<ApiResponse<RestaurantResponseDTO>> createRestaurant(
-            @Valid @RequestBody RestaurantRequestDTO request) {
-        RestaurantResponseDTO response = this.restaurantService.createRestaurant(request);
-        return ApiResponse.created(response);
-    }
+	@PostMapping("/restaurants")
+	public ResponseEntity<ApiResponse<RestaurantResponseDTO>> createRestaurant(
+			@Valid @RequestBody RestaurantRequestDTO request) {
+		RestaurantResponseDTO response = this.restaurantService.createRestaurant(request);
+		return ApiResponse.created(response);
+	}
 
-    @GetMapping("/restaurants")
-    public ResponseEntity<ApiResponse<List<RestaurantResponseDTO>>> getAllRestaurants() {
-        List<RestaurantResponseDTO> response = this.restaurantService.getAllRestaurants();
-        return ApiResponse.success(response);
-    }
+	@GetMapping("/restaurants")
+	public ResponseEntity<ApiResponse<List<RestaurantResponseDTO>>> getAllRestaurants() {
+		List<RestaurantResponseDTO> response = this.restaurantService.getAllRestaurants();
+		return ApiResponse.success(response);
+	}
 
-    @GetMapping("/restaurants/{restaurantId}")
-    public ResponseEntity<ApiResponse<RestaurantResponseDTO>> getRestaurantById(@PathVariable Long restaurantId) {
-        RestaurantResponseDTO response = this.restaurantService.getRestaurantById(restaurantId);
-        return ApiResponse.success(response);
-    }
+	@GetMapping("/restaurants/{restaurantId}")
+	public ResponseEntity<ApiResponse<RestaurantResponseDTO>> getRestaurantById(@PathVariable Long restaurantId) {
+		RestaurantResponseDTO response = this.restaurantService.getRestaurantById(restaurantId);
+		return ApiResponse.success(response);
+	}
 
-    @PutMapping("/restaurants/{restaurantId}")
-    public ResponseEntity<ApiResponse<RestaurantResponseDTO>> updateRestaurantById(@PathVariable Long restaurantId,
-            @Valid @RequestBody RestaurantUpdateRequestDTO request) {
-        RestaurantResponseDTO response = this.restaurantService.updateRestaurantById(restaurantId, request);
-        return ApiResponse.success(response);
-    }
+	@PutMapping("/restaurants/{restaurantId}")
+	public ResponseEntity<ApiResponse<RestaurantResponseDTO>> updateRestaurantById(@PathVariable Long restaurantId,
+			@Valid @RequestBody RestaurantUpdateRequestDTO request) {
+		RestaurantResponseDTO response = this.restaurantService.updateRestaurantById(restaurantId, request);
+		return ApiResponse.success(response);
+	}
 
-    @DeleteMapping("/restaurants/{restaurantId}")
-    public ResponseEntity<ApiResponse<String>> deleteRestaurantById(@PathVariable Long restaurantId) {
-        this.restaurantService.deleteRestaurantById(restaurantId);
-        return ApiResponse.success("delete succesful");
-    }
+	@DeleteMapping("/restaurants/{restaurantId}")
+	public ResponseEntity<ApiResponse<String>> deleteRestaurantById(@PathVariable Long restaurantId) {
+		this.restaurantService.deleteRestaurantById(restaurantId);
+		return ApiResponse.success("delete succesful");
+	}
 }

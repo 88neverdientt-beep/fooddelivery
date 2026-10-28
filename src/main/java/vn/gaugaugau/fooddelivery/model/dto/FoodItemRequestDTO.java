@@ -15,14 +15,14 @@ import lombok.Setter;
 @Builder
 public class FoodItemRequestDTO {
 
-    @NotBlank(message = "Name cannot be blank")
-    @Size(max = 150, message = "Name must not exceed 150 characters")
-    private String name;
+	@NotBlank(message = "Name cannot be blank")
+	@Size(max = 150, message = "Name must not exceed 150 characters")
+	private String name;
 
-    @Size(max = 150, message = "Category must not exceed 150 characters")
-    private String category;
+	@Size(max = 150, message = "Category must not exceed 150 characters")
+	private String category;
 
-    @Size(max = 255, message = "Description must not exceed 255 characters")
-    private String description;
+	@Size(max = 255, message = "Description must not exceed 255 characters")
+	private String description;
 
 }

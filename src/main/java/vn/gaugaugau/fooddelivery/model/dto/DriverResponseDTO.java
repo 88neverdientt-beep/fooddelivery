@@ -15,13 +15,13 @@ import java.time.LocalDateTime;
 @Builder
 public class DriverResponseDTO {
 
-    private Long driverId;
-    private String name;
-    private String email;
-    private String phoneNumber;
-    private String address;
-    private String licensePlate;
-    private Boolean driveStatus;
-    private LocalDateTime createdAt;
+	private Long driverId;
+	private String name;
+	private String email;
+	private String phoneNumber;
+	private String address;
+	private String licensePlate;
+	private Boolean driveStatus;
+	private LocalDateTime createdAt;
 
 }

@@ -15,8 +15,8 @@ import lombok.Setter;
 @Builder
 public class OrderRequestDTO {
 
-    @NotBlank(message = "Delivery address cannot be blank")
-    @Size(max = 255, message = "Delivery address must not exceed 255 characters")
-    private String deliveryAddress;
+	@NotBlank(message = "Delivery address cannot be blank")
+	@Size(max = 255, message = "Delivery address must not exceed 255 characters")
+	private String deliveryAddress;
 
 }

@@ -6,8 +6,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 @RestController
 public class HomeController {
 
-    @GetMapping("/")
-    public String index() {
-        return "Hello World with gau gau gau Food Delivery";
-    }
+	@GetMapping("/")
+	public String index() {
+		return "Hello World with gau gau gau Food Delivery";
+	}
 }

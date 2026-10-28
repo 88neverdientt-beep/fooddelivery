@@ -18,32 +18,32 @@ import java.time.LocalDateTime;
 @Builder
 public class PaymentResponseDTO {
 
-    private Long paymentId;
-    private LocalDateTime paidAt;
-    private String transactionCode;
-    private PaymentStatus paymentStatus;
-    private OrderOutputDTO order;
-    private PaymentMethodOutputDTO paymentMethod;
+	private Long paymentId;
+	private LocalDateTime paidAt;
+	private String transactionCode;
+	private PaymentStatus paymentStatus;
+	private OrderOutputDTO order;
+	private PaymentMethodOutputDTO paymentMethod;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class OrderOutputDTO {
-        private Long orderId;
-        private BigDecimal totalAmount;
-        private OrderStatus orderStatus;
-    }
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class OrderOutputDTO {
+		private Long orderId;
+		private BigDecimal totalAmount;
+		private OrderStatus orderStatus;
+	}
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class PaymentMethodOutputDTO {
-        private Long methodId;
-        private String methodName;
-        private String methodCode;
-    }
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class PaymentMethodOutputDTO {
+		private Long methodId;
+		private String methodName;
+		private String methodCode;
+	}
 }

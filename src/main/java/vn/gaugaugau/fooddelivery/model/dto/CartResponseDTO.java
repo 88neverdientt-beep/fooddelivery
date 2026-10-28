@@ -15,21 +15,21 @@ import lombok.Setter;
 @NoArgsConstructor
 @Builder
 public class CartResponseDTO {
-    private Long cartId;
-    private RestaurantResponseDTO restaurant;
-    private List<CartItemResponseDTO> cartItems;
-    private Integer totalItems;
-    private BigDecimal subtotal;
-    private BigDecimal shippingFee;
-    private BigDecimal totalAmount;
+	private Long cartId;
+	private RestaurantResponseDTO restaurant;
+	private List<CartItemResponseDTO> cartItems;
+	private Integer totalItems;
+	private BigDecimal subtotal;
+	private BigDecimal shippingFee;
+	private BigDecimal totalAmount;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class RestaurantResponseDTO {
-        private Long restaurantId;
-        private String name;
-    }
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class RestaurantResponseDTO {
+		private Long restaurantId;
+		private String name;
+	}
 }

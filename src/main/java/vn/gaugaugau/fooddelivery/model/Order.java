@@ -35,45 +35,45 @@ import java.util.List;
 @Builder
 public class Order {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "order_id")
-    private Long orderId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "order_id")
+	private Long orderId;
 
-    @Column(name = "delivery_address", nullable = false, length = 255)
-    private String deliveryAddress;
+	@Column(name = "delivery_address", nullable = false, length = 255)
+	private String deliveryAddress;
 
-    @Column(name = "subtotal", precision = 12, scale = 2)
-    private BigDecimal subtotal;
+	@Column(name = "subtotal", precision = 12, scale = 2)
+	private BigDecimal subtotal;
 
-    @Column(name = "shipping_fee", precision = 12, scale = 2)
-    private BigDecimal shippingFee;
+	@Column(name = "shipping_fee", precision = 12, scale = 2)
+	private BigDecimal shippingFee;
 
-    @Column(name = "total_amount", precision = 12, scale = 2)
-    private BigDecimal totalAmount;
+	@Column(name = "total_amount", precision = 12, scale = 2)
+	private BigDecimal totalAmount;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+	@CreationTimestamp
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createdAt;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "order_status", length = 20)
-    private OrderStatus orderStatus;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "order_status", length = 20)
+	private OrderStatus orderStatus;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "customer_id")
+	private Customer customer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_id")
-    private Restaurant restaurant;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "restaurant_id")
+	private Restaurant restaurant;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderDetail> orderDetails;
+	@OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+	private List<OrderDetail> orderDetails;
 
-    @OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
-    private Delivery delivery;
+	@OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
+	private Delivery delivery;
 
-    @OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
-    private Payment payment;
+	@OneToOne(mappedBy = "order", fetch = FetchType.LAZY)
+	private Payment payment;
 }

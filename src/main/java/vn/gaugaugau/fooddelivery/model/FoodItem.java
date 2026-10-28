@@ -24,20 +24,20 @@ import java.util.List;
 @Builder
 public class FoodItem {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "item_id")
-    private Long itemId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "item_id")
+	private Long itemId;
 
-    @Column(name = "name", nullable = false, length = 150)
-    private String name;
+	@Column(name = "name", nullable = false, length = 150)
+	private String name;
 
-    @Column(name = "category", length = 150)
-    private String category;
+	@Column(name = "category", length = 150)
+	private String category;
 
-    @Column(name = "description", length = 255)
-    private String description;
+	@Column(name = "description", length = 255)
+	private String description;
 
-    @OneToMany(mappedBy = "foodItem")
-    private List<RestaurantFoodItem> restaurantFoodItems;
+	@OneToMany(mappedBy = "foodItem")
+	private List<RestaurantFoodItem> restaurantFoodItems;
 }

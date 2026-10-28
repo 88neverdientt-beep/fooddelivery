@@ -30,26 +30,26 @@ import java.time.LocalDateTime;
 @Builder
 public class Payment {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "payment_id")
-    private Long paymentId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "payment_id")
+	private Long paymentId;
 
-    @Column(name = "paid_at")
-    private LocalDateTime paidAt;
+	@Column(name = "paid_at")
+	private LocalDateTime paidAt;
 
-    @Column(name = "transaction_code", length = 100)
-    private String transactionCode;
+	@Column(name = "transaction_code", length = 100)
+	private String transactionCode;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "payment_status", length = 20)
-    private PaymentStatus paymentStatus;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "payment_status", length = 20)
+	private PaymentStatus paymentStatus;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private Order order;
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "order_id")
+	private Order order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "method_id")
-    private PaymentMethod paymentMethod;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "method_id")
+	private PaymentMethod paymentMethod;
 }

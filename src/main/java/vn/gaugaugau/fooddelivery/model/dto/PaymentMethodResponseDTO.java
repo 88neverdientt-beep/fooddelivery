@@ -13,7 +13,7 @@ import lombok.Setter;
 @Builder
 public class PaymentMethodResponseDTO {
 
-    private Long methodId;
-    private String methodName;
-    private String methodCode;
+	private Long methodId;
+	private String methodName;
+	private String methodCode;
 }

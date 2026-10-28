@@ -26,25 +26,25 @@ import lombok.Setter;
 @Builder
 public class CartItem {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "cart_item_id")
-    private Long cartItemId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "cart_item_id")
+	private Long cartItemId;
 
-    @NotNull(message = "Quantity cannot be null")
-    @Positive(message = "Quantity must be greater than 0")
-    @Column(name = "quantity", nullable = false)
-    @Builder.Default
-    private Integer quantity = 1;
+	@NotNull(message = "Quantity cannot be null")
+	@Positive(message = "Quantity must be greater than 0")
+	@Column(name = "quantity", nullable = false)
+	@Builder.Default
+	private Integer quantity = 1;
 
-    @Column(name = "note", length = 255)
-    private String note;
+	@Column(name = "note", length = 255)
+	private String note;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cart_id", nullable = false)
-    private Cart cart;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "cart_id", nullable = false)
+	private Cart cart;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_food_item_id", nullable = false)
-    private RestaurantFoodItem restaurantFoodItem;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "restaurant_food_item_id", nullable = false)
+	private RestaurantFoodItem restaurantFoodItem;
 }

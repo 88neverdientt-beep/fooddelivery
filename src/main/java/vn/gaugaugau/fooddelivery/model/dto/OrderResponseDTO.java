@@ -20,60 +20,60 @@ import java.util.List;
 @Builder
 public class OrderResponseDTO {
 
-    private Long orderId;
-    private String deliveryAddress;
-    private BigDecimal subtotal;
-    private BigDecimal shippingFee;
-    private BigDecimal totalAmount;
-    private OrderStatus orderStatus;
-    private LocalDateTime createdAt;
-    private CustomerOutputDTO customer;
-    private RestaurantOutputDTO restaurant;
-    private List<OrderDetailResponseDTO> orderDetails;
-    // private DeliveryOutputDTO delivery;
-    // private PaymentOutputDTO payment;
+	private Long orderId;
+	private String deliveryAddress;
+	private BigDecimal subtotal;
+	private BigDecimal shippingFee;
+	private BigDecimal totalAmount;
+	private OrderStatus orderStatus;
+	private LocalDateTime createdAt;
+	private CustomerOutputDTO customer;
+	private RestaurantOutputDTO restaurant;
+	private List<OrderDetailResponseDTO> orderDetails;
+	// private DeliveryOutputDTO delivery;
+	// private PaymentOutputDTO payment;
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class CustomerOutputDTO {
-        private Long customerId;
-        private String name;
-    }
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class CustomerOutputDTO {
+		private Long customerId;
+		private String name;
+	}
 
-    @Getter
-    @Setter
-    @NoArgsConstructor
-    @AllArgsConstructor
-    @Builder
-    public static class RestaurantOutputDTO {
-        private Long restaurantId;
-        private String name;
-    }
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class RestaurantOutputDTO {
+		private Long restaurantId;
+		private String name;
+	}
 
-    // @Getter
-    // @Setter
-    // @NoArgsConstructor
-    // @AllArgsConstructor
-    // @Builder
-    // public static class DeliveryOutputDTO {
-    // private Long deliveryId;
-    // private DeliveryStatus deliveryStatus;
-    // private LocalDateTime pickupTime;
-    // private LocalDateTime deliveredTime;
-    // }
+	// @Getter
+	// @Setter
+	// @NoArgsConstructor
+	// @AllArgsConstructor
+	// @Builder
+	// public static class DeliveryOutputDTO {
+	// private Long deliveryId;
+	// private DeliveryStatus deliveryStatus;
+	// private LocalDateTime pickupTime;
+	// private LocalDateTime deliveredTime;
+	// }
 
-    // @Getter
-    // @Setter
-    // @NoArgsConstructor
-    // @AllArgsConstructor
-    // @Builder
-    // public static class PaymentOutputDTO {
-    // private Long paymentId;
-    // private PaymentStatus paymentStatus;
-    // private String transactionCode;
-    // private LocalDateTime paidAt;
-    // }
+	// @Getter
+	// @Setter
+	// @NoArgsConstructor
+	// @AllArgsConstructor
+	// @Builder
+	// public static class PaymentOutputDTO {
+	// private Long paymentId;
+	// private PaymentStatus paymentStatus;
+	// private String transactionCode;
+	// private LocalDateTime paidAt;
+	// }
 }

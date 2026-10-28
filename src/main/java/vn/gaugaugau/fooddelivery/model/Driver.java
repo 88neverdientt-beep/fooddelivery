@@ -26,36 +26,36 @@ import java.util.List;
 @Builder
 public class Driver {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "driver_id")
-    private Long driverId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "driver_id")
+	private Long driverId;
 
-    @Column(name = "name", nullable = false, length = 100)
-    private String name;
+	@Column(name = "name", nullable = false, length = 100)
+	private String name;
 
-    @Column(name = "email", nullable = false, unique = true, length = 255)
-    private String email;
+	@Column(name = "email", nullable = false, unique = true, length = 255)
+	private String email;
 
-    @Column(name = "password", nullable = false, length = 255)
-    private String password;
+	@Column(name = "password", nullable = false, length = 255)
+	private String password;
 
-    @Column(name = "phone_number", nullable = false, length = 15)
-    private String phoneNumber;
+	@Column(name = "phone_number", nullable = false, length = 15)
+	private String phoneNumber;
 
-    @Column(name = "address", nullable = false, length = 255)
-    private String address;
+	@Column(name = "address", nullable = false, length = 255)
+	private String address;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+	@CreationTimestamp
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createdAt;
 
-    @Column(name = "license_plate", length = 20)
-    private String licensePlate;
+	@Column(name = "license_plate", length = 20)
+	private String licensePlate;
 
-    @Column(name = "drive_status")
-    private Boolean driveStatus;
+	@Column(name = "drive_status")
+	private Boolean driveStatus;
 
-    @OneToMany(mappedBy = "driver")
-    private List<Delivery> deliveries;
+	@OneToMany(mappedBy = "driver")
+	private List<Delivery> deliveries;
 }

@@ -7,6 +7,6 @@ import vn.gaugaugau.fooddelivery.model.Customer;
 
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
-    boolean existsByEmail(String email);
+	boolean existsByEmail(String email);
 
 }

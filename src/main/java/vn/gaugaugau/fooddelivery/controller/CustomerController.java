@@ -23,37 +23,37 @@ import vn.gaugaugau.fooddelivery.utils.ApiResponse;
 @RequiredArgsConstructor
 public class CustomerController {
 
-    private final CustomerService customerService;
+	private final CustomerService customerService;
 
-    @PostMapping("/customers")
-    public ResponseEntity<ApiResponse<CustomerResponseDTO>> createCustomer(
-            @Valid @RequestBody CustomerRequestDTO request) {
-        CustomerResponseDTO response = this.customerService.createCustomer(request);
-        return ApiResponse.created(response);
-    }
+	@PostMapping("/customers")
+	public ResponseEntity<ApiResponse<CustomerResponseDTO>> createCustomer(
+			@Valid @RequestBody CustomerRequestDTO request) {
+		CustomerResponseDTO response = this.customerService.createCustomer(request);
+		return ApiResponse.created(response);
+	}
 
-    @GetMapping("/customers")
-    public ResponseEntity<ApiResponse<List<CustomerResponseDTO>>> getAllCustomers() {
-        List<CustomerResponseDTO> response = this.customerService.getAllCustomers();
-        return ApiResponse.success(response);
-    }
+	@GetMapping("/customers")
+	public ResponseEntity<ApiResponse<List<CustomerResponseDTO>>> getAllCustomers() {
+		List<CustomerResponseDTO> response = this.customerService.getAllCustomers();
+		return ApiResponse.success(response);
+	}
 
-    @GetMapping("/customers/{customerId}")
-    public ResponseEntity<ApiResponse<CustomerResponseDTO>> getCustomerById(@PathVariable Long customerId) {
-        CustomerResponseDTO response = this.customerService.getCustomerById(customerId);
-        return ApiResponse.success(response);
-    }
+	@GetMapping("/customers/{customerId}")
+	public ResponseEntity<ApiResponse<CustomerResponseDTO>> getCustomerById(@PathVariable Long customerId) {
+		CustomerResponseDTO response = this.customerService.getCustomerById(customerId);
+		return ApiResponse.success(response);
+	}
 
-    @PutMapping("/customers/{customerId}")
-    public ResponseEntity<ApiResponse<CustomerResponseDTO>> updateCustomerById(@PathVariable Long customerId,
-            @Valid @RequestBody CustomerUpdateRequestDTO request) {
-        CustomerResponseDTO response = this.customerService.updateCustomerById(customerId, request);
-        return ApiResponse.success(response);
-    }
+	@PutMapping("/customers/{customerId}")
+	public ResponseEntity<ApiResponse<CustomerResponseDTO>> updateCustomerById(@PathVariable Long customerId,
+			@Valid @RequestBody CustomerUpdateRequestDTO request) {
+		CustomerResponseDTO response = this.customerService.updateCustomerById(customerId, request);
+		return ApiResponse.success(response);
+	}
 
-    @DeleteMapping("/customers/{customerId}")
-    public ResponseEntity<ApiResponse<String>> deleteCustomerById(@PathVariable Long customerId) {
-        this.customerService.deleteCustomerById(customerId);
-        return ApiResponse.success("delete succesful");
-    }
+	@DeleteMapping("/customers/{customerId}")
+	public ResponseEntity<ApiResponse<String>> deleteCustomerById(@PathVariable Long customerId) {
+		this.customerService.deleteCustomerById(customerId);
+		return ApiResponse.success("delete succesful");
+	}
 }

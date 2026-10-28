@@ -27,26 +27,26 @@ import java.time.LocalDateTime;
 @Builder
 public class Rating {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "rating_id")
-    private Long ratingId;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "rating_id")
+	private Long ratingId;
 
-    @Column(name = "rating_score", nullable = false)
-    private Integer ratingScore;
+	@Column(name = "rating_score", nullable = false)
+	private Integer ratingScore;
 
-    @Column(name = "comment", columnDefinition = "TEXT")
-    private String comment;
+	@Column(name = "comment", columnDefinition = "TEXT")
+	private String comment;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
+	@CreationTimestamp
+	@Column(name = "created_at", updatable = false)
+	private LocalDateTime createdAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id")
-    private Customer customer;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "customer_id")
+	private Customer customer;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "restaurant_id")
-    private Restaurant restaurant;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "restaurant_id")
+	private Restaurant restaurant;
 }

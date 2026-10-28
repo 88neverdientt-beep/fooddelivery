@@ -23,44 +23,44 @@ import vn.gaugaugau.fooddelivery.utils.ApiResponse;
 @RequiredArgsConstructor
 public class OrderController {
 
-    private final OrderService orderService;
+	private final OrderService orderService;
 
-    @PostMapping("/customers/{customerId}/orders")
-    public ResponseEntity<ApiResponse<OrderResponseDTO>> createOrder(@PathVariable Long customerId,
-            @Valid @RequestBody OrderRequestDTO orderRequestDTO) {
-        OrderResponseDTO orderResponseDTO = this.orderService.createOrder(customerId, orderRequestDTO);
-        return ApiResponse.created(orderResponseDTO);
-    }
+	@PostMapping("/customers/{customerId}/orders")
+	public ResponseEntity<ApiResponse<OrderResponseDTO>> createOrder(@PathVariable Long customerId,
+			@Valid @RequestBody OrderRequestDTO orderRequestDTO) {
+		OrderResponseDTO orderResponseDTO = this.orderService.createOrder(customerId, orderRequestDTO);
+		return ApiResponse.created(orderResponseDTO);
+	}
 
-    @GetMapping("/customers/{customerId}/orders")
-    public ResponseEntity<ApiResponse<List<OrderResponseDTO>>> getAllOrders(@PathVariable Long customerId) {
-        List<OrderResponseDTO> orderResponseDTOs = this.orderService.getAllOrders(customerId);
-        return ApiResponse.success(orderResponseDTOs);
-    }
+	@GetMapping("/customers/{customerId}/orders")
+	public ResponseEntity<ApiResponse<List<OrderResponseDTO>>> getAllOrders(@PathVariable Long customerId) {
+		List<OrderResponseDTO> orderResponseDTOs = this.orderService.getAllOrders(customerId);
+		return ApiResponse.success(orderResponseDTOs);
+	}
 
-    @GetMapping("/orders/{orderId}")
-    public ResponseEntity<ApiResponse<OrderResponseDTO>> getOrderByOrderId(@PathVariable Long orderId) {
-        OrderResponseDTO orderResponseDTO = this.orderService.getOrderByOrderId(orderId);
-        return ApiResponse.success(orderResponseDTO);
-    }
+	@GetMapping("/orders/{orderId}")
+	public ResponseEntity<ApiResponse<OrderResponseDTO>> getOrderByOrderId(@PathVariable Long orderId) {
+		OrderResponseDTO orderResponseDTO = this.orderService.getOrderByOrderId(orderId);
+		return ApiResponse.success(orderResponseDTO);
+	}
 
-    @PutMapping("/orders/{orderId}/delivery-address")
-    public ResponseEntity<ApiResponse<OrderResponseDTO>> updateDeliveryAddress(@PathVariable Long orderId,
-            @Valid @RequestBody OrderRequestDTO orderRequestDTO) {
-        OrderResponseDTO orderResponseDTO = this.orderService.updateDeliveryAddress(orderId, orderRequestDTO);
-        return ApiResponse.success(orderResponseDTO);
-    }
+	@PutMapping("/orders/{orderId}/delivery-address")
+	public ResponseEntity<ApiResponse<OrderResponseDTO>> updateDeliveryAddress(@PathVariable Long orderId,
+			@Valid @RequestBody OrderRequestDTO orderRequestDTO) {
+		OrderResponseDTO orderResponseDTO = this.orderService.updateDeliveryAddress(orderId, orderRequestDTO);
+		return ApiResponse.success(orderResponseDTO);
+	}
 
-    @PutMapping("/orders/{orderId}/status")
-    public ResponseEntity<ApiResponse<OrderStatus>> updateOrderStatus(@PathVariable Long orderId,
-            @Valid @RequestBody OrderStatus orderStatus) {
-        OrderStatus updatedOrderStatus = this.orderService.updateOrderStatus(orderId, orderStatus);
-        return ApiResponse.success(updatedOrderStatus);
-    }
+	@PutMapping("/orders/{orderId}/status")
+	public ResponseEntity<ApiResponse<OrderStatus>> updateOrderStatus(@PathVariable Long orderId,
+			@Valid @RequestBody OrderStatus orderStatus) {
+		OrderStatus updatedOrderStatus = this.orderService.updateOrderStatus(orderId, orderStatus);
+		return ApiResponse.success(updatedOrderStatus);
+	}
 
-    @PatchMapping("/orders/{orderId}/cancel")
-    public ResponseEntity<ApiResponse<OrderStatus>> cancelOrder(@PathVariable Long orderId) {
-        OrderStatus updatedOrderStatus = this.orderService.cancelOrder(orderId);
-        return ApiResponse.success(updatedOrderStatus);
-    }
+	@PatchMapping("/orders/{orderId}/cancel")
+	public ResponseEntity<ApiResponse<OrderStatus>> cancelOrder(@PathVariable Long orderId) {
+		OrderStatus updatedOrderStatus = this.orderService.cancelOrder(orderId);
+		return ApiResponse.success(updatedOrderStatus);
+	}
 }

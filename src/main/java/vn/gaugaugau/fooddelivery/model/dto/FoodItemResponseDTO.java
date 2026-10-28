@@ -13,9 +13,9 @@ import lombok.Setter;
 @Builder
 public class FoodItemResponseDTO {
 
-    private Long itemId;
-    private String name;
-    private String category;
-    private String description;
+	private Long itemId;
+	private String name;
+	private String category;
+	private String description;
 
 }

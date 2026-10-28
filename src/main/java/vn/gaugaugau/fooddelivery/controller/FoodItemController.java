@@ -22,38 +22,38 @@ import vn.gaugaugau.fooddelivery.utils.ApiResponse;
 @RequiredArgsConstructor
 public class FoodItemController {
 
-    private final FoodItemService foodItemService;
+	private final FoodItemService foodItemService;
 
-    @PostMapping("/food-items")
-    public ResponseEntity<ApiResponse<FoodItemResponseDTO>> createFoodItem(
-            @Valid @RequestBody FoodItemRequestDTO request) {
-        FoodItemResponseDTO response = this.foodItemService.createFoodItem(request);
-        return ApiResponse.created(response);
-    }
+	@PostMapping("/food-items")
+	public ResponseEntity<ApiResponse<FoodItemResponseDTO>> createFoodItem(
+			@Valid @RequestBody FoodItemRequestDTO request) {
+		FoodItemResponseDTO response = this.foodItemService.createFoodItem(request);
+		return ApiResponse.created(response);
+	}
 
-    @GetMapping("/food-items")
-    public ResponseEntity<ApiResponse<List<FoodItemResponseDTO>>> getAllFoodItems() {
-        List<FoodItemResponseDTO> response = this.foodItemService.getAllFoodItems();
-        return ApiResponse.success(response);
-    }
+	@GetMapping("/food-items")
+	public ResponseEntity<ApiResponse<List<FoodItemResponseDTO>>> getAllFoodItems() {
+		List<FoodItemResponseDTO> response = this.foodItemService.getAllFoodItems();
+		return ApiResponse.success(response);
+	}
 
-    @GetMapping("/food-items/{itemId}")
-    public ResponseEntity<ApiResponse<FoodItemResponseDTO>> getFoodItemById(@PathVariable Long itemId) {
-        FoodItemResponseDTO response = this.foodItemService.getFoodItemById(itemId);
-        return ApiResponse.success(response);
-    }
+	@GetMapping("/food-items/{itemId}")
+	public ResponseEntity<ApiResponse<FoodItemResponseDTO>> getFoodItemById(@PathVariable Long itemId) {
+		FoodItemResponseDTO response = this.foodItemService.getFoodItemById(itemId);
+		return ApiResponse.success(response);
+	}
 
-    @PutMapping("/food-items/{itemId}")
-    public ResponseEntity<ApiResponse<FoodItemResponseDTO>> updateFoodItemById(
-            @PathVariable Long itemId,
-            @Valid @RequestBody FoodItemRequestDTO request) {
-        FoodItemResponseDTO response = this.foodItemService.updateFoodItemById(itemId, request);
-        return ApiResponse.success(response);
-    }
+	@PutMapping("/food-items/{itemId}")
+	public ResponseEntity<ApiResponse<FoodItemResponseDTO>> updateFoodItemById(
+			@PathVariable Long itemId,
+			@Valid @RequestBody FoodItemRequestDTO request) {
+		FoodItemResponseDTO response = this.foodItemService.updateFoodItemById(itemId, request);
+		return ApiResponse.success(response);
+	}
 
-    @DeleteMapping("/food-items/{itemId}")
-    public ResponseEntity<ApiResponse<String>> deleteFoodItemById(@PathVariable Long itemId) {
-        this.foodItemService.deleteFoodItemById(itemId);
-        return ApiResponse.success("delete succesful");
-    }
+	@DeleteMapping("/food-items/{itemId}")
+	public ResponseEntity<ApiResponse<String>> deleteFoodItemById(@PathVariable Long itemId) {
+		this.foodItemService.deleteFoodItemById(itemId);
+		return ApiResponse.success("delete succesful");
+	}
 }
