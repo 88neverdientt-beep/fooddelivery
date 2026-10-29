@@ -5,10 +5,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import vn.gaugaugau.fooddelivery.controller.CartController;
 import vn.gaugaugau.fooddelivery.model.Cart;
 import vn.gaugaugau.fooddelivery.model.CartItem;
 import vn.gaugaugau.fooddelivery.model.Customer;
@@ -65,9 +68,16 @@ public class CartItemService {
 			throw new ResourceNotFoundException("Food item is not available");
 		}
 
-		cart.setRestaurant(restaurantFoodItem.getRestaurant());
-		this.cartRepository.save(cart);
-
+		if (cart.getRestaurant() == null) {
+			cart.setRestaurant(restaurantFoodItem.getRestaurant());
+			this.cartRepository.save(cart);
+		}
+		if (cart.getRestaurant() != null && !cart.getRestaurant().getRestaurantId()
+				.equals(restaurantFoodItem.getRestaurant().getRestaurantId())) {
+			throw new ResponseStatusException(
+					HttpStatus.BAD_REQUEST,
+					"Cannot add food items from different restaurants to the same cart");
+		}
 		CartItem cartItem = CartItem.builder()
 				.quantity(request.getQuantity())
 				.note(request.getNote())
