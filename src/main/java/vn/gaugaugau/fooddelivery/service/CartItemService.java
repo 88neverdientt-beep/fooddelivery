@@ -66,23 +66,53 @@ public class CartItemService {
 		if (!restaurantFoodItem.getIsAvailable()) {
 			throw new ResourceNotFoundException("Food item is not available");
 		}
+		if (cart.getRestaurant() != null && !cart.getRestaurant().getRestaurantId()
+				.equals(restaurantFoodItem.getRestaurant().getRestaurantId())) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Cannot add food items from different restaurants to the same cart");
+		}
+		if (request.getQuantity() <= 0) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be greater than 0");
+		}
 		if (cart.getRestaurant() == null) {
 			cart.setRestaurant(restaurantFoodItem.getRestaurant());
 			this.cartRepository.save(cart);
 		}
-		if (cart.getRestaurant() != null && !cart.getRestaurant().getRestaurantId()
-				.equals(restaurantFoodItem.getRestaurant().getRestaurantId())) {
-			throw new ResponseStatusException(
-					HttpStatus.BAD_REQUEST,
-					"Cannot add food items from different restaurants to the same cart");
+		List<CartItem> cartItems = this.cartItemRepository.findByCart_CartId(cart.getCartId());
+		CartItem newCartItem = new CartItem();
+		if (cartItems.isEmpty()) {
+			newCartItem = CartItem.builder()
+					.quantity(request.getQuantity())
+					.note(request.getNote())
+					.cart(cart)
+					.restaurantFoodItem(restaurantFoodItem)
+					.build();
+		} else {
+			CartItem cartItemTmp = null;
+			for (CartItem cartItem : cartItems) {
+				if (Long.compare(cartItem.getRestaurantFoodItem().getRestaurantFoodItemId(),
+						request.getRestaurantFoodItemId()) == 0) {
+					cartItemTmp = cartItem;
+					break;
+				}
+			}
+			if (cartItemTmp == null) {
+				newCartItem = CartItem.builder()
+						.quantity(request.getQuantity())
+						.note(request.getNote())
+						.cart(cart)
+						.restaurantFoodItem(restaurantFoodItem)
+						.build();
+			} else {
+				cartItemTmp.setQuantity(cartItemTmp.getQuantity() + request.getQuantity());
+				if (request.getNote() != null && !request.getNote().isBlank()) {
+					cartItemTmp.setNote(request.getNote());
+				}
+				this.cartItemRepository.save(cartItemTmp);
+				return convertToCartItemResponseDTO(cartItemTmp);
+			}
 		}
-		CartItem cartItem = CartItem.builder()
-				.quantity(request.getQuantity())
-				.note(request.getNote())
-				.cart(cart)
-				.restaurantFoodItem(restaurantFoodItem)
-				.build();
-		return convertToCartItemResponseDTO(this.cartItemRepository.save(cartItem));
+		return convertToCartItemResponseDTO(this.cartItemRepository.save(newCartItem));
 	}
 
 	public List<CartItemResponseDTO> getAllCartItems(Long customerId) {
@@ -98,15 +128,25 @@ public class CartItemService {
 	public CartItemResponseDTO updateCartItem(Long cartItemId, CartItemUpdateRequestDTO request) {
 		CartItem cartItem = this.cartItemRepository.findById(cartItemId)
 				.orElseThrow(() -> new ResourceNotFoundException("Cart item not found with ID: " + cartItemId));
+		if (request.getQuantity() <= 0) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be greater than 0");
+		}
 		cartItem.setQuantity(request.getQuantity());
-		cartItem.setNote(request.getNote());
+		if (request.getNote() != null && !request.getNote().isBlank()) {
+			cartItem.setNote(request.getNote());
+		}
 		return convertToCartItemResponseDTO(this.cartItemRepository.save(cartItem));
 	}
 
 	public void deleteCartItem(Long cartItemId) {
 		CartItem cartItem = this.cartItemRepository.findById(cartItemId)
 				.orElseThrow(() -> new ResourceNotFoundException("Cart item not found with ID: " + cartItemId));
+		Cart cart = cartItem.getCart();
 		this.cartItemRepository.delete(cartItem);
+		if (this.cartItemRepository.findByCart_CartId(cart.getCartId()).isEmpty()) {
+			cart.setRestaurant(null);
+			this.cartRepository.save(cart);
+		}
 	}
 
 }
