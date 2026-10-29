@@ -11,7 +11,6 @@ import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import vn.gaugaugau.fooddelivery.controller.CartController;
 import vn.gaugaugau.fooddelivery.model.Cart;
 import vn.gaugaugau.fooddelivery.model.CartItem;
 import vn.gaugaugau.fooddelivery.model.Customer;
@@ -67,7 +66,6 @@ public class CartItemService {
 		if (!restaurantFoodItem.getIsAvailable()) {
 			throw new ResourceNotFoundException("Food item is not available");
 		}
-
 		if (cart.getRestaurant() == null) {
 			cart.setRestaurant(restaurantFoodItem.getRestaurant());
 			this.cartRepository.save(cart);

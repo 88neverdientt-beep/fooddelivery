@@ -6,6 +6,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.server.ResponseStatusException;
 
 import jakarta.persistence.EntityNotFoundException;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceAlreadyExistsException;
@@ -19,6 +20,11 @@ public class GlobalExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleAllException(Exception e) {
 		return ApiResponse.error(HttpStatus.BAD_REQUEST, e.getMessage());
+	}
+
+	@ExceptionHandler(ResponseStatusException.class)
+	public ResponseEntity<?> handleStatusException(ResponseStatusException e) {
+		return ApiResponse.error(HttpStatus.valueOf(e.getStatusCode().value()), e.getReason());
 	}
 
 	@ExceptionHandler(EntityNotFoundException.class)
