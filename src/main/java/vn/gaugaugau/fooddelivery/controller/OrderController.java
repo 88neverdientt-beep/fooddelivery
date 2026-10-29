@@ -51,16 +51,16 @@ public class OrderController {
 		return ApiResponse.success(orderResponseDTO);
 	}
 
-	@PutMapping("/orders/{orderId}/status")
-	public ResponseEntity<ApiResponse<OrderStatus>> updateOrderStatus(@PathVariable Long orderId,
+	@PatchMapping("/orders/{orderId}/status")
+	public ResponseEntity<ApiResponse<OrderResponseDTO>> updateOrderStatus(@PathVariable Long orderId,
 			@Valid @RequestBody OrderStatus orderStatus) {
-		OrderStatus updatedOrderStatus = this.orderService.updateOrderStatus(orderId, orderStatus);
+		OrderResponseDTO updatedOrderStatus = this.orderService.updateOrderStatus(orderId, orderStatus);
 		return ApiResponse.success(updatedOrderStatus);
 	}
 
 	@PatchMapping("/orders/{orderId}/cancel")
-	public ResponseEntity<ApiResponse<OrderStatus>> cancelOrder(@PathVariable Long orderId) {
-		OrderStatus updatedOrderStatus = this.orderService.cancelOrder(orderId);
+	public ResponseEntity<ApiResponse<OrderResponseDTO>> cancelOrder(@PathVariable Long orderId) {
+		OrderResponseDTO updatedOrderStatus = this.orderService.cancelOrder(orderId);
 		return ApiResponse.success(updatedOrderStatus);
 	}
 }

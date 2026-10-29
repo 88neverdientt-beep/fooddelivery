@@ -1,7 +1,6 @@
 package vn.gaugaugau.fooddelivery.service;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -119,7 +118,6 @@ public class OrderService {
 					.build();
 			orderDetails.add(orderDetail);
 		}
-		order.setCreatedAt(LocalDateTime.now());
 		order.setSubtotal(subtotal);
 		order.setTotalAmount(subtotal.add(SHIPPING_FEE));
 		order.setOrderDetails(orderDetails);
@@ -154,9 +152,6 @@ public class OrderService {
 	@Transactional
 	public List<OrderResponseDTO> getAllOrders(Long customerId) {
 		List<Order> orders = this.orderRepository.findByCustomer_CustomerId(customerId);
-		if (orders.isEmpty()) {
-			throw new ResourceNotFoundException("Orders not found with ID of customer: " + customerId);
-		}
 		return orders.stream()
 				.map(order -> convertToOrderResponseDTO(order))
 				.collect(Collectors.toList());
@@ -174,44 +169,50 @@ public class OrderService {
 	public OrderResponseDTO updateDeliveryAddress(Long orderId, OrderRequestDTO orderRequestDTO) {
 		Order order = this.orderRepository.findById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
+		if (order.getOrderStatus() != OrderStatus.PENDING && order.getOrderStatus() != OrderStatus.CONFIRMED) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Cannot update delivery address for order " + orderId);
+		}
 		order.setDeliveryAddress(orderRequestDTO.getDeliveryAddress());
 		Order updatedOrder = this.orderRepository.save(order);
 		return convertToOrderResponseDTO(updatedOrder);
-
 	}
 
-	public OrderStatus updateOrderStatus(Long orderId, OrderStatus newStatus) {
+	@Transactional
+	public OrderResponseDTO updateOrderStatus(Long orderId, OrderStatus newStatus) {
 		Order order = orderRepository.findById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException(
 						"Order not found with ID: " + orderId));
-
 		OrderStatus currentStatus = order.getOrderStatus();
 		boolean validTransition = switch (currentStatus) {
-			case PENDING -> newStatus == OrderStatus.CONFIRMED || newStatus == OrderStatus.CANCELLED;
-			case CONFIRMED -> newStatus == OrderStatus.PREPARING || newStatus == OrderStatus.CANCELLED;
+			case PENDING -> newStatus == OrderStatus.CONFIRMED;
+			case CONFIRMED -> newStatus == OrderStatus.PREPARING;
 			case PREPARING -> newStatus == OrderStatus.READY;
 			case READY -> newStatus == OrderStatus.DELIVERING;
 			case DELIVERING -> newStatus == OrderStatus.COMPLETED;
 			case COMPLETED, CANCELLED -> false;
 		};
-
 		if (!validTransition) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 					"Cannot change order status from " + currentStatus + " to " + newStatus);
 		}
 		order.setOrderStatus(newStatus);
-		return orderRepository.save(order).getOrderStatus();
+		this.orderRepository.save(order);
+		return convertToOrderResponseDTO(order);
 	}
 
-	public OrderStatus cancelOrder(Long orderId) {
-		Order order = this.orderRepository.findById(orderId)
-				.orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
-		if (order.getOrderStatus() == OrderStatus.PENDING || order.getOrderStatus() == OrderStatus.CONFIRMED) {
-			order.setOrderStatus(OrderStatus.CANCELLED);
-			return this.orderRepository.save(order).getOrderStatus();
+	@Transactional
+	public OrderResponseDTO cancelOrder(Long orderId) {
+		Order order = orderRepository.findById(orderId)
+				.orElseThrow(() -> new ResourceNotFoundException(
+						"Order not found with ID: " + orderId));
+		if (order.getOrderStatus() != OrderStatus.PENDING && order.getOrderStatus() != OrderStatus.CONFIRMED) {
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+					"Cannot cancel order when status is " + order.getOrderStatus());
 		}
-		throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-				"Cannot change order status from " + order.getOrderStatus() + " to CANCELLED");
+		order.setOrderStatus(OrderStatus.CANCELLED);
+		this.orderRepository.save(order);
+		return convertToOrderResponseDTO(order);
 	}
 
 }
