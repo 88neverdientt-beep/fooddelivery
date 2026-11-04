@@ -1,6 +1,7 @@
 package vn.gaugaugau.fooddelivery.model.dto;
 
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,4 +20,6 @@ public class OrderRequestDTO {
 	@Size(max = 255, message = "Delivery address must not exceed 255 characters")
 	private String deliveryAddress;
 
+	@NotNull(message = "Payment method ID cannot be null")
+	private Long paymentMethodId;
 }

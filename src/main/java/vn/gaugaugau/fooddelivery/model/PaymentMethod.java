@@ -27,13 +27,16 @@ public class PaymentMethod {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "method_id")
-	private Long methodId;
+	private Long paymentMethodId;
 
 	@Column(name = "method_name", nullable = false, length = 50)
-	private String methodName;
+	private String paymentMethodName;
 
 	@Column(name = "method_code", nullable = false, unique = true, length = 30)
-	private String methodCode;
+	private String paymentMethodCode;
+
+	@Column(nullable = false)
+	private Boolean isActive;
 
 	@OneToMany(mappedBy = "paymentMethod")
 	private List<Payment> payments;

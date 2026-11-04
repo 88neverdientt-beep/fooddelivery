@@ -7,9 +7,9 @@ import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import vn.gaugaugau.fooddelivery.model.Cart;
 import vn.gaugaugau.fooddelivery.model.CartItem;
@@ -20,6 +20,7 @@ import vn.gaugaugau.fooddelivery.model.Restaurant;
 import vn.gaugaugau.fooddelivery.model.dto.OrderDetailResponseDTO;
 import vn.gaugaugau.fooddelivery.model.dto.OrderRequestDTO;
 import vn.gaugaugau.fooddelivery.model.dto.OrderResponseDTO;
+import vn.gaugaugau.fooddelivery.model.dto.PaymentResponseDTO;
 import vn.gaugaugau.fooddelivery.model.enums.OrderStatus;
 import vn.gaugaugau.fooddelivery.repository.CartItemRepository;
 import vn.gaugaugau.fooddelivery.repository.CartRepository;
@@ -37,6 +38,7 @@ public class OrderService {
 	private final RestaurantRepository restaurantRepository;
 	private final CartItemRepository cartItemRepository;
 	private final OrderRepository orderRepository;
+	private final PaymentService paymentService;
 	private static final BigDecimal SHIPPING_FEE = BigDecimal.valueOf(15000);
 
 	public OrderResponseDTO.CustomerOutputDTO convertToCustomerOutputDTO(Customer customer) {
@@ -64,7 +66,8 @@ public class OrderService {
 				.createdAt(order.getCreatedAt())
 				.customer(convertToCustomerOutputDTO(order.getCustomer()))
 				.restaurant(convertToRestaurantOutputDTO(order.getRestaurant()))
-				.orderDetails(order.getOrderDetails().stream()
+				.orderDetails(order.getOrderDetails()
+						.stream()
 						.map(orderDetail -> OrderDetailResponseDTO.builder()
 								.orderDetailId(orderDetail.getOrderDetailId())
 								.foodItemName(orderDetail.getRestaurantFoodItem().getFoodItem().getName())
@@ -74,6 +77,7 @@ public class OrderService {
 								.note(orderDetail.getNote())
 								.build())
 						.collect(Collectors.toList()))
+				.paymentResponseDTO(this.paymentService.convertToPaymentResponseDTO(order.getPayment()))
 				.build();
 	}
 
@@ -122,6 +126,8 @@ public class OrderService {
 		order.setTotalAmount(subtotal.add(SHIPPING_FEE));
 		order.setOrderDetails(orderDetails);
 		Order savedOrder = this.orderRepository.save(order);
+		PaymentResponseDTO paymentResponseDTO = this.paymentService.createPayment(orderRequestDTO.getPaymentMethodId(),
+				savedOrder.getOrderId());
 		this.cartItemRepository.deleteAll(cartItems);
 		cart.setRestaurant(null);
 		this.cartRepository.save(cart);
@@ -146,6 +152,7 @@ public class OrderService {
 				.customer(convertToCustomerOutputDTO(customer))
 				.restaurant(convertToRestaurantOutputDTO(restaurant))
 				.orderDetails(orderDetailResponseDTOs)
+				.paymentResponseDTO(paymentResponseDTO)
 				.build();
 	}
 

@@ -19,7 +19,10 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.gaugaugau.fooddelivery.model.enums.PaymentStatus;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
+
+import org.hibernate.annotations.CreationTimestamp;
 
 @Entity
 @Table(name = "payments")
@@ -35,8 +38,16 @@ public class Payment {
 	@Column(name = "payment_id")
 	private Long paymentId;
 
+	@Column(nullable = false, precision = 12, scale = 2)
+	private BigDecimal amount;
+
 	@Column(name = "paid_at")
 	private LocalDateTime paidAt;
+
+	@CreationTimestamp
+	private LocalDateTime createdAt;
+
+	private LocalDateTime refundedAt;
 
 	@Column(name = "transaction_code", length = 100)
 	private String transactionCode;
@@ -46,7 +57,7 @@ public class Payment {
 	private PaymentStatus paymentStatus;
 
 	@OneToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "order_id")
+	@JoinColumn(name = "order_id", nullable = false, unique = true)
 	private Order order;
 
 	@ManyToOne(fetch = FetchType.LAZY)

@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.gaugaugau.fooddelivery.model.enums.DeliveryStatus;
 import vn.gaugaugau.fooddelivery.model.enums.OrderStatus;
-import vn.gaugaugau.fooddelivery.model.enums.PaymentStatus;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -31,7 +30,7 @@ public class OrderResponseDTO {
 	private RestaurantOutputDTO restaurant;
 	private List<OrderDetailResponseDTO> orderDetails;
 	// private DeliveryOutputDTO delivery;
-	// private PaymentOutputDTO payment;
+	private PaymentResponseDTO paymentResponseDTO;
 
 	@Getter
 	@Setter
@@ -63,17 +62,5 @@ public class OrderResponseDTO {
 	// private DeliveryStatus deliveryStatus;
 	// private LocalDateTime pickupTime;
 	// private LocalDateTime deliveredTime;
-	// }
-
-	// @Getter
-	// @Setter
-	// @NoArgsConstructor
-	// @AllArgsConstructor
-	// @Builder
-	// public static class PaymentOutputDTO {
-	// private Long paymentId;
-	// private PaymentStatus paymentStatus;
-	// private String transactionCode;
-	// private LocalDateTime paidAt;
 	// }
 }
