@@ -1,14 +1,12 @@
 package vn.gaugaugau.fooddelivery.model.dto;
 
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import vn.gaugaugau.fooddelivery.model.enums.DeliveryStatus;
-
-import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -17,14 +15,7 @@ import java.time.LocalDateTime;
 @Builder
 public class DeliveryRequestDTO {
 
-	@NotNull(message = "Order ID cannot be null")
-	private Long orderId;
-
+	@NotNull(message = "Driver ID cannot be null")
+	@Positive(message = "Driver ID must be positive")
 	private Long driverId;
-
-	private LocalDateTime pickupTime;
-
-	private LocalDateTime deliveredTime;
-
-	private DeliveryStatus deliveryStatus;
 }

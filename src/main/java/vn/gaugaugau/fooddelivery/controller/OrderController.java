@@ -15,6 +15,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import vn.gaugaugau.fooddelivery.model.dto.OrderRequestDTO;
 import vn.gaugaugau.fooddelivery.model.dto.OrderResponseDTO;
+import vn.gaugaugau.fooddelivery.model.dto.OrderUpdateDeliveryAddressRequestDTO;
 import vn.gaugaugau.fooddelivery.model.enums.OrderStatus;
 import vn.gaugaugau.fooddelivery.service.OrderService;
 import vn.gaugaugau.fooddelivery.utils.ApiResponse;
@@ -46,8 +47,9 @@ public class OrderController {
 
 	@PutMapping("/orders/{orderId}/delivery-address")
 	public ResponseEntity<ApiResponse<OrderResponseDTO>> updateDeliveryAddress(@PathVariable Long orderId,
-			@Valid @RequestBody OrderRequestDTO orderRequestDTO) {
-		OrderResponseDTO orderResponseDTO = this.orderService.updateDeliveryAddress(orderId, orderRequestDTO);
+			@Valid @RequestBody OrderUpdateDeliveryAddressRequestDTO orderUpdateDeliveryAddressRequestDTO) {
+		OrderResponseDTO orderResponseDTO = this.orderService.updateDeliveryAddress(orderId,
+				orderUpdateDeliveryAddressRequestDTO);
 		return ApiResponse.success(orderResponseDTO);
 	}
 

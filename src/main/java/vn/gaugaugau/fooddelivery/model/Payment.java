@@ -61,6 +61,6 @@ public class Payment {
 	private Order order;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "method_id")
+	@JoinColumn(name = "payment_method_id")
 	private PaymentMethod paymentMethod;
 }

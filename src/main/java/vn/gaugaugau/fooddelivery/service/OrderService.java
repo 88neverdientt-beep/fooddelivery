@@ -14,14 +14,19 @@ import lombok.RequiredArgsConstructor;
 import vn.gaugaugau.fooddelivery.model.Cart;
 import vn.gaugaugau.fooddelivery.model.CartItem;
 import vn.gaugaugau.fooddelivery.model.Customer;
+import vn.gaugaugau.fooddelivery.model.Delivery;
 import vn.gaugaugau.fooddelivery.model.Order;
 import vn.gaugaugau.fooddelivery.model.OrderDetail;
+import vn.gaugaugau.fooddelivery.model.Payment;
 import vn.gaugaugau.fooddelivery.model.Restaurant;
 import vn.gaugaugau.fooddelivery.model.dto.OrderDetailResponseDTO;
 import vn.gaugaugau.fooddelivery.model.dto.OrderRequestDTO;
 import vn.gaugaugau.fooddelivery.model.dto.OrderResponseDTO;
+import vn.gaugaugau.fooddelivery.model.dto.OrderUpdateDeliveryAddressRequestDTO;
 import vn.gaugaugau.fooddelivery.model.dto.PaymentResponseDTO;
+import vn.gaugaugau.fooddelivery.model.enums.DeliveryStatus;
 import vn.gaugaugau.fooddelivery.model.enums.OrderStatus;
+import vn.gaugaugau.fooddelivery.model.enums.PaymentStatus;
 import vn.gaugaugau.fooddelivery.repository.CartItemRepository;
 import vn.gaugaugau.fooddelivery.repository.CartRepository;
 import vn.gaugaugau.fooddelivery.repository.CustomerRepository;
@@ -39,6 +44,7 @@ public class OrderService {
 	private final CartItemRepository cartItemRepository;
 	private final OrderRepository orderRepository;
 	private final PaymentService paymentService;
+	private final DeliveryService deliveryService;
 	private static final BigDecimal SHIPPING_FEE = BigDecimal.valueOf(15000);
 
 	public OrderResponseDTO.CustomerOutputDTO convertToCustomerOutputDTO(Customer customer) {
@@ -173,14 +179,15 @@ public class OrderService {
 	}
 
 	@Transactional
-	public OrderResponseDTO updateDeliveryAddress(Long orderId, OrderRequestDTO orderRequestDTO) {
+	public OrderResponseDTO updateDeliveryAddress(Long orderId,
+			OrderUpdateDeliveryAddressRequestDTO orderUpdateDeliveryAddressRequestDTO) {
 		Order order = this.orderRepository.findById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
 		if (order.getOrderStatus() != OrderStatus.PENDING && order.getOrderStatus() != OrderStatus.CONFIRMED) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 					"Cannot update delivery address for order " + orderId);
 		}
-		order.setDeliveryAddress(orderRequestDTO.getDeliveryAddress());
+		order.setDeliveryAddress(orderUpdateDeliveryAddressRequestDTO.getDeliveryAddress());
 		Order updatedOrder = this.orderRepository.save(order);
 		return convertToOrderResponseDTO(updatedOrder);
 	}
@@ -205,6 +212,9 @@ public class OrderService {
 		}
 		order.setOrderStatus(newStatus);
 		this.orderRepository.save(order);
+		if (newStatus.equals(OrderStatus.CONFIRMED)) {
+			this.deliveryService.createDelivery(orderId);
+		}
 		return convertToOrderResponseDTO(order);
 	}
 
@@ -216,6 +226,22 @@ public class OrderService {
 		if (order.getOrderStatus() != OrderStatus.PENDING && order.getOrderStatus() != OrderStatus.CONFIRMED) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 					"Cannot cancel order when status is " + order.getOrderStatus());
+		}
+		Delivery delivery = order.getDelivery();
+		if (delivery != null) {
+			if (delivery.getDeliveryStatus() != DeliveryStatus.PENDING) {
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery cannot be cancelled");
+			}
+			delivery.setDeliveryStatus(DeliveryStatus.CANCELLED);
+		}
+		Payment payment = order.getPayment();
+		if (payment != null) {
+			if (payment.getPaymentStatus() == PaymentStatus.PENDING) {
+				payment.setPaymentStatus(PaymentStatus.CANCELLED);
+			} else if (payment.getPaymentStatus() == PaymentStatus.SUCCESS) {
+				// Chưa tích hợp hoàn tiền online.
+				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Paid order requires refund processing");
+			}
 		}
 		order.setOrderStatus(OrderStatus.CANCELLED);
 		this.orderRepository.save(order);

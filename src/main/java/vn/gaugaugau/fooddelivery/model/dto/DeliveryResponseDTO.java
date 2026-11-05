@@ -6,9 +6,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import vn.gaugaugau.fooddelivery.model.enums.DeliveryStatus;
-import vn.gaugaugau.fooddelivery.model.enums.OrderStatus;
-
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Getter
@@ -33,8 +30,6 @@ public class DeliveryResponseDTO {
 	public static class OrderOutputDTO {
 		private Long orderId;
 		private String deliveryAddress;
-		private BigDecimal totalAmount;
-		private OrderStatus orderStatus;
 	}
 
 	@Getter
