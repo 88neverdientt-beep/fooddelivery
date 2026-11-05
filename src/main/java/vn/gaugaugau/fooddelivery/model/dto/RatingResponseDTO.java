@@ -19,8 +19,7 @@ public class RatingResponseDTO {
 	private Integer ratingScore;
 	private String comment;
 	private LocalDateTime createdAt;
-	private CustomerOutputDTO customer;
-	private FoodItemOutputDTO foodItem;
+	private CustomerOutputDTO customerOutputDTO;
 
 	@Getter
 	@Setter
@@ -29,16 +28,6 @@ public class RatingResponseDTO {
 	@Builder
 	public static class CustomerOutputDTO {
 		private Long customerId;
-		private String name;
-	}
-
-	@Getter
-	@Setter
-	@NoArgsConstructor
-	@AllArgsConstructor
-	@Builder
-	public static class FoodItemOutputDTO {
-		private Long itemId;
 		private String name;
 	}
 }

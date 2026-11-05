@@ -19,9 +19,6 @@ public class RatingRequestDTO {
 	@NotNull(message = "Customer ID cannot be null")
 	private Long customerId;
 
-	@NotNull(message = "Item ID cannot be null")
-	private Long itemId;
-
 	@NotNull(message = "Rating score cannot be null")
 	@Min(value = 1, message = "Rating score must be at least 1")
 	@Max(value = 5, message = "Rating score must not exceed 5")
