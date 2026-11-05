@@ -61,6 +61,15 @@ public class OrderService {
 				.build();
 	}
 
+	public OrderResponseDTO.DeliveryOutputDTO convertToDeliveryOutputDTO(Delivery delivery) {
+		return OrderResponseDTO.DeliveryOutputDTO.builder()
+				.deliveryId(delivery.getDeliveryId())
+				.deliveryStatus(delivery.getDeliveryStatus())
+				.pickupTime(delivery.getPickupTime() != null ? delivery.getPickupTime() : null)
+				.deliveredTime(delivery.getDeliveredTime() != null ? delivery.getDeliveredTime() : null)
+				.build();
+	}
+
 	public OrderResponseDTO convertToOrderResponseDTO(Order order) {
 		return OrderResponseDTO.builder()
 				.orderId(order.getOrderId())
@@ -83,6 +92,7 @@ public class OrderService {
 								.note(orderDetail.getNote())
 								.build())
 						.collect(Collectors.toList()))
+				.deliveryOutputDTO(convertToDeliveryOutputDTO(order.getDelivery()))
 				.paymentResponseDTO(this.paymentService.convertToPaymentResponseDTO(order.getPayment()))
 				.build();
 	}

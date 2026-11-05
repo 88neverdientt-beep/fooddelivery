@@ -29,7 +29,7 @@ public class OrderResponseDTO {
 	private CustomerOutputDTO customer;
 	private RestaurantOutputDTO restaurant;
 	private List<OrderDetailResponseDTO> orderDetails;
-	// private DeliveryOutputDTO delivery;
+	private DeliveryOutputDTO deliveryOutputDTO;
 	private PaymentResponseDTO paymentResponseDTO;
 
 	@Getter
@@ -52,15 +52,15 @@ public class OrderResponseDTO {
 		private String name;
 	}
 
-	// @Getter
-	// @Setter
-	// @NoArgsConstructor
-	// @AllArgsConstructor
-	// @Builder
-	// public static class DeliveryOutputDTO {
-	// private Long deliveryId;
-	// private DeliveryStatus deliveryStatus;
-	// private LocalDateTime pickupTime;
-	// private LocalDateTime deliveredTime;
-	// }
+	@Getter
+	@Setter
+	@NoArgsConstructor
+	@AllArgsConstructor
+	@Builder
+	public static class DeliveryOutputDTO {
+		private Long deliveryId;
+		private DeliveryStatus deliveryStatus;
+		private LocalDateTime pickupTime;
+		private LocalDateTime deliveredTime;
+	}
 }

@@ -72,6 +72,8 @@ public class DeliveryService {
 				.deliveryStatus(DeliveryStatus.PENDING)
 				.order(order)
 				.build();
+		order.setDelivery(delivery);
+		this.orderRepository.save(order);
 		Delivery savedDelivery = this.deliveryRepository.save(delivery);
 		return convertToDeliveryResponseDTO(savedDelivery);
 	}
