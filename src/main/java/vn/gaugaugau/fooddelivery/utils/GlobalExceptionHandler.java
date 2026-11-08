@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleAllException(Exception e) {
-		return ApiResponse.error(HttpStatus.BAD_REQUEST, e.getMessage());
+		return ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected server error occurred");
 	}
 
 	@ExceptionHandler(ResponseStatusException.class)
@@ -29,19 +29,37 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(EntityNotFoundException.class)
 	public ResponseEntity<?> handleNotFound(EntityNotFoundException e) {
-		return ApiResponse.error(HttpStatus.BAD_REQUEST, e.getMessage());
+		return ApiResponse.error(HttpStatus.NOT_FOUND, "Resource not found");
 	}
 
-	@ExceptionHandler({ ResourceNotFoundException.class, ResourceAlreadyExistsException.class })
+	@ExceptionHandler(ResourceNotFoundException.class)
 	public ResponseEntity<?> handleNotFoundOrAlreadyExists(Exception e) {
-		return ApiResponse.error(HttpStatus.BAD_REQUEST, e.getMessage());
+		return ApiResponse.error(HttpStatus.NOT_FOUND, e.getMessage());
 	}
+
+    @ExceptionHandler(ResourceAlreadyExistsException.class)
+    public ResponseEntity<?> handleConflict(ResourceAlreadyExistsException e) {
+        return ApiResponse.error(HttpStatus.CONFLICT, e.getMessage());
+    }
+
+    @ExceptionHandler({org.springframework.dao.DataIntegrityViolationException.class,
+        org.springframework.dao.ConcurrencyFailureException.class})
+    public ResponseEntity<?> handleDataConflict(Exception e) {
+        return ApiResponse.error(HttpStatus.CONFLICT, "Data changed or violates a constraint");
+    }
+
+    @ExceptionHandler({org.springframework.http.converter.HttpMessageNotReadableException.class,
+        jakarta.validation.ConstraintViolationException.class,
+        org.springframework.web.method.annotation.HandlerMethodValidationException.class,
+        vn.gaugaugau.fooddelivery.utils.exception.BadRequestException.class})
+    public ResponseEntity<?> handleInvalidInput(Exception e) {
+        return ApiResponse.error(HttpStatus.BAD_REQUEST, "Invalid request data");
+    }
 
 	// todo: xử lý invalid input
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
 	public ResponseEntity<?> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
-		String errorMessage = String.format("Tham số '%s' có giá trị '%s' không đúng định dạng.", ex.getName(),
-				ex.getValue());
+		String errorMessage = "Invalid format for parameter: " + ex.getName();
 		return ApiResponse.error(HttpStatus.BAD_REQUEST, errorMessage);
 	}
 

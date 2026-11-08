@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.springframework.stereotype.Service;
 
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import vn.gaugaugau.fooddelivery.model.Cart;
 import vn.gaugaugau.fooddelivery.model.Restaurant;
@@ -19,29 +19,39 @@ import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 public class CartService {
 
 	private final CartRepository cartRepository;
+    private final vn.gaugaugau.fooddelivery.repository.CustomerRepository customerRepository;
 	private final CartItemService cartItemService;
 	private static final BigDecimal SHIPPING_FEE = BigDecimal.valueOf(15000);
 
 	public CartResponseDTO.RestaurantResponseDTO convertToRestaurantResponseDTO(Restaurant restaurant) {
+		if (restaurant == null) return null;
 		return CartResponseDTO.RestaurantResponseDTO.builder()
 				.restaurantId(restaurant.getRestaurantId())
 				.name(restaurant.getName())
 				.build();
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	public CartResponseDTO getAllCartItems(Long customerId) {
+		if (!customerRepository.existsById(customerId)) throw new ResourceNotFoundException("Customer not found");
 		Cart cart = this.cartRepository.findByCustomer_CustomerId(customerId)
-				.orElseThrow(() -> new ResourceNotFoundException("Customer doesn't have a cart!"));
+				.orElse(null);
+        if (cart == null) return CartResponseDTO.builder().cartItems(List.of()).totalItems(0)
+            .subtotal(BigDecimal.ZERO).shippingFee(BigDecimal.ZERO).totalAmount(BigDecimal.ZERO).build();
 
 		CartResponseDTO.RestaurantResponseDTO restaurant = convertToRestaurantResponseDTO(cart.getRestaurant());
 		List<CartItemResponseDTO> cartItems = this.cartItemService.getAllCartItems(customerId);
 
-		BigDecimal subtotal = cartItems.stream()
+		if (!cartItems.isEmpty() && cart.getRestaurant() == null)
+            throw new org.springframework.web.server.ResponseStatusException(
+                org.springframework.http.HttpStatus.CONFLICT, "Cart restaurant is missing");
+        if (cartItems.isEmpty()) restaurant = null;
+        BigDecimal subtotal = cartItems.stream()
 				.map(CartItemResponseDTO::getSubtotal)
 				.reduce(BigDecimal.ZERO, BigDecimal::add);
 
-		BigDecimal totalAmount = subtotal.add(SHIPPING_FEE);
+		BigDecimal shippingFee = cartItems.isEmpty() ? BigDecimal.ZERO : SHIPPING_FEE;
+        BigDecimal totalAmount = subtotal.add(shippingFee);
 
 		return CartResponseDTO.builder()
 				.cartId(cart.getCartId())
@@ -49,7 +59,7 @@ public class CartService {
 				.cartItems(cartItems)
 				.totalItems(cartItems.size())
 				.subtotal(subtotal)
-				.shippingFee(SHIPPING_FEE)
+				.shippingFee(shippingFee)
 				.totalAmount(totalAmount)
 				.build();
 	}

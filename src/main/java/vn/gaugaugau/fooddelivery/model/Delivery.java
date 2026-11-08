@@ -1,6 +1,5 @@
 package vn.gaugaugau.fooddelivery.model;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -46,11 +45,11 @@ public class Delivery {
 	@Column(name = "delivery_status", length = 20)
 	private DeliveryStatus deliveryStatus;
 
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "order_id")
 	private Order order;
 
-	@ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "driver_id")
 	private Driver driver;
 }

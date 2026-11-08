@@ -17,6 +17,7 @@ import lombok.Setter;
 public class RatingRequestDTO {
 
 	@NotNull(message = "Customer ID cannot be null")
+	@jakarta.validation.constraints.Positive
 	private Long customerId;
 
 	@NotNull(message = "Rating score cannot be null")

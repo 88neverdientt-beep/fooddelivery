@@ -17,6 +17,7 @@ import lombok.Setter;
 public class CartItemRequestDTO {
 
 	@NotNull(message = "Restaurant food item ID cannot be null")
+	@jakarta.validation.constraints.Positive
 	private Long restaurantFoodItemId;
 
 	@NotNull(message = "Quantity cannot be null")

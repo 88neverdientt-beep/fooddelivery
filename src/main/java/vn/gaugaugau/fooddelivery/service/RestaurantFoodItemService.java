@@ -18,6 +18,7 @@ import vn.gaugaugau.fooddelivery.repository.RestaurantFoodItemRepository;
 import vn.gaugaugau.fooddelivery.repository.RestaurantRepository;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 
+@org.springframework.transaction.annotation.Transactional
 @Service
 @RequiredArgsConstructor
 public class RestaurantFoodItemService {
@@ -57,7 +58,7 @@ public class RestaurantFoodItemService {
 				() -> new ResourceNotFoundException("Food item not found with ID: " + request.getFoodItemId()));
 		if (this.restaurantFoodItemRepository.existsByRestaurant_RestaurantIdAndFoodItem_ItemId(
 				restaurant.getRestaurantId(), foodItem.getItemId())) {
-			throw new ResourceNotFoundException("Restaurant food item already exists");
+			throw new vn.gaugaugau.fooddelivery.utils.exception.ResourceAlreadyExistsException("Restaurant food item already exists");
 		}
 		RestaurantFoodItem restaurantFoodItem = RestaurantFoodItem.builder()
 				.price(request.getPrice())
@@ -68,14 +69,16 @@ public class RestaurantFoodItemService {
 		return convertToRestaurantFoodItemResponseDTO(this.restaurantFoodItemRepository.save(restaurantFoodItem));
 	}
 
+	@org.springframework.transaction.annotation.Transactional(readOnly = true)
 	public List<RestaurantFoodItemResponseDTO> getAllRestaurantFoodItems() {
-		List<RestaurantFoodItem> restaurantFoodItems = this.restaurantFoodItemRepository.findAll();
+		List<RestaurantFoodItem> restaurantFoodItems = this.restaurantFoodItemRepository.findAllWithDetails();
 		return restaurantFoodItems.stream().map(this::convertToRestaurantFoodItemResponseDTO)
 				.collect(Collectors.toList());
 	}
 
+	@org.springframework.transaction.annotation.Transactional(readOnly = true)
 	public RestaurantFoodItemResponseDTO getRestaurantFoodItemById(Long restaurantFoodItemId) {
-		RestaurantFoodItem restaurantFoodItem = this.restaurantFoodItemRepository.findById(restaurantFoodItemId)
+		RestaurantFoodItem restaurantFoodItem = this.restaurantFoodItemRepository.findByIdWithDetails(restaurantFoodItemId)
 				.orElseThrow(() -> new ResourceNotFoundException(
 						"Restaurant food item not found with ID: " + restaurantFoodItemId));
 		return convertToRestaurantFoodItemResponseDTO(restaurantFoodItem);

@@ -24,10 +24,12 @@ import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+// Locking reads and ORM refresh must see the latest committed relationship state.
+@Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 public class DeliveryService {
 
 	private final DeliveryRepository deliveryRepository;
+    private final jakarta.persistence.EntityManager entityManager;
 	private final OrderRepository orderRepository;
 	private final DriverRepository driverRepository;
 	private final PaymentService paymentService;
@@ -59,11 +61,24 @@ public class DeliveryService {
 				.build();
 	}
 
+    // Lock Order before Delivery in every lifecycle writer.
+    private java.util.Optional<Delivery> lockedDelivery(Long deliveryId) {
+        Long orderId = deliveryRepository.findOrderId(deliveryId)
+            .orElseThrow(() -> new ResourceNotFoundException("Delivery not found"));
+        orderRepository.findLockedById(orderId)
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        var delivery = deliveryRepository.findLockedById(deliveryId);
+        // Order's inverse one-to-one may already have loaded Delivery from an older
+        // repeatable-read snapshot. A lock query alone does not refresh managed state.
+        delivery.ifPresent(value -> entityManager.refresh(value, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE));
+        return delivery;
+    }
+
 	public DeliveryResponseDTO createDelivery(Long orderId) {
-		Order order = this.orderRepository.findById(orderId)
+		Order order = this.orderRepository.findLockedById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
 		if (order.getOrderStatus() != OrderStatus.CONFIRMED) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order must be CONFIRMED");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Order must be CONFIRMED");
 		}
 		if (order.getDelivery() != null) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Delivery already exists for this order");
@@ -88,10 +103,10 @@ public class DeliveryService {
 	}
 
 	public DeliveryResponseDTO acceptDelivery(Long deliveryId, DeliveryRequestDTO deliveryRequestDTO) {
-		Delivery delivery = this.deliveryRepository.findById(deliveryId)
+		Delivery delivery = lockedDelivery(deliveryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Delivery not found with ID: " + deliveryId));
 		if (delivery.getDeliveryStatus() != DeliveryStatus.PENDING) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery is not available to accept");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Delivery is not available to accept");
 		}
 		if (delivery.getDriver() != null) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Delivery is already accepted by another driver");
@@ -99,18 +114,26 @@ public class DeliveryService {
 		Driver driver = this.driverRepository.findById(deliveryRequestDTO.getDriverId())
 				.orElseThrow(() -> new ResourceNotFoundException(
 						"Driver not found with ID: " + deliveryRequestDTO.getDriverId()));
-		delivery.setDriver(driver);
+		if (!Boolean.TRUE.equals(driver.getDriveStatus()))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Driver is inactive");
+        if (delivery.getOrder().getOrderStatus() != OrderStatus.CONFIRMED
+            && delivery.getOrder().getOrderStatus() != OrderStatus.PREPARING
+            && delivery.getOrder().getOrderStatus() != OrderStatus.READY)
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Order cannot be accepted");
+        delivery.setDriver(driver);
 		Delivery savedDelivery = this.deliveryRepository.save(delivery);
 		return convertToDeliveryResponseDTO(savedDelivery);
 	}
 
 	public DeliveryResponseDTO updateDeliveryStatus(Long deliveryId, DeliveryStatus newStatus) {
-		Delivery delivery = this.deliveryRepository.findById(deliveryId)
+		Delivery delivery = lockedDelivery(deliveryId)
 				.orElseThrow(() -> new ResourceNotFoundException("Delivery not found with ID: " + deliveryId));
 		if (delivery.getDriver() == null) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery hasn't accepted by any driver yet");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Delivery hasn't accepted by any driver yet");
 		}
-		DeliveryStatus currentDeliveryStatus = delivery.getDeliveryStatus();
+		if (newStatus == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status is required");
+        DeliveryStatus currentDeliveryStatus = delivery.getDeliveryStatus();
+        if (currentDeliveryStatus == null) throw new ResponseStatusException(HttpStatus.CONFLICT, "Delivery has no status");
 		boolean validTransition = switch (currentDeliveryStatus) {
 			case PENDING -> newStatus == DeliveryStatus.PICKED_UP;
 			case PICKED_UP -> newStatus == DeliveryStatus.DELIVERING;
@@ -118,28 +141,36 @@ public class DeliveryService {
 			case DELIVERED, CANCELLED -> false;
 		};
 		if (!validTransition) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
 					"Can not change delivery status from " + currentDeliveryStatus + " to " + newStatus);
 		}
 		if (newStatus == DeliveryStatus.PICKED_UP) {
 			if (delivery.getOrder().getOrderStatus() != OrderStatus.READY) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Order is not ready for pickup");
+				throw new ResponseStatusException(HttpStatus.CONFLICT, "Order is not ready for pickup");
 			}
 			delivery.setPickupTime(LocalDateTime.now());
 		}
 		if (newStatus == DeliveryStatus.DELIVERING) {
-			delivery.getOrder().setOrderStatus(OrderStatus.DELIVERING);
+			if (delivery.getOrder().getOrderStatus() != OrderStatus.READY)
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Order must be READY");
+            delivery.getOrder().setOrderStatus(OrderStatus.DELIVERING);
 		}
 		if (newStatus == DeliveryStatus.DELIVERED) {
 			Order order = delivery.getOrder();
 			if (order.getOrderStatus() != OrderStatus.DELIVERING) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+				throw new ResponseStatusException(HttpStatus.CONFLICT,
 						"Order must be DELIVERING to complete delivery");
 			}
-			if ("COD".equals(order.getPayment().getPaymentMethod().getPaymentMethodCode())) {
+			if (order.getPayment() == null || order.getPayment().getPaymentMethod() == null)
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Payment is missing");
+            if ("COD".equals(order.getPayment().getPaymentMethod().getPaymentMethodCode())) {
 				paymentService.confirmCashPayment(order);
 			}
-			delivery.setDeliveredTime(LocalDateTime.now());
+			if (order.getPayment().getPaymentStatus() != vn.gaugaugau.fooddelivery.model.enums.PaymentStatus.SUCCESS
+                || order.getPayment().getAmount() == null || order.getTotalAmount() == null
+                || order.getPayment().getAmount().compareTo(order.getTotalAmount()) != 0)
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Successful matching payment is required");
+            delivery.setDeliveredTime(LocalDateTime.now());
 			delivery.getOrder().setOrderStatus(OrderStatus.COMPLETED);
 		}
 		delivery.setDeliveryStatus(newStatus);

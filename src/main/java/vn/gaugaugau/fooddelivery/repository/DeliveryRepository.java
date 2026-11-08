@@ -10,6 +10,12 @@ import vn.gaugaugau.fooddelivery.model.enums.DeliveryStatus;
 
 @Repository
 public interface DeliveryRepository extends JpaRepository<Delivery, Long> {
+    @org.springframework.data.jpa.repository.Query("select d.order.orderId from Delivery d where d.deliveryId = :id")
+    java.util.Optional<Long> findOrderId(@org.springframework.data.repository.query.Param("id") Long id);
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select d from Delivery d where d.deliveryId = :id")
+    java.util.Optional<Delivery> findLockedById(@org.springframework.data.repository.query.Param("id") Long id);
+
 
 	List<Delivery> findByDeliveryStatusAndDriverIsNull(DeliveryStatus deliveryStatus);
 }

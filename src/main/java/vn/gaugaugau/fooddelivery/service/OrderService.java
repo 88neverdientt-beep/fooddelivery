@@ -39,6 +39,7 @@ import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 public class OrderService {
 
 	private final CartRepository cartRepository;
+    private final vn.gaugaugau.fooddelivery.repository.RestaurantFoodItemRepository restaurantFoodItemRepository;
 	private final CustomerRepository customerRepository;
 	private final RestaurantRepository restaurantRepository;
 	private final CartItemRepository cartItemRepository;
@@ -62,6 +63,7 @@ public class OrderService {
 	}
 
 	public OrderResponseDTO.DeliveryOutputDTO convertToDeliveryOutputDTO(Delivery delivery) {
+		if (delivery == null) return null;
 		return OrderResponseDTO.DeliveryOutputDTO.builder()
 				.deliveryId(delivery.getDeliveryId())
 				.deliveryStatus(delivery.getDeliveryStatus())
@@ -99,22 +101,24 @@ public class OrderService {
 
 	@Transactional
 	public OrderResponseDTO createOrder(Long customerId, OrderRequestDTO orderRequestDTO) {
-		Customer customer = this.customerRepository.findById(customerId)
+		Customer customer = this.customerRepository.findLockedById(customerId)
 				.orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
 		Cart cart = this.cartRepository.findByCustomer_CustomerId(customerId)
 				.orElseThrow(() -> new ResourceNotFoundException(
 						"Cart not found with ID of customer: " + customerId));
 		if (cart.getRestaurant() == null) {
-			throw new ResourceNotFoundException("Cart does not belong to any restaurant");
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Cart is empty");
 		}
 		Restaurant restaurant = this.restaurantRepository.findById(cart.getRestaurant().getRestaurantId())
 				.orElseThrow(() -> new ResourceNotFoundException(
 						"Restaurant not found with ID: " + cart.getRestaurant().getRestaurantId()));
-		List<CartItem> cartItems = this.cartItemRepository.findByCart_CartId(cart.getCartId());
+		List<CartItem> cartItems = this.cartItemRepository.findLockedByCartId(cart.getCartId());
 		if (cartItems.isEmpty()) {
-			throw new ResourceNotFoundException("Cart items not found in cart: " + cart.getCartId());
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Cart is empty");
 		}
-		Order order = Order.builder()
+		if (!Boolean.TRUE.equals(restaurant.getRestaurantStatus()))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Restaurant is inactive");
+        Order order = Order.builder()
 				.deliveryAddress(orderRequestDTO.getDeliveryAddress())
 				.orderStatus(OrderStatus.PENDING)
 				.customer(customer)
@@ -124,7 +128,19 @@ public class OrderService {
 		BigDecimal subtotal = BigDecimal.ZERO;
 		List<OrderDetail> orderDetails = new ArrayList<>();
 		for (CartItem cartItem : cartItems) {
-			BigDecimal quantity = BigDecimal.valueOf(cartItem.getQuantity());
+            if (cartItem.getRestaurantFoodItem() == null)
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Cart item has no menu item");
+            var menuItem = restaurantFoodItemRepository.findById(cartItem.getRestaurantFoodItem().getRestaurantFoodItemId())
+                .orElseThrow(() -> new ResourceNotFoundException("Menu item not found"));
+            cartItem.setRestaurantFoodItem(menuItem);
+			if (cartItem.getQuantity() == null || cartItem.getQuantity() <= 0
+                || cartItem.getRestaurantFoodItem() == null
+                || !Boolean.TRUE.equals(cartItem.getRestaurantFoodItem().getIsAvailable())
+                || !restaurant.getRestaurantId().equals(cartItem.getRestaurantFoodItem().getRestaurant().getRestaurantId())
+                || cartItem.getRestaurantFoodItem().getPrice() == null
+                || cartItem.getRestaurantFoodItem().getPrice().signum() <= 0)
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Invalid or unavailable cart item");
+            BigDecimal quantity = BigDecimal.valueOf(cartItem.getQuantity());
 			BigDecimal unitPrice = cartItem.getRestaurantFoodItem().getPrice();
 			BigDecimal subtotalItem = quantity.multiply(unitPrice);
 			subtotal = subtotal.add(subtotalItem);
@@ -172,7 +188,7 @@ public class OrderService {
 				.build();
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	public List<OrderResponseDTO> getAllOrders(Long customerId) {
 		List<Order> orders = this.orderRepository.findByCustomer_CustomerId(customerId);
 		return orders.stream()
@@ -180,7 +196,7 @@ public class OrderService {
 				.collect(Collectors.toList());
 	}
 
-	@Transactional
+	@Transactional(readOnly = true)
 	public OrderResponseDTO getOrderByOrderId(Long orderId) {
 		Order order = this.orderRepository.findById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
@@ -191,10 +207,10 @@ public class OrderService {
 	@Transactional
 	public OrderResponseDTO updateDeliveryAddress(Long orderId,
 			OrderUpdateDeliveryAddressRequestDTO orderUpdateDeliveryAddressRequestDTO) {
-		Order order = this.orderRepository.findById(orderId)
+		Order order = this.orderRepository.findLockedById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
 		if (order.getOrderStatus() != OrderStatus.PENDING && order.getOrderStatus() != OrderStatus.CONFIRMED) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
 					"Cannot update delivery address for order " + orderId);
 		}
 		order.setDeliveryAddress(orderUpdateDeliveryAddressRequestDTO.getDeliveryAddress());
@@ -204,23 +220,31 @@ public class OrderService {
 
 	@Transactional
 	public OrderResponseDTO updateOrderStatus(Long orderId, OrderStatus newStatus) {
-		Order order = orderRepository.findById(orderId)
+		Order order = orderRepository.findLockedById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException(
 						"Order not found with ID: " + orderId));
-		OrderStatus currentStatus = order.getOrderStatus();
+		if (newStatus == null) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status is required");
+        OrderStatus currentStatus = order.getOrderStatus();
+        if (currentStatus == null) throw new ResponseStatusException(HttpStatus.CONFLICT, "Order has no status");
 		boolean validTransition = switch (currentStatus) {
 			case PENDING -> newStatus == OrderStatus.CONFIRMED;
 			case CONFIRMED -> newStatus == OrderStatus.PREPARING;
 			case PREPARING -> newStatus == OrderStatus.READY;
-			case READY -> newStatus == OrderStatus.DELIVERING;
-			case DELIVERING -> newStatus == OrderStatus.COMPLETED;
+			case READY -> false;
+			case DELIVERING -> false;
 			case COMPLETED, CANCELLED -> false;
 		};
 		if (!validTransition) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
 					"Cannot change order status from " + currentStatus + " to " + newStatus);
 		}
-		order.setOrderStatus(newStatus);
+		if (order.getPayment() == null
+            || (order.getPayment().getPaymentStatus() != PaymentStatus.PENDING
+                && order.getPayment().getPaymentStatus() != PaymentStatus.SUCCESS)
+            || order.getPayment().getAmount() == null || order.getTotalAmount() == null
+            || order.getPayment().getAmount().compareTo(order.getTotalAmount()) != 0)
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Order requires a matching valid payment");
+        order.setOrderStatus(newStatus);
 		this.orderRepository.save(order);
 		if (newStatus.equals(OrderStatus.CONFIRMED)) {
 			this.deliveryService.createDelivery(orderId);
@@ -230,17 +254,17 @@ public class OrderService {
 
 	@Transactional
 	public OrderResponseDTO cancelOrder(Long orderId) {
-		Order order = orderRepository.findById(orderId)
+		Order order = orderRepository.findLockedById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException(
 						"Order not found with ID: " + orderId));
 		if (order.getOrderStatus() != OrderStatus.PENDING && order.getOrderStatus() != OrderStatus.CONFIRMED) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
 					"Cannot cancel order when status is " + order.getOrderStatus());
 		}
 		Delivery delivery = order.getDelivery();
 		if (delivery != null) {
 			if (delivery.getDeliveryStatus() != DeliveryStatus.PENDING) {
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Delivery cannot be cancelled");
+				throw new ResponseStatusException(HttpStatus.CONFLICT, "Delivery cannot be cancelled");
 			}
 			delivery.setDeliveryStatus(DeliveryStatus.CANCELLED);
 		}
@@ -250,7 +274,7 @@ public class OrderService {
 				payment.setPaymentStatus(PaymentStatus.CANCELLED);
 			} else if (payment.getPaymentStatus() == PaymentStatus.SUCCESS) {
 				// Chưa tích hợp hoàn tiền online.
-				throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Paid order requires refund processing");
+				throw new ResponseStatusException(HttpStatus.CONFLICT, "Paid order requires refund processing");
 			}
 		}
 		order.setOrderStatus(OrderStatus.CANCELLED);

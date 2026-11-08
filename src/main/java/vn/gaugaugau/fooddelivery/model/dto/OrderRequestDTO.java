@@ -21,5 +21,6 @@ public class OrderRequestDTO {
 	private String deliveryAddress;
 
 	@NotNull(message = "Payment method ID cannot be null")
+	@jakarta.validation.constraints.Positive
 	private Long paymentMethodId;
 }

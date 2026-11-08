@@ -37,6 +37,7 @@ public class CartItemService {
 	public CartItemResponseDTO convertToCartItemResponseDTO(CartItem cartItem) {
 		return CartItemResponseDTO.builder()
 				.cartItemId(cartItem.getCartItemId())
+                .restaurantFoodItemId(cartItem.getRestaurantFoodItem().getRestaurantFoodItemId())
 				.foodItemName(cartItem.getRestaurantFoodItem().getFoodItem().getName())
 				.quantity(cartItem.getQuantity())
 				.note(cartItem.getNote())
@@ -56,29 +57,40 @@ public class CartItemService {
 	}
 
 	public CartItemResponseDTO addCartItemToCart(Long customerId, CartItemRequestDTO request) {
-		Customer customer = this.customerRepository.findById(customerId)
+		Customer customer = this.customerRepository.findLockedById(customerId)
 				.orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
 		Cart cart = this.getOrCreateCart(customer);
+        List<CartItem> existingItems = cartItemRepository.findLockedByCartId(cart.getCartId());
+        if (existingItems.isEmpty()) cart.setRestaurant(null);
+        else {
+            var expected = existingItems.get(0).getRestaurantFoodItem().getRestaurant();
+            if (existingItems.stream().anyMatch(i -> !expected.getRestaurantId().equals(
+                    i.getRestaurantFoodItem().getRestaurant().getRestaurantId())))
+                throw new ResponseStatusException(HttpStatus.CONFLICT, "Cart contains mixed restaurants");
+            cart.setRestaurant(expected);
+        }
 		RestaurantFoodItem restaurantFoodItem = this.restaurantFoodItemRepository
 				.findById(request.getRestaurantFoodItemId())
 				.orElseThrow(() -> new ResourceNotFoundException(
 						"Restaurant food item not found with ID: " + request.getRestaurantFoodItemId()));
-		if (!restaurantFoodItem.getIsAvailable()) {
-			throw new ResourceNotFoundException("Food item is not available");
+		if (!Boolean.TRUE.equals(restaurantFoodItem.getRestaurant().getRestaurantStatus()))
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Restaurant is inactive");
+        if (!Boolean.TRUE.equals(restaurantFoodItem.getIsAvailable())) {
+			throw new ResponseStatusException(HttpStatus.CONFLICT, "Food item is not available");
 		}
 		if (cart.getRestaurant() != null && !cart.getRestaurant().getRestaurantId()
 				.equals(restaurantFoodItem.getRestaurant().getRestaurantId())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
 					"Cannot add food items from different restaurants to the same cart");
 		}
-		if (request.getQuantity() <= 0) {
+		if (request.getQuantity() == null || request.getQuantity() <= 0) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be greater than 0");
 		}
 		if (cart.getRestaurant() == null) {
 			cart.setRestaurant(restaurantFoodItem.getRestaurant());
 			this.cartRepository.save(cart);
 		}
-		List<CartItem> cartItems = this.cartItemRepository.findByCart_CartId(cart.getCartId());
+		List<CartItem> cartItems = this.cartItemRepository.findLockedByCartId(cart.getCartId());
 		CartItem newCartItem = new CartItem();
 		if (cartItems.isEmpty()) {
 			newCartItem = CartItem.builder()
@@ -104,7 +116,9 @@ public class CartItemService {
 						.restaurantFoodItem(restaurantFoodItem)
 						.build();
 			} else {
-				cartItemTmp.setQuantity(cartItemTmp.getQuantity() + request.getQuantity());
+				if ((long) cartItemTmp.getQuantity() + request.getQuantity() > Integer.MAX_VALUE)
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity is too large");
+                cartItemTmp.setQuantity(cartItemTmp.getQuantity() + request.getQuantity());
 				if (request.getNote() != null && !request.getNote().isBlank()) {
 					cartItemTmp.setNote(request.getNote());
 				}
@@ -116,8 +130,10 @@ public class CartItemService {
 	}
 
 	public List<CartItemResponseDTO> getAllCartItems(Long customerId) {
-		Cart cart = this.cartRepository.findByCustomer_CustomerId(customerId)
-				.orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+        if (!customerRepository.existsById(customerId)) throw new ResourceNotFoundException("Customer not found");
+        Cart cart = this.cartRepository.findByCustomer_CustomerId(customerId)
+				.orElse(null);
+        if (cart == null) return List.of();
 
 		return this.cartItemRepository.findByCart_CartId(cart.getCartId())
 				.stream()
@@ -126,9 +142,10 @@ public class CartItemService {
 	}
 
 	public CartItemResponseDTO updateCartItem(Long cartItemId, CartItemUpdateRequestDTO request) {
-		CartItem cartItem = this.cartItemRepository.findById(cartItemId)
+        lockCartOwner(cartItemId);
+		CartItem cartItem = this.cartItemRepository.findLockedById(cartItemId)
 				.orElseThrow(() -> new ResourceNotFoundException("Cart item not found with ID: " + cartItemId));
-		if (request.getQuantity() <= 0) {
+		if (request.getQuantity() == null || request.getQuantity() <= 0) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Quantity must be greater than 0");
 		}
 		cartItem.setQuantity(request.getQuantity());
@@ -138,12 +155,20 @@ public class CartItemService {
 		return convertToCartItemResponseDTO(this.cartItemRepository.save(cartItem));
 	}
 
+    private void lockCartOwner(Long itemId) {
+        Long customerId = cartItemRepository.findCustomerId(itemId)
+            .orElseThrow(() -> new ResourceNotFoundException("Cart item not found"));
+        customerRepository.findLockedById(customerId)
+            .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
+    }
+
 	public void deleteCartItem(Long cartItemId) {
-		CartItem cartItem = this.cartItemRepository.findById(cartItemId)
+        lockCartOwner(cartItemId);
+		CartItem cartItem = this.cartItemRepository.findLockedById(cartItemId)
 				.orElseThrow(() -> new ResourceNotFoundException("Cart item not found with ID: " + cartItemId));
 		Cart cart = cartItem.getCart();
 		this.cartItemRepository.delete(cartItem);
-		if (this.cartItemRepository.findByCart_CartId(cart.getCartId()).isEmpty()) {
+		if (this.cartItemRepository.findLockedByCartId(cart.getCartId()).isEmpty()) {
 			cart.setRestaurant(null);
 			this.cartRepository.save(cart);
 		}

@@ -20,7 +20,8 @@ import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+// Locking reads and ORM refresh must see the latest committed relationship state.
+@Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 public class PaymentService {
 
 	private final PaymentRepository paymentRepository;
@@ -28,9 +29,10 @@ public class PaymentService {
 	private final OrderRepository orderRepository;
 
 	public PaymentResponseDTO convertToPaymentResponseDTO(Payment payment) {
+		if (payment == null) return null;
 		return PaymentResponseDTO.builder()
 				.paymentId(payment.getPaymentId())
-				.paymentMethod(payment.getPaymentMethod().getPaymentMethodCode())
+				.paymentMethod(payment.getPaymentMethod() == null ? null : payment.getPaymentMethod().getPaymentMethodCode())
 				.paymentStatus(payment.getPaymentStatus())
 				.amount(payment.getAmount())
 				.paidAt(payment.getPaidAt())
@@ -42,15 +44,18 @@ public class PaymentService {
 		PaymentMethod paymentMethod = this.paymentMethodRepository.findById(paymentMethodId).orElseThrow(
 				() -> new ResourceNotFoundException("Payment Method not found with ID = " + paymentMethodId));
 		if (!Boolean.TRUE.equals(paymentMethod.getIsActive())) {
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+			throw new ResponseStatusException(HttpStatus.CONFLICT,
 					"Payment Method " + paymentMethod.getPaymentMethodCode() + " is not active");
 		}
-		Order order = this.orderRepository.findById(orderId)
+		Order order = this.orderRepository.findLockedById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException("Order not found with ID = " + orderId));
 		if (order.getPayment() != null) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Order already has a payment");
 		}
-		Payment payment = Payment.builder()
+		if (order.getOrderStatus() != vn.gaugaugau.fooddelivery.model.enums.OrderStatus.PENDING
+            || order.getTotalAmount() == null || order.getTotalAmount().signum() <= 0)
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Order cannot be paid");
+        Payment payment = Payment.builder()
 				.amount(order.getTotalAmount())
 				.paymentStatus(PaymentStatus.PENDING)
 				.order(order)
@@ -62,24 +67,32 @@ public class PaymentService {
 		return convertToPaymentResponseDTO(savedPayment);
 	}
 
+	@Transactional(readOnly = true)
 	public PaymentResponseDTO getPaymentByOrderId(Long orderId) {
 		Order order = this.orderRepository.findById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException("Order not found with ID = " + orderId));
+		if (order.getPayment() == null) throw new ResourceNotFoundException("Payment not found");
 		return convertToPaymentResponseDTO(order.getPayment());
 	}
 
 	public void confirmCashPayment(Order order) {
-		Payment payment = order.getPayment();
+		Order lockedOrder = orderRepository.findLockedById(order.getOrderId())
+            .orElseThrow(() -> new ResourceNotFoundException("Order not found"));
+        Payment payment = lockedOrder.getPayment();
 		if (payment == null) {
 			throw new ResourceNotFoundException("Payment not found for order ID: " + order.getOrderId());
 		}
-		if (!"COD".equals(payment.getPaymentMethod().getPaymentMethodCode())) {
+		if (payment.getPaymentMethod() == null || !"COD".equals(payment.getPaymentMethod().getPaymentMethodCode())) {
 			throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Payment method is not COD");
 		}
 		if (payment.getPaymentStatus() != PaymentStatus.PENDING) {
 			throw new ResponseStatusException(HttpStatus.CONFLICT, "Payment is not pending");
 		}
-		payment.setPaymentStatus(PaymentStatus.SUCCESS);
+		if (lockedOrder.getOrderStatus() != vn.gaugaugau.fooddelivery.model.enums.OrderStatus.DELIVERING
+            || payment.getAmount() == null || lockedOrder.getTotalAmount() == null
+            || payment.getAmount().compareTo(lockedOrder.getTotalAmount()) != 0)
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Payment does not match delivering order");
+        payment.setPaymentStatus(PaymentStatus.SUCCESS);
 		payment.setPaidAt(LocalDateTime.now());
 		this.paymentRepository.save(payment);
 	}
