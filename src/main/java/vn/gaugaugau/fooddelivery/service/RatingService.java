@@ -34,7 +34,7 @@ public class RatingService {
 	public RatingResponseDTO.CustomerOutputDTO convertToCustomerOutputDTO(Customer customer) {
 		return RatingResponseDTO.CustomerOutputDTO.builder()
 				.customerId(customer.getCustomerId())
-				.name(customer.getName())
+				.name("Customer")
 				.build();
 	}
 
@@ -47,6 +47,8 @@ public class RatingService {
 				.customerOutputDTO(convertToCustomerOutputDTO(rating.getCustomer()))
 				.build();
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.profile('CUSTOMER',#request.customerId,false)")
+
 
 	public RatingResponseDTO createRating(Long restaurantId, RatingRequestDTO request) {
 		Customer customer = this.customerRepository.findById(request.getCustomerId())
@@ -95,6 +97,8 @@ public class RatingService {
 	}
 
 	@Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("@access.rating(#ratingId,#customerId,false)")
+
 	public RatingResponseDTO updateRating(Long ratingId, Long customerId, RatingUpdateRequestDTO request) {
 		Rating rating = this.ratingRepository.findById(ratingId).orElseThrow(() -> new ResourceNotFoundException(
 				"Rating not found with ID = " + ratingId));
@@ -109,6 +113,8 @@ public class RatingService {
 	}
 
 	@Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("@access.rating(#ratingId,#customerId,true)")
+
 	public void deleteRating(Long ratingId, Long customerId) {
 		Rating rating = this.ratingRepository.findById(ratingId).orElseThrow(() -> new ResourceNotFoundException(
 				"Rating not found with ID = " + ratingId));

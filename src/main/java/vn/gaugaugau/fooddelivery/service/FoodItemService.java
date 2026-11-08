@@ -13,6 +13,7 @@ import vn.gaugaugau.fooddelivery.repository.FoodItemRepository;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceAlreadyExistsException;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 
+@org.springframework.transaction.annotation.Transactional
 @Service
 @RequiredArgsConstructor
 public class FoodItemService {
@@ -27,6 +28,8 @@ public class FoodItemService {
 				.description(foodItem.getDescription())
 				.build();
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+
 
 	public FoodItemResponseDTO createFoodItem(FoodItemRequestDTO request) {
 		if (this.foodItemRepository.existsByName(request.getName().toUpperCase())) {
@@ -50,6 +53,8 @@ public class FoodItemService {
 				.orElseThrow(() -> new ResourceNotFoundException("Food item not found with ID: " + itemId));
 		return foodItemToFoodItemResponseDTO(foodItem);
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+
 
 	public FoodItemResponseDTO updateFoodItemById(Long itemId, FoodItemRequestDTO request) {
 		FoodItem foodItem = this.foodItemRepository.findById(itemId)
@@ -63,6 +68,8 @@ public class FoodItemService {
 		foodItem.setDescription(request.getDescription());
 		return foodItemToFoodItemResponseDTO(this.foodItemRepository.save(foodItem));
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+
 
 	public FoodItemResponseDTO deleteFoodItemById(Long itemId) {
 		FoodItem foodItem = this.foodItemRepository.findById(itemId)

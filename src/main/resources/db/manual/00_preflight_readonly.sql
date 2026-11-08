@@ -1,0 +1,8 @@
+-- Counts only: no email/password/hash values are printed. Run before any DDL.
+SELECT @@port AS port, @@datadir AS datadir, DATABASE() AS schema_name, @@version AS mysql_version;
+SELECT COUNT(*) AS profiles FROM (SELECT email,password FROM customers UNION ALL SELECT email,password FROM restaurants UNION ALL SELECT email,password FROM drivers) p;
+SELECT COUNT(*) AS duplicate_email_groups FROM (SELECT LOWER(TRIM(email)) e FROM (SELECT email,password FROM customers UNION ALL SELECT email,password FROM restaurants UNION ALL SELECT email,password FROM drivers) p GROUP BY e HAVING COUNT(*)>1) d;
+SELECT COUNT(*) AS invalid_emails FROM (SELECT email,password FROM customers UNION ALL SELECT email,password FROM restaurants UNION ALL SELECT email,password FROM drivers) p WHERE email IS NULL OR CHAR_LENGTH(TRIM(email))>255 OR NOT REGEXP_LIKE(TRIM(email),CONVERT(0x5e5b412d5a612d7a302d392e5f252b2d5d2b405b412d5a612d7a302d392e2d5d2b5c2e5b412d5a612d7a5d7b322c7d24 USING utf8mb4),'c');
+SELECT COUNT(*) AS invalid_bcrypt_hashes FROM (SELECT email,password FROM customers UNION ALL SELECT email,password FROM restaurants UNION ALL SELECT email,password FROM drivers) p WHERE password IS NULL OR NOT REGEXP_LIKE(password,CONVERT(0x5e5c24325b6162795d5c2428305b342d395d7c5b31325d5b302d395d7c335b30315d295c245b2e2f412d5a612d7a302d395d7b35337d24 USING utf8mb4),'c');
+SELECT table_name,column_name,column_type,is_nullable,column_key FROM information_schema.columns WHERE table_schema=DATABASE() AND column_name IN ('customer_id','restaurant_id','driver_id');
+SELECT table_name,constraint_name,constraint_type FROM information_schema.table_constraints WHERE constraint_schema=DATABASE();

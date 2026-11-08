@@ -16,12 +16,14 @@ import vn.gaugaugau.fooddelivery.repository.DriverRepository;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceAlreadyExistsException;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 
+@org.springframework.transaction.annotation.Transactional
 @Service
 @RequiredArgsConstructor
 public class DriverService {
 
 	private final DriverRepository driverRepository;
 	private final PasswordEncoder passwordEncoder;
+    private final vn.gaugaugau.fooddelivery.auth.service.AuthService authService;
 
 	private DriverResponseDTO driverToDriverResponseDTO(Driver driver) {
 		DriverResponseDTO response = new DriverResponseDTO();
@@ -35,6 +37,8 @@ public class DriverService {
 		response.setCreatedAt(driver.getCreatedAt());
 		return response;
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("denyAll()")
+
 
 	public DriverResponseDTO createDriver(DriverRequestDTO request) {
 		if (driverRepository.existsByEmail(request.getEmail())) {
@@ -53,6 +57,8 @@ public class DriverService {
 		Driver savedDriver = driverRepository.save(driver);
 		return driverToDriverResponseDTO(savedDriver);
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+
 
 	public List<DriverResponseDTO> getAllDrivers() {
 		List<DriverResponseDTO> drivers = this.driverRepository.findAll().stream()
@@ -60,6 +66,8 @@ public class DriverService {
 				.collect(Collectors.toList());
 		return drivers;
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.profile('DRIVER',#driverId,true)")
+
 
 	public DriverResponseDTO getDriverById(Long driverId) {
 		Driver driver = driverRepository.findById(driverId).orElse(null);
@@ -68,6 +76,8 @@ public class DriverService {
 		}
 		return driverToDriverResponseDTO(driver);
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.profile('DRIVER',#driverId,true)")
+
 
 	public DriverResponseDTO updateDriverById(Long driverId, DriverUpdateRequestDTO request) {
 		Driver driver = driverRepository.findById(driverId)
@@ -86,11 +96,13 @@ public class DriverService {
 		Driver updatedDriver = driverRepository.save(driver);
 		return driverToDriverResponseDTO(updatedDriver);
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+
 
 	public DriverResponseDTO deleteDriverById(Long driverId) {
 		Driver driver = driverRepository.findById(driverId)
 				.orElseThrow(() -> new ResourceNotFoundException("Driver not found with ID: " + driverId));
-		this.driverRepository.delete(driver);
+		authService.disableProfile(vn.gaugaugau.fooddelivery.auth.model.Role.DRIVER, driverId);
 		return driverToDriverResponseDTO(driver);
 	}
 }

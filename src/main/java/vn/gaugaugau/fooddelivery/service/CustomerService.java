@@ -16,12 +16,14 @@ import vn.gaugaugau.fooddelivery.repository.CustomerRepository;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceAlreadyExistsException;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 
+@org.springframework.transaction.annotation.Transactional
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
 
 	private final CustomerRepository customerRepository;
 	private final PasswordEncoder passwordEncoder;
+    private final vn.gaugaugau.fooddelivery.auth.service.AuthService authService;
 
 	private CustomerResponseDTO customerToCustomerResponseDTO(Customer customer) {
 		CustomerResponseDTO response = new CustomerResponseDTO();
@@ -33,6 +35,8 @@ public class CustomerService {
 		response.setCreatedAt(customer.getCreatedAt());
 		return response;
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("denyAll()")
+
 
 	public CustomerResponseDTO createCustomer(CustomerRequestDTO request) {
 		if (customerRepository.existsByEmail(request.getEmail())) {
@@ -48,6 +52,8 @@ public class CustomerService {
 		Customer savedCustomer = customerRepository.save(customer);
 		return customerToCustomerResponseDTO(savedCustomer);
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+
 
 	public List<CustomerResponseDTO> getAllCustomers() {
 		List<CustomerResponseDTO> customers = this.customerRepository.findAll().stream()
@@ -55,6 +61,8 @@ public class CustomerService {
 				.collect(Collectors.toList());
 		return customers;
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.profile('CUSTOMER',#customerId,true)")
+
 
 	public CustomerResponseDTO getCustomerById(Long customerId) {
 		Customer customer = customerRepository.findById(customerId).orElse(null);
@@ -63,6 +71,8 @@ public class CustomerService {
 		}
 		return customerToCustomerResponseDTO(customer);
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.profile('CUSTOMER',#customerId,true)")
+
 
 	public CustomerResponseDTO updateCustomerById(Long customerId, CustomerUpdateRequestDTO request) {
 		Customer customer = customerRepository.findById(customerId)
@@ -75,11 +85,13 @@ public class CustomerService {
 		Customer updatedCustomer = customerRepository.save(customer);
 		return customerToCustomerResponseDTO(updatedCustomer);
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+
 
 	public CustomerResponseDTO deleteCustomerById(Long customerId) {
 		Customer customer = customerRepository.findById(customerId)
 				.orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
-		this.customerRepository.delete(customer);
+		authService.disableProfile(vn.gaugaugau.fooddelivery.auth.model.Role.CUSTOMER, customerId);
 		return customerToCustomerResponseDTO(customer);
 	}
 

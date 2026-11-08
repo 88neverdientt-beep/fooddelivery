@@ -28,8 +28,8 @@ public class DeliveryController {
 	private final DeliveryService deliveryService;
 
 	@GetMapping("/available")
-	public ResponseEntity<ApiResponse<List<DeliveryResponseDTO>>> getAvailableDeliveries() {
-		List<DeliveryResponseDTO> listAvailableDeliveries = this.deliveryService.getAvailableDeliveries();
+	public ResponseEntity<ApiResponse<List<vn.gaugaugau.fooddelivery.model.dto.AvailableDelivery>>> getAvailableDeliveries() {
+		List<vn.gaugaugau.fooddelivery.model.dto.AvailableDelivery> listAvailableDeliveries = this.deliveryService.getAvailableDeliveries();
 		return ApiResponse.success(listAvailableDeliveries);
 	}
 

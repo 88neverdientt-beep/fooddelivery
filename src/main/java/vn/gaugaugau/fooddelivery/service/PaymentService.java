@@ -39,6 +39,8 @@ public class PaymentService {
 				.refundedAt(payment.getRefundedAt())
 				.build();
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.customerOrder(#orderId)")
+
 
 	public PaymentResponseDTO createPayment(Long paymentMethodId, Long orderId) {
 		PaymentMethod paymentMethod = this.paymentMethodRepository.findById(paymentMethodId).orElseThrow(
@@ -68,12 +70,16 @@ public class PaymentService {
 	}
 
 	@Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("@access.readOrder(#orderId)")
+
 	public PaymentResponseDTO getPaymentByOrderId(Long orderId) {
 		Order order = this.orderRepository.findById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException("Order not found with ID = " + orderId));
 		if (order.getPayment() == null) throw new ResourceNotFoundException("Payment not found");
 		return convertToPaymentResponseDTO(order.getPayment());
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.driverOrder(#order.orderId)")
+
 
 	public void confirmCashPayment(Order order) {
 		Order lockedOrder = orderRepository.findLockedById(order.getOrderId())

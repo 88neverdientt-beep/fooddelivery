@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CartItemUpdateRequestDTO {
+public class CartItemUpdateRequestDTO extends StrictRequest {
 
 	@NotNull(message = "Quantity cannot be null")
 	@Positive(message = "Quantity must be greater than 0")

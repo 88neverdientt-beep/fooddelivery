@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RatingRequestDTO {
+public class RatingRequestDTO extends StrictRequest {
 
 	@NotNull(message = "Customer ID cannot be null")
 	@jakarta.validation.constraints.Positive

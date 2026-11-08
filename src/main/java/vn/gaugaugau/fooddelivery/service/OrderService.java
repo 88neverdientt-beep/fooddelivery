@@ -100,6 +100,8 @@ public class OrderService {
 	}
 
 	@Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("@access.profile('CUSTOMER',#customerId,false)")
+
 	public OrderResponseDTO createOrder(Long customerId, OrderRequestDTO orderRequestDTO) {
 		Customer customer = this.customerRepository.findLockedById(customerId)
 				.orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
@@ -189,6 +191,8 @@ public class OrderService {
 	}
 
 	@Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("@access.profile('CUSTOMER',#customerId,true)")
+
 	public List<OrderResponseDTO> getAllOrders(Long customerId) {
 		List<Order> orders = this.orderRepository.findByCustomer_CustomerId(customerId);
 		return orders.stream()
@@ -197,6 +201,8 @@ public class OrderService {
 	}
 
 	@Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("@access.readOrder(#orderId)")
+
 	public OrderResponseDTO getOrderByOrderId(Long orderId) {
 		Order order = this.orderRepository.findById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException("Order not found with ID: " + orderId));
@@ -205,6 +211,8 @@ public class OrderService {
 	}
 
 	@Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("@access.customerOrder(#orderId)")
+
 	public OrderResponseDTO updateDeliveryAddress(Long orderId,
 			OrderUpdateDeliveryAddressRequestDTO orderUpdateDeliveryAddressRequestDTO) {
 		Order order = this.orderRepository.findLockedById(orderId)
@@ -219,6 +227,8 @@ public class OrderService {
 	}
 
 	@Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("@access.restaurantOrder(#orderId)")
+
 	public OrderResponseDTO updateOrderStatus(Long orderId, OrderStatus newStatus) {
 		Order order = orderRepository.findLockedById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException(
@@ -253,6 +263,8 @@ public class OrderService {
 	}
 
 	@Transactional
+    @org.springframework.security.access.prepost.PreAuthorize("@access.cancelOrder(#orderId)")
+
 	public OrderResponseDTO cancelOrder(Long orderId) {
 		Order order = orderRepository.findLockedById(orderId)
 				.orElseThrow(() -> new ResourceNotFoundException(

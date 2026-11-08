@@ -32,6 +32,9 @@ public class CartService {
 	}
 
 	@Transactional(readOnly = true)
+    @org.springframework.security.access.prepost.PreAuthorize("@access.profile('CUSTOMER',#customerId,false)")
+
+
 	public CartResponseDTO getAllCartItems(Long customerId) {
 		if (!customerRepository.existsById(customerId)) throw new ResourceNotFoundException("Customer not found");
 		Cart cart = this.cartRepository.findByCustomer_CustomerId(customerId)

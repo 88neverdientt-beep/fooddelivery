@@ -33,7 +33,7 @@ public class RestaurantFoodItemService {
 				.restaurantId(restaurantFoodItem.getRestaurant().getRestaurantId())
 				.name(restaurantFoodItem.getRestaurant().getName())
 				.address(restaurantFoodItem.getRestaurant().getAddress())
-				.phoneNumber(restaurantFoodItem.getRestaurant().getPhoneNumber())
+				.phoneNumber(null)
 				.build();
 		RestaurantFoodItemResponseDTO.FoodItemOutputDTO foodItemOutputDTO = RestaurantFoodItemResponseDTO.FoodItemOutputDTO
 				.builder()
@@ -50,6 +50,8 @@ public class RestaurantFoodItemService {
 				.foodItem(foodItemOutputDTO)
 				.build();
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.profile('RESTAURANT',#request.restaurantId,true)")
+
 
 	public RestaurantFoodItemResponseDTO createRestaurantFoodItem(RestaurantFoodItemRequestDTO request) {
 		Restaurant restaurant = this.restaurantRepository.findById(request.getRestaurantId()).orElseThrow(
@@ -83,6 +85,8 @@ public class RestaurantFoodItemService {
 						"Restaurant food item not found with ID: " + restaurantFoodItemId));
 		return convertToRestaurantFoodItemResponseDTO(restaurantFoodItem);
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.menu(#restaurantFoodItemId)")
+
 
 	public RestaurantFoodItemResponseDTO updateRestaurantFoodItemById(Long restaurantFoodItemId,
 			RestaurantFoodItemUpdateDTO request) {
@@ -93,6 +97,8 @@ public class RestaurantFoodItemService {
 		restaurantFoodItem.setIsAvailable(request.getIsAvailable() != null ? request.getIsAvailable() : true);
 		return convertToRestaurantFoodItemResponseDTO(this.restaurantFoodItemRepository.save(restaurantFoodItem));
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.menu(#restaurantFoodItemId)")
+
 
 	public RestaurantFoodItemResponseDTO deleteRestaurantFoodItemById(Long restaurantFoodItemId) {
 		RestaurantFoodItem restaurantFoodItem = this.restaurantFoodItemRepository.findById(restaurantFoodItemId)

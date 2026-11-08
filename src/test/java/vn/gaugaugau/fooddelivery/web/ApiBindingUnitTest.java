@@ -18,14 +18,14 @@ import vn.gaugaugau.fooddelivery.utils.GlobalExceptionHandler;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 
 // Integrates HTTP binding, Bean Validation, controllers and advice; no datasource or app startup.
-class ApiIntegrationTest {
+class ApiBindingUnitTest {
     final CustomerService customers=mock(CustomerService.class);
     final RestaurantFoodItemService menus=mock(RestaurantFoodItemService.class);
     final CartItemService items=mock(CartItemService.class);
     final OrderService orders=mock(OrderService.class);
     MockMvc mvc;
     @BeforeEach void setup() {
-        mvc=MockMvcBuilders.standaloneSetup(new CustomerController(customers),
+        mvc=MockMvcBuilders.standaloneSetup(new CustomerController(customers,mock(vn.gaugaugau.fooddelivery.auth.service.AuthService.class)),
             new RestaurantFoodItemController(menus),new CartItemController(items),new OrderController(orders))
             .setControllerAdvice(new GlobalExceptionHandler()).build();
     }

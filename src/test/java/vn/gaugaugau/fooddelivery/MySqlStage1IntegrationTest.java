@@ -24,13 +24,14 @@ import vn.gaugaugau.fooddelivery.service.*;
 // Explicit opt-in; hard-coded approved endpoint and validate prevent use of the development DB.
 @EnabledIfEnvironmentVariable(named="RUN_STAGE1_MYSQL_TESTS", matches="true")
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.MOCK, properties={
-    "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/fooddelivery_stage1_test?allowPublicKeyRetrieval=true&sslMode=DISABLED",
-    "spring.datasource.username=stage1_app", "spring.datasource.password=${STAGE1_MYSQL_PASSWORD}",
+    "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/fooddelivery_stage2_rehearsal?allowPublicKeyRetrieval=true&sslMode=DISABLED",
+    "spring.datasource.username=stage2_app", "spring.datasource.password=${STAGE2_MYSQL_PASSWORD}",
     "spring.jpa.hibernate.ddl-auto=validate", "spring.jpa.open-in-view=false",
     "spring.jpa.properties.hibernate.generate_statistics=true", "spring.jpa.show-sql=false",
     "spring.main.lazy-initialization=false", "logging.level.root=WARN"
 })
-class MySqlStage1IntegrationTest {
+class MySqlStage1IntegrationTest extends vn.gaugaugau.fooddelivery.auth.AuthTestKeys {
+    static final String FIXTURE_HASH = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(4).encode("stage1-test-fixture-password");
     @Autowired CustomerRepository customers;
     @Autowired RestaurantRepository restaurants;
     @Autowired FoodItemRepository foods;
@@ -49,27 +50,45 @@ class MySqlStage1IntegrationTest {
     @Autowired EntityManager entityManager;
     @Autowired EntityManagerFactory factory;
 
+    @Autowired vn.gaugaugau.fooddelivery.auth.repository.AccountRepository authAccounts;
+    @Autowired vn.gaugaugau.fooddelivery.auth.service.AuthService authentication;
+    @Autowired org.springframework.security.oauth2.jwt.JwtDecoder decoder;
+    @Autowired vn.gaugaugau.fooddelivery.auth.security.SessionJwtConverter converter;
+    final java.util.concurrent.ConcurrentMap<Long,String> tokens=new java.util.concurrent.ConcurrentHashMap<>();
+    void asActor(vn.gaugaugau.fooddelivery.auth.model.Role role,Long id) {
+        var account=new TransactionTemplate(manager).execute(st -> authAccounts.findProfileAccount(role,id).orElseThrow());
+        String token=tokens.computeIfAbsent(account.getAccountId(),key -> authentication.login(
+            new vn.gaugaugau.fooddelivery.auth.dto.AuthDtos.Login(account.getEmail(),"stage1-test-fixture-password"),"fixture-"+key).response().accessToken());
+        var ctx=org.springframework.security.core.context.SecurityContextHolder.createEmptyContext();
+        ctx.setAuthentication(converter.convert(decoder.decode(token)));org.springframework.security.core.context.SecurityContextHolder.setContext(ctx);
+    }
+    @org.junit.jupiter.api.AfterEach void clearActor(){org.springframework.security.core.context.SecurityContextHolder.clearContext();}
     record Fixture(long customer,long restaurant,long menu,long method,long driver1,long driver2) {}
     Fixture fixture() {
         assertEquals(3307,jdbc.queryForObject("select @@port",Integer.class));
-        assertEquals("fooddelivery_stage1_test",jdbc.queryForObject("select database()",String.class));
+        assertEquals("fooddelivery_stage2_rehearsal",jdbc.queryForObject("select database()",String.class));
         assertTrue(jdbc.queryForObject("select @@datadir",String.class).replace('\\','/').startsWith("F:/New folder/food-delivery-mysql-test/data"));
         String tag=UUID.randomUUID().toString();
-        return new TransactionTemplate(manager).execute(status -> {
-            var c=customers.save(Customer.builder().name("Test").email(tag+"@test.invalid").password("test-hash")
+        Fixture fixture = new TransactionTemplate(manager).execute(status -> {
+            var c=customers.save(Customer.builder().name("Test").email(tag+"@test.invalid").password(FIXTURE_HASH)
                 .phoneNumber("0900000000").address("Test address").build());
-            var r=restaurants.save(Restaurant.builder().name("Test restaurant").email(tag+"r@test.invalid").password("test-hash")
+            var r=restaurants.save(Restaurant.builder().name("Test restaurant").email(tag+"r@test.invalid").password(FIXTURE_HASH)
                 .phoneNumber("0900000000").address("Test address").restaurantStatus(true).build());
             var food=foods.save(FoodItem.builder().name("Test "+tag).build());
             var menu=menus.save(RestaurantFoodItem.builder().restaurant(r).foodItem(food).price(new BigDecimal("20000.00")).isAvailable(true).build());
             String code="T"+tag.replace("-","").substring(0,20);
             var method=methods.save(PaymentMethod.builder().paymentMethodName("Test COD").paymentMethodCode(code).isActive(true).build());
-            var d1=drivers.save(Driver.builder().name("Driver1").email(tag+"d1@test.invalid").password("test-hash")
+            var d1=drivers.save(Driver.builder().name("Driver1").email(tag+"d1@test.invalid").password(FIXTURE_HASH)
                 .phoneNumber("0900000000").address("Test address").driveStatus(true).build());
-            var d2=drivers.save(Driver.builder().name("Driver2").email(tag+"d2@test.invalid").password("test-hash")
+            var d2=drivers.save(Driver.builder().name("Driver2").email(tag+"d2@test.invalid").password(FIXTURE_HASH)
                 .phoneNumber("0900000000").address("Test address").driveStatus(true).build());
+            authAccounts.save(vn.gaugaugau.fooddelivery.auth.model.Account.builder().email(c.getEmail()).passwordHash(FIXTURE_HASH).role(vn.gaugaugau.fooddelivery.auth.model.Role.CUSTOMER).customer(c).build());
+            authAccounts.save(vn.gaugaugau.fooddelivery.auth.model.Account.builder().email(r.getEmail()).passwordHash(FIXTURE_HASH).role(vn.gaugaugau.fooddelivery.auth.model.Role.RESTAURANT).restaurant(r).build());
+            authAccounts.save(vn.gaugaugau.fooddelivery.auth.model.Account.builder().email(d1.getEmail()).passwordHash(FIXTURE_HASH).role(vn.gaugaugau.fooddelivery.auth.model.Role.DRIVER).driver(d1).build());
+            authAccounts.save(vn.gaugaugau.fooddelivery.auth.model.Account.builder().email(d2.getEmail()).passwordHash(FIXTURE_HASH).role(vn.gaugaugau.fooddelivery.auth.model.Role.DRIVER).driver(d2).build());
             return new Fixture(c.getCustomerId(),r.getRestaurantId(),menu.getRestaurantFoodItemId(),method.getPaymentMethodId(),d1.getDriverId(),d2.getDriverId());
         });
+        asActor(vn.gaugaugau.fooddelivery.auth.model.Role.CUSTOMER,fixture.customer());return fixture;
     }
     void add(Fixture f) { cartItems.addCartItemToCart(f.customer(),CartItemRequestDTO.builder().restaurantFoodItemId(f.menu()).quantity(2).build()); }
     OrderRequestDTO request(Fixture f) { return OrderRequestDTO.builder().deliveryAddress("Test address").paymentMethodId(f.method()).build(); }
@@ -79,10 +98,15 @@ class MySqlStage1IntegrationTest {
     }
     long create(Fixture f) { add(f);return orders.createOrder(f.customer(),request(f)).getOrderId(); }
     long ready(long id) {
+        var original=org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        Long rid=jdbc.queryForObject("SELECT restaurant_id FROM orders WHERE order_id=?",Long.class,id);
+        asActor(vn.gaugaugau.fooddelivery.auth.model.Role.RESTAURANT,rid);
+        try {
         orders.updateOrderStatus(id,OrderStatus.CONFIRMED);
         orders.updateOrderStatus(id,OrderStatus.PREPARING);
         orders.updateOrderStatus(id,OrderStatus.READY);
         return orders.getOrderByOrderId(id).getDeliveryOutputDTO().getDeliveryId();
+        }finally {org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(original);}
     }
     void useCod(long orderId) {
         new TransactionTemplate(manager).executeWithoutResult(s -> {
@@ -93,6 +117,7 @@ class MySqlStage1IntegrationTest {
         });
     }
     void delivering(Fixture f,long id,long delivery) {
+        asActor(vn.gaugaugau.fooddelivery.auth.model.Role.DRIVER,f.driver1());
         shipping.acceptDelivery(delivery,DeliveryRequestDTO.builder().driverId(f.driver1()).build());
         shipping.updateDeliveryStatus(delivery,DeliveryStatus.PICKED_UP);
         shipping.updateDeliveryStatus(delivery,DeliveryStatus.DELIVERING);
@@ -100,8 +125,9 @@ class MySqlStage1IntegrationTest {
     List<Boolean> race(Callable<?> a,Callable<?> b) throws Exception {
         var executor=Executors.newFixedThreadPool(2);
         var gate=new CyclicBarrier(2);
-        Callable<Boolean> first=()->{gate.await(10,TimeUnit.SECONDS);return attempt(a);};
-        Callable<Boolean> second=()->{gate.await(10,TimeUnit.SECONDS);return attempt(b);};
+        var original=org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        Callable<Boolean> first=()->{org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(original);gate.await(10,TimeUnit.SECONDS);try{return attempt(a);}finally{clearActor();}};
+        Callable<Boolean> second=()->{org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(original);gate.await(10,TimeUnit.SECONDS);try{return attempt(b);}finally{clearActor();}};
         try { var x=executor.submit(first);var y=executor.submit(second);return List.of(x.get(30,TimeUnit.SECONDS),y.get(30,TimeUnit.SECONDS)); }
         finally {executor.shutdownNow();}
     }
@@ -141,14 +167,14 @@ class MySqlStage1IntegrationTest {
     }
     @Test void twoDriversHaveOneWinner() throws Exception {
         var f=fixture();long id=create(f);long d=ready(id);
-        oneWinner(race(()->shipping.acceptDelivery(d,DeliveryRequestDTO.builder().driverId(f.driver1()).build()),
-            ()->shipping.acceptDelivery(d,DeliveryRequestDTO.builder().driverId(f.driver2()).build())));
+        oneWinner(race(()->{asActor(vn.gaugaugau.fooddelivery.auth.model.Role.DRIVER,f.driver1());return shipping.acceptDelivery(d,DeliveryRequestDTO.builder().driverId(f.driver1()).build());},
+            ()->{asActor(vn.gaugaugau.fooddelivery.auth.model.Role.DRIVER,f.driver2());return shipping.acceptDelivery(d,DeliveryRequestDTO.builder().driverId(f.driver2()).build());}));
         long winner=jdbc.queryForObject("select driver_id from deliveries where delivery_id=?",Long.class,d);
         assertTrue(winner==f.driver1() || winner==f.driver2());
         assertEquals(1,jdbc.queryForObject("select count(*) from deliveries where order_id=?",Integer.class,id));
     }
     @Test void concurrentConfirmationCreatesOneDelivery() throws Exception {
-        var f=fixture();long id=create(f);
+        var f=fixture();long id=create(f);asActor(vn.gaugaugau.fooddelivery.auth.model.Role.RESTAURANT,f.restaurant());
         oneWinner(race(()->orders.updateOrderStatus(id,OrderStatus.CONFIRMED),()->orders.updateOrderStatus(id,OrderStatus.CONFIRMED)));
         assertEquals(1,jdbc.queryForObject("select count(*) from deliveries where order_id=?",Integer.class,id));
     }
@@ -189,7 +215,7 @@ class MySqlStage1IntegrationTest {
     }
     @Test void schemaHasExpectedForeignKeysAndUniqueRelationships() {
         fixture();
-        assertEquals(13,jdbc.queryForObject("select count(*) from information_schema.tables where table_schema=database()",Integer.class));
+        assertEquals(13,jdbc.queryForObject("select count(*) from information_schema.tables where table_schema=database() and table_name in ('customers','restaurants','drivers','food_items','restaurant_food_items','carts','cart_items','orders','order_details','payments','payment_methods','deliveries','ratings')",Integer.class));
         assertTrue(jdbc.queryForObject("select count(*) from information_schema.table_constraints where constraint_schema=database() and constraint_type='FOREIGN KEY'",Integer.class)>=15);
         for(String table:List.of("payments","deliveries")) {
             assertTrue(jdbc.queryForObject("select count(*) from information_schema.statistics where table_schema=database() and table_name=? and column_name='order_id' and non_unique=0",Integer.class,table)>0);

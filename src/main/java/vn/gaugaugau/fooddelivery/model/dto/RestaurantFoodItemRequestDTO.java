@@ -15,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RestaurantFoodItemRequestDTO {
+public class RestaurantFoodItemRequestDTO extends StrictRequest {
 
 	@NotNull(message = "Price cannot be null")
 	@DecimalMin(value = "0.0", inclusive = false, message = "Price must be greater than 0")

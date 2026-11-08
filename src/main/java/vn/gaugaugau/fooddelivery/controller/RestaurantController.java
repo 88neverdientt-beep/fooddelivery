@@ -24,24 +24,25 @@ import vn.gaugaugau.fooddelivery.utils.ApiResponse;
 public class RestaurantController {
 
 	private final RestaurantService restaurantService;
+    private final vn.gaugaugau.fooddelivery.auth.service.AuthService authService;
 
 	@PostMapping("/restaurants")
-	public ResponseEntity<ApiResponse<RestaurantResponseDTO>> createRestaurant(
+	public ResponseEntity<?> createRestaurant(
 			@Valid @RequestBody RestaurantRequestDTO request) {
-		RestaurantResponseDTO response = this.restaurantService.createRestaurant(request);
+		var response = this.authService.createRestaurant(request);
 		return ApiResponse.created(response);
 	}
 
 	@GetMapping("/restaurants")
-	public ResponseEntity<ApiResponse<List<RestaurantResponseDTO>>> getAllRestaurants() {
+	public ResponseEntity<?> getAllRestaurants() {
 		List<RestaurantResponseDTO> response = this.restaurantService.getAllRestaurants();
-		return ApiResponse.success(response);
+		return ApiResponse.success(response.stream().map(vn.gaugaugau.fooddelivery.model.dto.PublicRestaurant::from).toList());
 	}
 
 	@GetMapping("/restaurants/{restaurantId}")
-	public ResponseEntity<ApiResponse<RestaurantResponseDTO>> getRestaurantById(@PathVariable Long restaurantId) {
+	public ResponseEntity<?> getRestaurantById(@PathVariable Long restaurantId) {
 		RestaurantResponseDTO response = this.restaurantService.getRestaurantById(restaurantId);
-		return ApiResponse.success(response);
+		return ApiResponse.success(vn.gaugaugau.fooddelivery.model.dto.PublicRestaurant.from(response));
 	}
 
 	@PutMapping("/restaurants/{restaurantId}")

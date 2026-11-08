@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RestaurantRequestDTO {
+public class RestaurantRequestDTO extends StrictRequest {
 
 	@NotBlank(message = "Name cannot be blank")
 	@Size(max = 150, message = "Name must not exceed 150 characters")

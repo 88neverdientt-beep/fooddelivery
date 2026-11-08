@@ -73,6 +73,8 @@ public class DeliveryService {
         delivery.ifPresent(value -> entityManager.refresh(value, jakarta.persistence.LockModeType.PESSIMISTIC_WRITE));
         return delivery;
     }
+    @org.springframework.security.access.prepost.PreAuthorize("@access.restaurantOrder(#orderId)")
+
 
 	public DeliveryResponseDTO createDelivery(Long orderId) {
 		Order order = this.orderRepository.findLockedById(orderId)
@@ -94,13 +96,17 @@ public class DeliveryService {
 	}
 
 	@Transactional(readOnly = true)
-	public List<DeliveryResponseDTO> getAvailableDeliveries() {
+    @org.springframework.security.access.prepost.PreAuthorize("@access.activeDriver(@currentDriver.id())")
+
+	public List<vn.gaugaugau.fooddelivery.model.dto.AvailableDelivery> getAvailableDeliveries() {
 		List<Delivery> listDeliveries = this.deliveryRepository
 				.findByDeliveryStatusAndDriverIsNull(DeliveryStatus.PENDING);
 		return listDeliveries.stream()
-				.map(this::convertToDeliveryResponseDTO)
+				.map(d -> new vn.gaugaugau.fooddelivery.model.dto.AvailableDelivery(d.getDeliveryId(),d.getOrder().getOrderId(),d.getOrder().getRestaurant().getRestaurantId(),d.getOrder().getRestaurant().getName(),d.getOrder().getRestaurant().getAddress()))
 				.collect(Collectors.toList());
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.activeDriver(#deliveryRequestDTO.driverId)")
+
 
 	public DeliveryResponseDTO acceptDelivery(Long deliveryId, DeliveryRequestDTO deliveryRequestDTO) {
 		Delivery delivery = lockedDelivery(deliveryId)
@@ -124,6 +130,8 @@ public class DeliveryService {
 		Delivery savedDelivery = this.deliveryRepository.save(delivery);
 		return convertToDeliveryResponseDTO(savedDelivery);
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.delivery(#deliveryId)")
+
 
 	public DeliveryResponseDTO updateDeliveryStatus(Long deliveryId, DeliveryStatus newStatus) {
 		Delivery delivery = lockedDelivery(deliveryId)

@@ -24,11 +24,12 @@ import vn.gaugaugau.fooddelivery.utils.ApiResponse;
 public class DriverController {
 
 	private final DriverService driverService;
+    private final vn.gaugaugau.fooddelivery.auth.service.AuthService authService;
 
 	@PostMapping("/drivers")
-	public ResponseEntity<ApiResponse<DriverResponseDTO>> createDriver(
+	public ResponseEntity<?> createDriver(
 			@Valid @RequestBody DriverRequestDTO request) {
-		DriverResponseDTO response = this.driverService.createDriver(request);
+		var response = this.authService.createDriver(request);
 		return ApiResponse.created(response);
 	}
 

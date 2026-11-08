@@ -24,11 +24,12 @@ import vn.gaugaugau.fooddelivery.utils.ApiResponse;
 public class CustomerController {
 
 	private final CustomerService customerService;
+    private final vn.gaugaugau.fooddelivery.auth.service.AuthService authService;
 
 	@PostMapping("/customers")
-	public ResponseEntity<ApiResponse<CustomerResponseDTO>> createCustomer(
+	public ResponseEntity<?> createCustomer(
 			@Valid @RequestBody CustomerRequestDTO request) {
-		CustomerResponseDTO response = this.customerService.createCustomer(request);
+		var response = this.authService.registerCustomer(request);
 		return ApiResponse.created(response);
 	}
 

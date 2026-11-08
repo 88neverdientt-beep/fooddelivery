@@ -55,6 +55,9 @@ public class CartItemService {
 			return this.cartRepository.save(Cart.builder().customer(customer).build());
 		}
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.profile('CUSTOMER',#customerId,false)")
+
+
 
 	public CartItemResponseDTO addCartItemToCart(Long customerId, CartItemRequestDTO request) {
 		Customer customer = this.customerRepository.findLockedById(customerId)
@@ -128,6 +131,9 @@ public class CartItemService {
 		}
 		return convertToCartItemResponseDTO(this.cartItemRepository.save(newCartItem));
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.profile('CUSTOMER',#customerId,false)")
+
+
 
 	public List<CartItemResponseDTO> getAllCartItems(Long customerId) {
         if (!customerRepository.existsById(customerId)) throw new ResourceNotFoundException("Customer not found");
@@ -140,6 +146,9 @@ public class CartItemService {
 				.map(this::convertToCartItemResponseDTO)
 				.collect(Collectors.toList());
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.cartItem(#cartItemId)")
+
+
 
 	public CartItemResponseDTO updateCartItem(Long cartItemId, CartItemUpdateRequestDTO request) {
         lockCartOwner(cartItemId);
@@ -161,6 +170,9 @@ public class CartItemService {
         customerRepository.findLockedById(customerId)
             .orElseThrow(() -> new ResourceNotFoundException("Customer not found"));
     }
+    @org.springframework.security.access.prepost.PreAuthorize("@access.cartItem(#cartItemId)")
+
+
 
 	public void deleteCartItem(Long cartItemId) {
         lockCartOwner(cartItemId);

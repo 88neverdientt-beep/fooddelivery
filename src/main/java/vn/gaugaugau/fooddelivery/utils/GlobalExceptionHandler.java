@@ -17,6 +17,11 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    public ResponseEntity<?> authentication(Exception e){return ApiResponse.error(HttpStatus.UNAUTHORIZED,"Authentication failed");}
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    public ResponseEntity<?> authorization(Exception e){return ApiResponse.error(HttpStatus.FORBIDDEN,"Forbidden");}
+
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleAllException(Exception e) {
 		return ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected server error occurred");

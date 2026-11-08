@@ -16,12 +16,14 @@ import vn.gaugaugau.fooddelivery.repository.RestaurantRepository;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceAlreadyExistsException;
 import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 
+@org.springframework.transaction.annotation.Transactional
 @Service
 @RequiredArgsConstructor
 public class RestaurantService {
 
 	private final RestaurantRepository restaurantRepository;
 	private final PasswordEncoder passwordEncoder;
+    private final vn.gaugaugau.fooddelivery.auth.service.AuthService authService;
 
 	private RestaurantResponseDTO restaurantToRestaurantResponseDTO(Restaurant restaurant) {
 		RestaurantResponseDTO response = new RestaurantResponseDTO();
@@ -34,6 +36,8 @@ public class RestaurantService {
 		response.setCreatedAt(restaurant.getCreatedAt());
 		return response;
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("denyAll()")
+
 
 	public RestaurantResponseDTO createRestaurant(RestaurantRequestDTO request) {
 		if (restaurantRepository.existsByEmail(request.getEmail())) {
@@ -66,6 +70,8 @@ public class RestaurantService {
 		}
 		return restaurantToRestaurantResponseDTO(restaurant);
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("@access.profile('RESTAURANT',#restaurantId,true)")
+
 
 	public RestaurantResponseDTO updateRestaurantById(Long restaurantId, RestaurantUpdateRequestDTO request) {
 		Restaurant restaurant = restaurantRepository.findById(restaurantId)
@@ -81,11 +87,13 @@ public class RestaurantService {
 		Restaurant updatedRestaurant = restaurantRepository.save(restaurant);
 		return restaurantToRestaurantResponseDTO(updatedRestaurant);
 	}
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
+
 
 	public RestaurantResponseDTO deleteRestaurantById(Long restaurantId) {
 		Restaurant restaurant = restaurantRepository.findById(restaurantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with ID: " + restaurantId));
-		this.restaurantRepository.delete(restaurant);
+		authService.disableProfile(vn.gaugaugau.fooddelivery.auth.model.Role.RESTAURANT, restaurantId);
 		return restaurantToRestaurantResponseDTO(restaurant);
 	}
 }

@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RatingUpdateRequestDTO {
+public class RatingUpdateRequestDTO extends StrictRequest {
 
 	@NotNull(message = "Rating score cannot be null")
 	@Min(value = 1, message = "Rating score must be at least 1")

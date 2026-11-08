@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class CartItemRequestDTO {
+public class CartItemRequestDTO extends StrictRequest {
 
 	@NotNull(message = "Restaurant food item ID cannot be null")
 	@jakarta.validation.constraints.Positive

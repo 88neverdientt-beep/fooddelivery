@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class DeliveryRequestDTO {
+public class DeliveryRequestDTO extends StrictRequest {
 
 	@NotNull(message = "Driver ID cannot be null")
 	@Positive(message = "Driver ID must be positive")
