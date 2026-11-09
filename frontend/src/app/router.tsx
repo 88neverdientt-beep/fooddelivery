@@ -50,6 +50,57 @@ const Dashboard = lazy(() =>
 const Future = lazy(() =>
   import('@/features/workspace/Workspace').then((m) => ({ default: m.FutureFeaturePage })),
 );
+const ManagementDashboard = lazy(() =>
+  import('@/features/restaurant-management/DashboardPages').then((m) => ({
+    default: m.RestaurantDashboard,
+  })),
+);
+const ManagementAnalytics = lazy(() =>
+  import('@/features/restaurant-management/DashboardPages').then((m) => ({
+    default: m.RestaurantAnalyticsPage,
+  })),
+);
+const ManagementProfile = lazy(() =>
+  import('@/features/restaurant-management/ProfilePage').then((m) => ({
+    default: m.RestaurantProfilePage,
+  })),
+);
+const ManagementMenu = lazy(() =>
+  import('@/features/restaurant-management/MenuPages').then((m) => ({
+    default: m.RestaurantMenuPage,
+  })),
+);
+const ManagementMenuEdit = lazy(() =>
+  import('@/features/restaurant-management/MenuPages').then((m) => ({
+    default: m.RestaurantMenuEditor,
+  })),
+);
+const ManagementOrders = lazy(() =>
+  import('@/features/restaurant-management/OrderPages').then((m) => ({
+    default: m.RestaurantOrdersPage,
+  })),
+);
+const ManagementOrderDetail = lazy(() =>
+  import('@/features/restaurant-management/OrderPages').then((m) => ({
+    default: m.RestaurantOrderDetail,
+  })),
+);
+const ManagementReviews = lazy(() =>
+  import('@/features/restaurant-management/ReviewsPage').then((m) => ({
+    default: m.RestaurantReviewsPage,
+  })),
+);
+const managementPages: Record<string, import('react').ReactNode> = {
+  dashboard: <ManagementDashboard />,
+  profile: <ManagementProfile />,
+  menu: <ManagementMenu />,
+  'menu/new': <ManagementMenuEdit />,
+  'menu/:id/edit': <ManagementMenuEdit />,
+  orders: <ManagementOrders />,
+  'orders/:id': <ManagementOrderDetail />,
+  reviews: <ManagementReviews />,
+  analytics: <ManagementAnalytics />,
+};
 function LazyOutlet() {
   return (
     <Suspense fallback={<Spinner label="Đang mở trang…" />}>
@@ -70,7 +121,21 @@ function RouteFailure() {
 const roleRoutes = (
   [
     ['CUSTOMER', 'customer', ['profile', 'cart', 'checkout', 'orders', 'orders/:id', 'ratings']],
-    ['RESTAURANT', 'restaurant', ['dashboard', 'profile', 'menu', 'orders']],
+    [
+      'RESTAURANT',
+      'restaurant',
+      [
+        'dashboard',
+        'profile',
+        'menu',
+        'menu/new',
+        'menu/:id/edit',
+        'orders',
+        'orders/:id',
+        'reviews',
+        'analytics',
+      ],
+    ],
     ['DRIVER', 'driver', ['dashboard', 'profile', 'deliveries']],
     ['ADMIN', 'admin', ['dashboard', 'accounts', 'restaurants', 'drivers']],
   ] as const
@@ -88,7 +153,9 @@ const roleRoutes = (
         ...children.map((child) => ({
           path: child,
           element:
-            child === 'profile' ? (
+            role === 'RESTAURANT' ? (
+              managementPages[child]
+            ) : child === 'profile' ? (
               <Account />
             ) : child === 'dashboard' ? (
               <Dashboard />

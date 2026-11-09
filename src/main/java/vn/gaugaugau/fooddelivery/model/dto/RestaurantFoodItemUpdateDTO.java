@@ -23,4 +23,10 @@ public class RestaurantFoodItemUpdateDTO extends StrictRequest {
 	private BigDecimal price;
 
 	private Boolean isAvailable;
+
+    @DecimalMin(value = "0.0", inclusive = false)
+    @jakarta.validation.constraints.Digits(integer = 10, fraction = 2)
+    private BigDecimal expectedPrice;
+
+    private Boolean expectedIsAvailable;
 }

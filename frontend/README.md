@@ -82,3 +82,13 @@ npm.cmd run test:e2e
 ```
 
 Sau kiểm thử phải dừng tiến trình mình khởi động, giữ datadir/log. Production vẫn cần HTTPS, reverse proxy và cookie/origin mapping đúng; chưa deploy public.
+
+## Giai đoạn 5 — Restaurant Management
+
+Dashboard/profile/menu/order processing/reviews/analytics đã dùng API thật. Xem [kiến trúc](../docs/phase5-architecture.md), [routes](../docs/phase5-restaurant-routes.md), [API](../docs/phase5-api-integration.md), [quy tắc](../docs/phase5-business-rules.md), [kết quả](../docs/phase5-test-results.md), [bàn giao](../docs/phase5-result.md). Chỉ RESTAURANT; giá và trạng thái bán thuộc menu riêng, FoodItem là catalog chung. Thêm/sửa/availability có baseline expected pair; không retry mutation. Khi kết quả chưa rõ phải đọc máy chủ; bản nháp cũ cần rebase tường minh.
+
+Backend phải có bốn GET management và conditional PUT đã phê duyệt. Schema/dependency/auth client giữ nguyên. Test mới dùng fooddelivery_stage5_e2e trên127.0.0.1:3307, Hibernate validate/OSIV=false; tuyệt đối không ghi3306/fooddelivery hoặc reset Stage1/2/4. External evidence tại F:/New folder/food-delivery-mysql-test/phase5-20261109.
+
+Chạy typecheck, lint, format:check, test, build và test:e2e như phần trên. Đổi biến FOOD_E2E_CREDENTIAL_FILE/RESULTS_FILE/SCREENSHOT_DIR/DIAGNOSTIC_DIR sang thư mục Stage5; credential còn khóa stage4 để hồi quy cũ và bổ sung OTHER_RESTAURANT. Chuẩn bị PASSWORD_CUSTOMER mới mỗi lượt auth password E2E. Không đưa credential vào VITE env, source, Git hoặc output báo cáo. Chỉ một frontend origin localhost4173 với backend18080.
+
+Thống kê tiền là SUM(subtotal) COMPLETED+SUCCESS theo paidAt, loại shipping, trước đối soát; không phải thực nhận hoặc lợi nhuận. Không có ảnh/upload/review reply/payout giả. Sau test dừng đúng backend/preview/MySQL test do mình tạo, giữ datadir/log, không dừng MySQL80.

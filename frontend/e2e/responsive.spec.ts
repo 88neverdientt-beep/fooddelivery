@@ -71,6 +71,10 @@ for (const width of [375, 768, 1024, 1440])
         await expect(
           page.getByRole('heading', { name: 'Giỏ hàng của bạn', exact: true }),
         ).toBeVisible();
+      else if (role === 'RESTAURANT')
+        await expect(
+          page.getByRole('heading', { name: 'Thực đơn nhà hàng', exact: true }),
+        ).toBeVisible();
       else
         await expect(
           page.getByRole('heading', { name: /Sẽ hoàn thiện ở Giai đoạn/ }),

@@ -21,6 +21,7 @@ export const test = base.extend<{ consoleGuard: void }>({
         const network =
           info.title.includes('network failure') &&
           (path === '/api/restaurants/search' ||
+            /^\/api\/restaurant-food-items\/\d+$/.test(path) ||
             /^\/api\/customers\/\d+\/orders(?:\/page)?$/.test(path)) &&
           /ERR_INTERNET_DISCONNECTED|Failed to load resource/.test(text);
         const ownership =

@@ -21,7 +21,10 @@ import {
   Bike,
   CheckCircle2,
   Star,
+  ChartColumn,
 } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
+import { restaurantApi, managementKey } from '@/features/restaurant-management/api';
 import { useAuth } from '@/features/auth/AuthProvider';
 import { roleName, roleHome, type Role } from '@/types/domain';
 import { Badge, Card, PageHeader } from '@/components/ui';
@@ -40,6 +43,8 @@ export const workspaceNav: Record<Role, Item[]> = {
     { to: '/restaurant/profile', label: 'Hồ sơ nhà hàng', icon: Store },
     { to: '/restaurant/menu', label: 'Thực đơn', icon: Utensils },
     { to: '/restaurant/orders', label: 'Đơn của nhà hàng', icon: ClipboardList },
+    { to: '/restaurant/reviews', label: 'Đánh giá', icon: Star },
+    { to: '/restaurant/analytics', label: 'Thống kê', icon: ChartColumn },
   ],
   DRIVER: [
     { to: '/driver/dashboard', label: 'Tổng quan', icon: LayoutDashboard },
@@ -57,6 +62,11 @@ export function WorkspaceLayout() {
   const account = useAuth().account!;
   const role = account.role;
   const [open, setOpen] = useState(false);
+  const restaurant = useQuery({
+    queryKey: [...managementKey(account.accountId, account.restaurantId || 0), 'profile'],
+    queryFn: ({ signal }) => restaurantApi.profile(signal),
+    enabled: role === 'RESTAURANT',
+  });
   const links = (
     <nav aria-label={`Điều hướng ${roleName[role]}`}>
       {workspaceNav[role].map((item) => (
@@ -85,7 +95,9 @@ export function WorkspaceLayout() {
             <Utensils size={23} />
           </span>
           <div>
-            <strong>{roleName[role]}</strong>
+            <strong>
+              {role === 'RESTAURANT' && restaurant.data ? restaurant.data.name : roleName[role]}
+            </strong>
             <small>HanoiFood workspace</small>
           </div>
         </div>
@@ -123,10 +135,12 @@ export function WorkspaceLayout() {
               </Dialog.Content>
             </Dialog.Portal>
           </Dialog.Root>
-          <div className="workspace-context">
+          <div className="workspace-context management-profile-title">
             <span>HanoiFood</span>
             <span>/</span>
-            <strong>{roleName[role]}</strong>
+            <strong>
+              {role === 'RESTAURANT' && restaurant.data ? restaurant.data.name : roleName[role]}
+            </strong>
           </div>
           <div className="workspace-topbar-actions">
             <Badge tone="success">

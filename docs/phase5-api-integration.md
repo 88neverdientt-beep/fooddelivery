@@ -1,0 +1,37 @@
+# Giai đoạn 5 — Khả năng API và khoảng thiếu
+
+Khảo sát implementation hiện tại ngày 09/11/2026. Các nhóm B/C dưới đây đã được người dùng phê duyệt và triển khai; không có migration D. Giữ nguyên bảng khảo sát để truy vết phạm vi phê duyệt.
+
+## Capability matrix / gap analysis
+
+| Chức năng | Endpoint hiện có | Thiếu sót và ảnh hưởng | Loại | Phương án tối thiểu | Kiểm thử cần bổ sung |
+|---|---|---|---|---|---|
+| Xem/sửa hồ sơ nhà hàng | GET/PUT /restaurants/{id}; GET /auth/me | GET chỉ PublicRestaurant, thiếu phoneNumber trong khi PUT bắt buộc phone; không thể hiện đầy đủ thông tin liên hệ đã lưu | B | GET /restaurant-management/profile, RESTAURANT, ID từ principal; trả id/name/address/phoneNumber/status/createdAt; email đăng nhập từ auth/me | Anonymous/Customer/Driver/Admin bị từ chối; không tham số ID giả; không hash/token hoặc dữ liệu nhà hàng khác |
+| Menu hiện có, giá, availability | GET /restaurants/{id}/menu; POST /restaurant-food-items; PUT /restaurant-food-items/{id} | Đủ cho UI quản lý menu. FoodItem là catalog chung, giá/availability ở RestaurantFoodItem; Restaurant không được sửa FoodItem | A | Dùng menu phân trang hiện có theo own restaurantId; chỉ form price/availability, không owner/id/catalog edit | Giá >0, tối đa10 chữ số nguyên/2 lẻ; ownership; cart nhận giá mới, đơn cũ giữ unitPrice |
+| Chọn món catalog để thêm | GET /food-items (toàn bộ); POST /restaurant-food-items | Chưa có catalog có giới hạn, không tải tất cả để giả phân trang | B | GET /restaurant-management/catalog?q=&category=&page=&size=; chỉ catalog chưa liên kết menu của principal; page tối đa50; không tạo/sửa catalog chung | Paging/literal LIKE/bounds; đúng danh mục; không lộ trường không cần thiết; duplicate menu409 |
+| Danh sách/history/search/filter đơn nhà hàng | GET /orders/{id}; GET /customers/{id}/orders/page | Không có discovery/list theo restaurant; không được dùng Customer API hoặc quét tất cả khách | B | GET /restaurant-management/orders?q=&status=&from=&to=&sort=&page=&size=; ID nhà hàng từ principal; page IDs rồi fetch graph giới hạn | Ownership A/B, role matrix, filters/date/sort/page, privacy, query count/LAZY |
+| Xác nhận/chuẩn bị/hủy đơn | PATCH /orders/{id}/status và /cancel | Đã đủ; backend sở hữu transaction/locking/transition | A | Chỉ PENDING→CONFIRMED→PREPARING→READY; hủy theo rule PENDING/CONFIRMED + delivery/payment; khi lỗi/unknown chỉ refetch, không tự retry | Hai confirm; confirm/cancel race; invalid transition; Customer thấy trạng thái mới; không DELIVERED/Payment SUCCESS từ Restaurant |
+| Xóa/ngừng bán | DELETE /restaurant-food-items/{id}; PUT availability | FK hiện tại chặn xóa món còn tham chiếu; không có soft-delete | A | Mặc định ngừng bán; delete có confirm,409 giữ nguyên và gợi ý ngừng bán; không đổi cascade/FK | Xóa món mới chưa tham chiếu; món có lịch sử bị409; OrderDetail còn nguyên |
+| Reviews | GET /restaurants/{id}/ratings/page và /ratings/average | Đủ read-only; không có phản hồi review; không có liên kết orderId trong Rating | A | Chỉ đọc review của own nhà hàng trong management, dùng public DTO, không edit/delete/create thay khách | Không nút mutation, score/count/average thật; generic customer name; role/ownership API khác giữ nguyên |
+| Dashboard/analytics | Không có aggregate endpoint | Không được suy KPI toàn bộ từ một trang; chưa có sổ đối soát/thực nhận/lợi nhuận | B | GET /restaurant-management/analytics?from=&to=; khoảng tối đa93 ngày; aggregate theo principal, đếm trạng thái, món bật bán, review count/avg, đơn/ngày, top món; định nghĩa tiền bên dưới | Seed qua business API; SQL đối chiếu toàn tập; hủy/PENDING không vào chỉ số tiền; shipping tách riêng; ngày/empty/owner |
+| Hai tab cùng cập nhật món | PUT hiện tại ghi đè toàn bộ price/isAvailable, không version/expected state | Hai form cũ có thể ghi đè thay đổi của nhau | C | Bổ sung optional expectedPrice/expectedIsAvailable cho PUT; nếu có phải đủ cặp; khóa và đọc lại đúng dòng menu, so sánh nguyên trạng rồi update hoặc409. Client cũ không gửi giữ hợp đồng hiện tại; UI mới luôn gửi cặp này | Hai request cùng baseline chỉ một200/một409; giữ price/availability thắng; rollback; A không sửa B; hồi quy Customer; không đổi checkout transaction |
+
+## Hợp đồng B đã phê duyệt và triển khai
+
+Bốn GET /restaurant-management/* chỉ cho role RESTAURANT ACTIVE, nhận restaurantId từ CurrentActor và kiểm tra liên kết hiện hành; không nhận accountId/restaurantId từ client để chọn phạm vi. Không mở quyền ADMIN giả làm nhà hàng. Các public API vẫn public theo hợp đồng cũ, nên quyền xem dữ liệu public của cơ sở khác không đồng nghĩa quyền quản trị cơ sở đó.
+
+List envelope dùng ApiResponse<PageResponse<T>> hiện có, page0..10000, size1..50, sort allowlist và secondary ID ổn định. Orders q tìm mã đơn hoặc tên khách trong own restaurant; không trả password/hash/session/token. Catalog chỉ trả itemId/name/category/description và loại các mục đã thêm trong own menu. Profile không trả owner/account/password.
+
+Analytics order counts và ordersByDay dựa createdAt trong [from,to] (ngày inclusive theo mốc LocalDateTime backend). Chỉ số tiền là **giá trị món của các đơn COMPLETED có Payment SUCCESS**, cộng Order.subtotal, loại shipping; chart tiền theo paidAt trong khoảng. Đây là giá trị ghi nhận trước đối soát, **không phải tiền thực nhận, lợi nhuận hoặc doanh thu ròng**. Không cộng đơn hủy/COD chưa thu. Top món theo quantity OrderDetail của các đơn hợp lệ cùng khoảng paidAt. Các số món bật bán và review toàn bộ có nhãn “hiện tại/tất cả thời gian”, không lẫn với KPI kỳ. Không đổi cách tính tiền hoặc trạng thái nghiệp vụ.
+
+## Phần giữ nguyên
+
+61 API cũ, JWT/refresh/CSRF, transaction checkout/cancel/delivery/COD, schema, cascade, dependency, giá/phí mặc định và logic Customer. Không upload ảnh, tạo description riêng nhà hàng, sửa FoodItem chung, phản hồi review hoặc notification realtime vì API không hỗ trợ. Các phần A được triển khai độc lập trong lúc chờ duyệt B/C. Database test đã dùng fooddelivery_stage5_e2e trên3307; không reset hoặc ghi rehearsal Giai đoạn2–4.
+
+## Hợp đồng triển khai
+
+Bốn GET dùng ApiResponse hiện có. Profile là Projection6field. Catalog/orders dùng PageResponse(items,page,size,totalElements,totalPages), page0..10000, size1..50; UI size12. Analytics trả from/to,totalOrders,states,paidOrderCount,paidFoodValue,paidShipping,activeMenuCount,ratingsCount,averageRating,ordersByDay,paidFoodByDay,topItems. q tối đa100, literal LIKE escape; sort allowlist,400 nếu sai. Không dùng restaurantId do client truyền để giới hạn management.
+
+PUT /restaurant-food-items/{id} thêm hai optional expectedPrice/expectedIsAvailable. Thiếu một400, baseline cũ409. Dùng atomic UPDATE predicate cả hai expected sau lock/refresh, không chỉ so sánh ORM trong bộ nhớ. Old client không gửi cặp giữ hợp đồng cũ. POST menu trả201, PUT/DELETE menu trả200 theo controller hiện hữu; UI không đoán DELETE204. Invalid transition409, sai owner404, role403, thiếu login401; validation400. Không bịa422 nếu backend không trả.
+
+API hiện có dùng thêm: PUT /restaurants/{id}; GET /restaurants/{id}/menu; GET/POST/PUT/DELETE /restaurant-food-items; GET /orders/{id}; PATCH /orders/{id}/status,/cancel; GET /restaurants/{id}/ratings/page; auth/me/session/password/logout hiện hữu. Xem route và business-rules cho field/ownership. Không còn thiếu API bắt buộc trong phạm vi đã phê duyệt. Upload ảnh, tạo catalog từ Restaurant, phản hồi review, payout ledger và notification realtime không có hợp đồng hỗ trợ, không trình bày như chức năng hoàn thành.

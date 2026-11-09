@@ -30,8 +30,8 @@ import vn.gaugaugau.fooddelivery.model.enums.*;
 /** Real MySQL/filter-chain tests. Every test fixture and auth session rolls back. */
 @EnabledIfEnvironmentVariable(named = "RUN_STAGE4_MYSQL_TESTS", matches = "true")
 @SpringBootTest(properties = {
-    "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/fooddelivery_stage4_e2e?allowPublicKeyRetrieval=true&sslMode=DISABLED",
-    "spring.datasource.username=stage4_app", "spring.datasource.password=${STAGE2_MYSQL_PASSWORD}",
+    "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage4_e2e}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
+    "spring.datasource.username=${FOOD_TEST_DB_USERNAME:stage4_app}", "spring.datasource.password=${STAGE2_MYSQL_PASSWORD}",
     "spring.jpa.hibernate.ddl-auto=validate", "spring.jpa.open-in-view=false",
     "spring.jpa.properties.hibernate.generate_statistics=true", "spring.jpa.show-sql=false", "logging.level.root=WARN"
 })
@@ -53,7 +53,7 @@ class CustomerReadMySqlIntegrationTest extends AuthTestKeys {
 
     @BeforeEach void fixtures() {
         ApprovedMySqlTestTarget.assertTarget(jdbc);
-        assertEquals("fooddelivery_stage4_e2e", jdbc.queryForObject("SELECT DATABASE()", String.class));
+        assertEquals(ApprovedMySqlTestTarget.databaseName(), jdbc.queryForObject("SELECT DATABASE()", String.class));
         for (String name : List.of("CUSTOMER", "CUSTOMER2", "RESTAURANT", "DRIVER", "ADMIN")) {
             Role role = Role.valueOf(name.replace("2", ""));
             String email = UUID.randomUUID() + "@read-api.test";

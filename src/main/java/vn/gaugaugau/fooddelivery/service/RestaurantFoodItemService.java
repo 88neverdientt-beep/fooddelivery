@@ -26,6 +26,7 @@ public class RestaurantFoodItemService {
 	private final RestaurantFoodItemRepository restaurantFoodItemRepository;
 	private final RestaurantRepository restaurantRepository;
 	private final FoodItemRepository foodItemRepository;
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
 
 	public RestaurantFoodItemResponseDTO convertToRestaurantFoodItemResponseDTO(RestaurantFoodItem restaurantFoodItem) {
 		RestaurantFoodItemResponseDTO.RestaurantOutputDTO restaurantOutputDTO = RestaurantFoodItemResponseDTO.RestaurantOutputDTO
@@ -90,9 +91,21 @@ public class RestaurantFoodItemService {
 
 	public RestaurantFoodItemResponseDTO updateRestaurantFoodItemById(Long restaurantFoodItemId,
 			RestaurantFoodItemUpdateDTO request) {
-		RestaurantFoodItem restaurantFoodItem = this.restaurantFoodItemRepository.findById(restaurantFoodItemId)
+        boolean conditional=request.getExpectedPrice()!=null || request.getExpectedIsAvailable()!=null;
+        if(conditional && (request.getExpectedPrice()==null || request.getExpectedIsAvailable()==null))
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.BAD_REQUEST,"Both expected fields are required");
+		RestaurantFoodItem restaurantFoodItem = (conditional ? this.restaurantFoodItemRepository.findLockedById(restaurantFoodItemId) : this.restaurantFoodItemRepository.findById(restaurantFoodItemId))
 				.orElseThrow(() -> new ResourceNotFoundException(
 						"Restaurant food item not found with ID: " + restaurantFoodItemId));
+        if(conditional) {
+            entityManager.refresh(restaurantFoodItem,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+            if(restaurantFoodItem.getPrice().compareTo(request.getExpectedPrice())!=0 || !java.util.Objects.equals(restaurantFoodItem.getIsAvailable(),request.getExpectedIsAvailable()))
+                throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,"Menu changed; reload before updating");
+            int changed=restaurantFoodItemRepository.compareAndUpdate(restaurantFoodItemId,request.getPrice(),request.getIsAvailable()!=null?request.getIsAvailable():true,request.getExpectedPrice(),request.getExpectedIsAvailable());
+            if(changed!=1)throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,"Menu changed; reload before updating");
+            entityManager.refresh(restaurantFoodItem);
+            return convertToRestaurantFoodItemResponseDTO(restaurantFoodItem);
+        }
 		restaurantFoodItem.setPrice(request.getPrice());
 		restaurantFoodItem.setIsAvailable(request.getIsAvailable() != null ? request.getIsAvailable() : true);
 		return convertToRestaurantFoodItemResponseDTO(this.restaurantFoodItemRepository.save(restaurantFoodItem));

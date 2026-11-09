@@ -63,3 +63,7 @@ Every route is tested with anonymous, CUSTOMER, RESTAURANT, DRIVER, ADMIN, DISAB
 Response contracts: ApiResponse<AuthDtos.Me> for registration/profile creation and /auth/me; Tokens for login/refresh, CSRF headerName/token for /auth/csrf, List<Me> for admin accounts, Me for account status. 204 routes have no body. Public restaurant GET uses PublicRestaurant, menu phoneNumber is null, public rating uses generic Customer name. AvailableDelivery contains delivery/order/restaurant IDs and restaurant name/address; assigned driver reads GET /orders/{id} for details. Other business routes retain their existing response DTOs (collection for list endpoints; String for DELETE; Double for average rating). Profile DELETE disables Account without deleting history.
 
 Policy/DTO details and integration notes: phase2-auth.md. Full evidence: phase2-result.md.
+
+## Bổ sung Giai đoạn 5 (phê duyệt ngày09/11/2026)
+
+GET /restaurant-management/profile, /catalog, /orders, /analytics: chỉ RESTAURANT ACTIVE, CurrentActor.restaurantId; anonymous401, CUSTOMER/DRIVER/ADMIN403. Không nhận ID chủ thể từ client để chọn phạm vi. Inventory hiện tại65endpoint:55business và10auth; các quyền61endpoint trước giữ nguyên. PUT menu có expected pair là hợp đồng conditional write cùng quyền owner404 hiện hữu, không mở role mới. Xem phase5-api-integration.md và phase5-security-tests.md.
