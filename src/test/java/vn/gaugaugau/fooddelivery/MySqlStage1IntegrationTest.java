@@ -24,8 +24,8 @@ import vn.gaugaugau.fooddelivery.service.*;
 // Explicit opt-in; hard-coded approved endpoint and validate prevent use of the development DB.
 @EnabledIfEnvironmentVariable(named="RUN_STAGE1_MYSQL_TESTS", matches="true")
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.MOCK, properties={
-    "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/fooddelivery_stage2_rehearsal?allowPublicKeyRetrieval=true&sslMode=DISABLED",
-    "spring.datasource.username=stage2_app", "spring.datasource.password=${STAGE2_MYSQL_PASSWORD}",
+    "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage2_rehearsal}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
+    "spring.datasource.username=${FOOD_TEST_DB_USERNAME:stage2_app}", "spring.datasource.password=${STAGE2_MYSQL_PASSWORD}",
     "spring.jpa.hibernate.ddl-auto=validate", "spring.jpa.open-in-view=false",
     "spring.jpa.properties.hibernate.generate_statistics=true", "spring.jpa.show-sql=false",
     "spring.main.lazy-initialization=false", "logging.level.root=WARN"
@@ -65,9 +65,7 @@ class MySqlStage1IntegrationTest extends vn.gaugaugau.fooddelivery.auth.AuthTest
     @org.junit.jupiter.api.AfterEach void clearActor(){org.springframework.security.core.context.SecurityContextHolder.clearContext();}
     record Fixture(long customer,long restaurant,long menu,long method,long driver1,long driver2) {}
     Fixture fixture() {
-        assertEquals(3307,jdbc.queryForObject("select @@port",Integer.class));
-        assertEquals("fooddelivery_stage2_rehearsal",jdbc.queryForObject("select database()",String.class));
-        assertTrue(jdbc.queryForObject("select @@datadir",String.class).replace('\\','/').startsWith("F:/New folder/food-delivery-mysql-test/data"));
+        vn.gaugaugau.fooddelivery.auth.ApprovedMySqlTestTarget.assertTarget(jdbc);
         String tag=UUID.randomUUID().toString();
         Fixture fixture = new TransactionTemplate(manager).execute(status -> {
             var c=customers.save(Customer.builder().name("Test").email(tag+"@test.invalid").password(FIXTURE_HASH)

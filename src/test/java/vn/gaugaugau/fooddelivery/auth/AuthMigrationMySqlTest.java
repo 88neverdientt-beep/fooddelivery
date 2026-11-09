@@ -22,17 +22,17 @@ class AuthMigrationMySqlTest {
     final String hash=new BCryptPasswordEncoder(4).encode("migration-test-fixture");
     final List<String> tables=List.of("customers","restaurants","drivers","food_items","restaurant_food_items","carts","cart_items","orders","order_details","payment_methods","payments","deliveries","ratings","accounts","auth_sessions","refresh_tokens");
     void assertTarget() {
-        assertEquals(3307,jdbc.queryForObject("SELECT @@port",Integer.class));
-        assertEquals("fooddelivery_stage2_rehearsal",jdbc.queryForObject("SELECT DATABASE()",String.class));
-        assertEquals("F:/New folder/food-delivery-mysql-test/data/",jdbc.queryForObject("SELECT @@datadir",String.class).replace('\\','/'));
+        ApprovedMySqlTestTarget.assertTarget(jdbc);
     }
     @BeforeAll void installGuards() throws Exception {
-        var source=new DriverManagerDataSource("jdbc:mysql://127.0.0.1:3307/fooddelivery_stage2_rehearsal?allowPublicKeyRetrieval=true&sslMode=DISABLED",
-            "stage2_migrator",System.getenv("STAGE2_MIGRATION_PASSWORD"));
+        var source=new DriverManagerDataSource(ApprovedMySqlTestTarget.url(),
+            ApprovedMySqlTestTarget.migratorUsername(),System.getenv("STAGE2_MIGRATION_PASSWORD"));
         jdbc=new JdbcTemplate(source);tx=new TransactionTemplate(new DataSourceTransactionManager(source));assertTarget();
         for(String file:List.of("01_expand_auth.sql","02_backfill_accounts.sql")) {
             String script=new ClassPathResource("db/manual/"+file).getContentAsString(StandardCharsets.UTF_8);
             String routine=script.substring(script.indexOf("CREATE PROCEDURE"),script.lastIndexOf("END$$")+3);
+            // Adapt only the explicit approved target in this test copy; preserve shipped manual SQL.
+            routine=routine.replace("'fooddelivery_stage2_rehearsal'", "'"+ApprovedMySqlTestTarget.databaseName()+"'");
             jdbc.execute(routine);
         }
     }

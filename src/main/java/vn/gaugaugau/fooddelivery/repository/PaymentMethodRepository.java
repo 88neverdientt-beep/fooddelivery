@@ -7,5 +7,5 @@ import vn.gaugaugau.fooddelivery.model.PaymentMethod;
 
 @Repository
 public interface PaymentMethodRepository extends JpaRepository<PaymentMethod, Long> {
-
+    java.util.List<PaymentMethod> findByIsActiveTrueAndPaymentMethodCodeOrderByPaymentMethodIdAsc(String code);
 }

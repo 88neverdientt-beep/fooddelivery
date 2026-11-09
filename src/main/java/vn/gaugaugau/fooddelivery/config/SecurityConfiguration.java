@@ -38,7 +38,7 @@ public class SecurityConfiguration {
         http.oauth2ResourceServer(o->o.bearerTokenResolver(r->(publicAuth.contains(path(r)) || (r.getMethod().equals("POST") && path(r).equals("/customers")))?null:resolver.resolve(r))
             .jwt(j->j.jwtAuthenticationConverter(converter)).authenticationEntryPoint((r,s,x)->error(s,401)).accessDeniedHandler((r,s,x)->error(s,403)));
         http.authorizeHttpRequests(a->a
-            .requestMatchers(HttpMethod.GET,"/","/auth/csrf","/food-items","/food-items/*","/restaurants","/restaurants/*","/restaurant-food-items","/restaurant-food-items/*","/restaurants/*/ratings","/restaurants/*/ratings/average").permitAll()
+            .requestMatchers(HttpMethod.GET,"/","/auth/csrf","/food-items","/food-items/*","/food-categories","/restaurants","/restaurants/*","/restaurant-food-items","/restaurant-food-items/*","/restaurants/*/menu","/restaurants/*/ratings","/restaurants/*/ratings/average","/restaurants/*/ratings/page").permitAll()
             .requestMatchers(HttpMethod.POST,"/auth/login","/auth/register/customer","/auth/refresh","/auth/logout","/customers").permitAll()
             .requestMatchers("/auth/me","/auth/change-password","/auth/logout-all").authenticated()
             .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -57,8 +57,9 @@ public class SecurityConfiguration {
             .requestMatchers(HttpMethod.PUT,"/restaurant-food-items/*").hasAnyRole("RESTAURANT","ADMIN")
             .requestMatchers(HttpMethod.DELETE,"/restaurant-food-items/*").hasAnyRole("RESTAURANT","ADMIN")
             .requestMatchers("/cart/*","/*/cart-items","/cart-items/*").hasRole("CUSTOMER")
+            .requestMatchers(HttpMethod.GET,"/payment-methods").hasRole("CUSTOMER")
             .requestMatchers(HttpMethod.POST,"/customers/*/orders").hasRole("CUSTOMER")
-            .requestMatchers(HttpMethod.GET,"/customers/*/orders").hasAnyRole("CUSTOMER","ADMIN")
+            .requestMatchers(HttpMethod.GET,"/customers/*/orders","/customers/*/orders/page").hasAnyRole("CUSTOMER","ADMIN")
             .requestMatchers(HttpMethod.GET,"/orders/*","/payments/orders/*").hasAnyRole("CUSTOMER","RESTAURANT","DRIVER","ADMIN")
             .requestMatchers(HttpMethod.PUT,"/orders/*/delivery-address").hasRole("CUSTOMER")
             .requestMatchers(HttpMethod.PATCH,"/orders/*/status").hasRole("RESTAURANT")

@@ -30,8 +30,8 @@ import vn.gaugaugau.fooddelivery.model.*;
 import vn.gaugaugau.fooddelivery.model.enums.*;
 
 @EnabledIfEnvironmentVariable(named="RUN_STAGE2_AUTH_SCHEMA_TESTS",matches="true")
-@SpringBootTest(properties={"spring.datasource.url=jdbc:mysql://127.0.0.1:3307/fooddelivery_stage2_rehearsal?allowPublicKeyRetrieval=true&sslMode=DISABLED",
-    "spring.datasource.username=stage2_app","spring.datasource.password=${STAGE2_MYSQL_PASSWORD}","spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false"})
+@SpringBootTest(properties={"spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage2_rehearsal}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
+    "spring.datasource.username=${FOOD_TEST_DB_USERNAME:stage2_app}","spring.datasource.password=${STAGE2_MYSQL_PASSWORD}","spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false"})
 @AutoConfigureMockMvc(print=org.springframework.boot.webmvc.test.autoconfigure.MockMvcPrint.NONE)
 class SecurityMySqlIntegrationTest extends AuthTestKeys {
     @Autowired MockMvc mvc;
@@ -51,8 +51,7 @@ class SecurityMySqlIntegrationTest extends AuthTestKeys {
     Map<String,Login> tokens=new HashMap<>();
     Long menu,otherMenu,food,order,delivery,cartItem,rating,method;
     @BeforeEach void fixtures(){
-        assertEquals(3307,jdbc.queryForObject("SELECT @@port",Integer.class));
-        assertEquals("fooddelivery_stage2_rehearsal",jdbc.queryForObject("SELECT DATABASE()",String.class));
+        ApprovedMySqlTestTarget.assertTarget(jdbc);
         new TransactionTemplate(manager).executeWithoutResult(s->{
             for(String name:List.of("CUSTOMER","CUSTOMER2","RESTAURANT","RESTAURANT2","DRIVER","DRIVER2","ADMIN")) {
                 Role role=Role.valueOf(name.replace("2",""));String email=UUID.randomUUID()+"@security.test";
@@ -177,7 +176,7 @@ class SecurityMySqlIntegrationTest extends AuthTestKeys {
         }
     }
     @Test void publicViewsExcludePrivateDataAndAssignedOnlyDeliveryDetails() throws Exception {
-        for(String path:List.of("/restaurants","/restaurants/"+people.get("RESTAURANT").profile(),"/restaurant-food-items","/restaurants/"+people.get("RESTAURANT").profile()+"/ratings")) {
+        for(String path:List.of("/restaurants","/restaurants/search","/food-categories","/restaurants/"+people.get("RESTAURANT").profile(),"/restaurant-food-items","/restaurants/"+people.get("RESTAURANT").profile()+"/menu","/restaurants/"+people.get("RESTAURANT").profile()+"/ratings","/restaurants/"+people.get("RESTAURANT").profile()+"/ratings/page")) {
             String response=request("GET",path,null,null,null,false).getResponse().getContentAsString();assertFalse(response.contains("0901234567"));assertFalse(response.contains("@security.test"));assertFalse(response.contains(hash));assertFalse(response.contains("Private customer"));
         }
         var result=request("GET","/deliveries/available",login("DRIVER").access(),null,null,false);assertEquals(200,result.getResponse().getStatus());assertFalse(result.getResponse().getContentAsString().contains("Private customer delivery address"));
@@ -222,13 +221,15 @@ class SecurityMySqlIntegrationTest extends AuthTestKeys {
                 }
             }
         }
-        assertEquals(45,endpoints,"New or removed endpoints require matrix review");
+        assertEquals(51,endpoints,"New or removed endpoints require matrix review");
     }
     private Set<String> policy(String method,String p) {
-        if(method.equals("GET") && (p.equals("/")||p.startsWith("/food-items")||p.startsWith("/restaurant-food-items")||p.equals("/restaurants")||p.equals("/restaurants/{restaurantId}")||p.contains("/ratings")))return Set.of("PUBLIC");
+        if(method.equals("GET") && (p.equals("/")||p.startsWith("/food-items")||p.equals("/food-categories")||p.startsWith("/restaurant-food-items")||p.equals("/restaurants")||p.equals("/restaurants/search")||p.equals("/restaurants/{restaurantId}")||p.equals("/restaurants/{restaurantId}/menu")||p.contains("/ratings")))return Set.of("PUBLIC");
         if(method.equals("POST")&&p.equals("/customers"))return Set.of("PUBLIC");
         if(p.startsWith("/cart")||p.equals("/{customerId}/cart-items"))return Set.of("CUSTOMER");
         if(p.startsWith("/deliveries"))return Set.of("DRIVER");
+        if(p.equals("/payment-methods"))return Set.of("CUSTOMER");
+        if(p.equals("/customers/{customerId}/orders/page"))return Set.of("CUSTOMER","ADMIN");
         if(p.equals("/customers/{customerId}/orders"))return method.equals("GET")?Set.of("CUSTOMER","ADMIN"):Set.of("CUSTOMER");
         if(p.equals("/orders/{orderId}")||p.startsWith("/payments/"))return Set.of("CUSTOMER","RESTAURANT","DRIVER","ADMIN");
         if(p.endsWith("/delivery-address"))return Set.of("CUSTOMER");
