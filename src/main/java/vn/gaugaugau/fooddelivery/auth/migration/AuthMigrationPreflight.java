@@ -18,7 +18,7 @@ public final class AuthMigrationPreflight {
     }
     public Report inspectApprovedTestDatabase() {
         if(!Integer.valueOf(3307).equals(jdbc.queryForObject("SELECT @@port",Integer.class))
-            || !java.util.Set.of("fooddelivery_stage1_test", "fooddelivery_stage2_rehearsal", "fooddelivery_stage4_e2e", "fooddelivery_stage5_e2e").contains(jdbc.queryForObject("SELECT DATABASE()",String.class)))
+            || !java.util.Set.of("fooddelivery_stage1_test", "fooddelivery_stage2_rehearsal", "fooddelivery_stage4_e2e", "fooddelivery_stage5_e2e", "fooddelivery_stage6_e2e").contains(jdbc.queryForObject("SELECT DATABASE()",String.class)))
             throw new IllegalStateException("Not the approved isolated test database");
         String dir=jdbc.queryForObject("SELECT @@datadir",String.class);
         if(dir==null || !dir.replace('\\','/').equalsIgnoreCase("F:/New folder/food-delivery-mysql-test/data/"))

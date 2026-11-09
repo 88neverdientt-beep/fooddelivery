@@ -1,6 +1,6 @@
 # Endpoint authorization matrix
 
-55 endpoints: 45 business routes and 10 Auth/Admin routes. Deny all unmatched routes.
+69 endpoints: 59 business routes and 10 Auth/Admin routes. Deny all unmatched routes.
 
 Every route is tested with anonymous, CUSTOMER, RESTAURANT, DRIVER, ADMIN, DISABLED in the two inventory-driven security tests. Denied requests execute without test rollback and compare persistent checksums. Allowed mutation samples roll back; functional positives are verified separately. Common errors: 400 validation, 401 authentication, 403 role/CSRF, 404 ownership, 409 conflict.
 
@@ -67,3 +67,9 @@ Policy/DTO details and integration notes: phase2-auth.md. Full evidence: phase2-
 ## Bổ sung Giai đoạn 5 (phê duyệt ngày09/11/2026)
 
 GET /restaurant-management/profile, /catalog, /orders, /analytics: chỉ RESTAURANT ACTIVE, CurrentActor.restaurantId; anonymous401, CUSTOMER/DRIVER/ADMIN403. Không nhận ID chủ thể từ client để chọn phạm vi. Inventory hiện tại65endpoint:55business và10auth; các quyền61endpoint trước giữ nguyên. PUT menu có expected pair là hợp đồng conditional write cùng quyền owner404 hiện hữu, không mở role mới. Xem phase5-api-integration.md và phase5-security-tests.md.
+
+## Bổ sung Giai đoạn 6 — Driver (đã phê duyệt)
+
+GET /driver-management/deliveries, /deliveries/{deliveryId}, /available, /analytics: chỉ DRIVER ACTIVE, CurrentActor.driverId; không impersonation từ ADMIN, không owner từ query. Detail/list/history chỉ own assigned; pool chỉ active Driver theo driveStatus=true và không lộ dropoff/customer/payment trước khi nhận. DriveStatus=false vẫn đọc/xử lý chuyến đã nhận, pool bị404 theo AccessRules cũ. List giới hạn50, query/date/scope/status/sort validation400; owner404/role403/auth401. Inventory hiện tại69route:59business+10auth,414tổ hợp6actor. Quyền65route trước và các mutation accept/status/profile không đổi. Xem phase6-api-integration.md, phase6-business-rules.md và phase6-security-tests.md.
+
+Bản sửa confirm/cancel đã được phê duyệt riêng: cancelOrder khóa và nạp lại Delivery sau Order để tránh inverse reference cũ trong REPEATABLE_READ; không thay endpoint, ACL, enum hoặc isolation toàn cục. Test tái hiện và bằng chứng dữ liệu QA trước sửa được ghi trong phase6-test-results.md.

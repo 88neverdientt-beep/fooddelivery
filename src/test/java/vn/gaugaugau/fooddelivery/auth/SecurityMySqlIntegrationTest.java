@@ -221,9 +221,10 @@ class SecurityMySqlIntegrationTest extends AuthTestKeys {
                 }
             }
         }
-        assertEquals(55,endpoints,"New or removed endpoints require matrix review");
+        assertEquals(59,endpoints,"New or removed endpoints require matrix review");
     }
     private Set<String> policy(String method,String p) {
+        if(p.startsWith("/driver-management/"))return Set.of("DRIVER");
         if(p.startsWith("/restaurant-management/"))return Set.of("RESTAURANT");
         if(method.equals("GET") && (p.equals("/")||p.startsWith("/food-items")||p.equals("/food-categories")||p.startsWith("/restaurant-food-items")||p.equals("/restaurants")||p.equals("/restaurants/search")||p.equals("/restaurants/{restaurantId}")||p.equals("/restaurants/{restaurantId}/menu")||p.contains("/ratings")))return Set.of("PUBLIC");
         if(method.equals("POST")&&p.equals("/customers"))return Set.of("PUBLIC");

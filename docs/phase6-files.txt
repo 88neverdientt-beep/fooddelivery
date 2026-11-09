@@ -1,0 +1,52 @@
+Giai đoạn 6 — file tạo/sửa (không gồm dữ liệu/log test ngoài Git)
+
+MODIFIED
+docs/security-endpoints.md
+frontend/e2e/auth.spec.ts
+frontend/e2e/fixtures.ts
+frontend/e2e/responsive.spec.ts
+frontend/e2e/restaurant.spec.ts
+frontend/README.md
+frontend/src/app/router.tsx
+frontend/src/features/restaurant-management/shared.tsx
+frontend/src/features/workspace/Workspace.tsx
+src/main/java/vn/gaugaugau/fooddelivery/auth/migration/AuthMigrationPreflight.java
+src/main/java/vn/gaugaugau/fooddelivery/config/SecurityConfiguration.java
+src/main/java/vn/gaugaugau/fooddelivery/repository/DeliveryRepository.java
+src/main/java/vn/gaugaugau/fooddelivery/service/OrderService.java
+src/test/java/vn/gaugaugau/fooddelivery/auth/ApprovedMySqlTestTarget.java
+src/test/java/vn/gaugaugau/fooddelivery/auth/SecurityMySqlIntegrationTest.java
+src/test/java/vn/gaugaugau/fooddelivery/MySqlStage1IntegrationTest.java
+src/test/java/vn/gaugaugau/fooddelivery/service/BackendServiceTest.java
+src/test/java/vn/gaugaugau/fooddelivery/service/TransactionIntegrationTest.java
+
+CREATED
+docs/phase6-api-integration.md
+docs/phase6-architecture.md
+docs/phase6-business-rules.md
+docs/phase6-driver-routes.md
+docs/phase6-files.txt
+docs/phase6-result.md
+docs/phase6-security-tests.md
+docs/phase6-test-results.md
+frontend/e2e/driver.spec.ts
+frontend/src/components/ui/UnsavedChanges.tsx
+frontend/src/features/driver-management/api.ts
+frontend/src/features/driver-management/Components.tsx
+frontend/src/features/driver-management/DashboardPages.tsx
+frontend/src/features/driver-management/DeliveryPages.tsx
+frontend/src/features/driver-management/driver.css
+frontend/src/features/driver-management/driver.test.tsx
+frontend/src/features/driver-management/model.ts
+frontend/src/features/driver-management/ProfilePage.tsx
+frontend/src/features/driver-management/shared.tsx
+src/main/java/vn/gaugaugau/fooddelivery/controller/DriverManagementController.java
+src/main/java/vn/gaugaugau/fooddelivery/model/dto/DriverManagementDtos.java
+src/main/java/vn/gaugaugau/fooddelivery/service/DriverManagementService.java
+src/test/java/vn/gaugaugau/fooddelivery/auth/DriverManagementMySqlTest.java
+
+PRESERVED USER FILE
+h github main
+
+EXTERNAL EVIDENCE
+F:/New folder/food-delivery-mysql-test/phase6-20261109/logs

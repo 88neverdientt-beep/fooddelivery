@@ -42,7 +42,8 @@ class TransactionIntegrationTest {
         when(items.findLockedByCartId(4L)).thenReturn(List.of(CartItem.builder().quantity(1).restaurantFoodItem(menu).build()));
         when(orders.save(any(Order.class))).thenAnswer(i -> { Order order=i.getArgument(0);order.setOrderId(5L);return order; });
         when(payments.createPayment(6L,5L)).thenThrow(new IllegalStateException("Simulated payment failure"));
-        var target=new OrderService(carts,menus,customers,restaurants,items,orders,payments,deliveries);
+        var target=new OrderService(carts,menus,customers,restaurants,items,orders,payments,deliveries,
+            mock(DeliveryRepository.class),mock(jakarta.persistence.EntityManager.class));
         var transactions=new RecordingTransactions();
         var factory=new ProxyFactory(target);
         var advice = new TransactionInterceptor();

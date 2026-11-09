@@ -22,10 +22,15 @@ export const test = base.extend<{ consoleGuard: void }>({
           info.title.includes('network failure') &&
           (path === '/api/restaurants/search' ||
             /^\/api\/restaurant-food-items\/\d+$/.test(path) ||
+            /^\/api\/deliveries\/\d+\/(?:accept|status)$/.test(path) ||
+            /^\/api\/driver-management\/deliveries(?:\/\d+)?$/.test(path) ||
             /^\/api\/customers\/\d+\/orders(?:\/page)?$/.test(path)) &&
           /ERR_INTERNET_DISCONNECTED|Failed to load resource/.test(text);
         const ownership =
-          info.title.includes('ownership') && /^\/api\/orders\/\d+$/.test(path) && /404/.test(text);
+          info.title.includes('ownership') &&
+          (/^\/api\/orders\/\d+$/.test(path) ||
+            /^\/api\/driver-management\/deliveries\/\d+$/.test(path)) &&
+          /404/.test(text);
         records.push({
           kind: 'console-error',
           path,

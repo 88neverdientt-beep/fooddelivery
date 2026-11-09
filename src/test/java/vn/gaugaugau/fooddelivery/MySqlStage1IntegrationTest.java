@@ -176,6 +176,68 @@ class MySqlStage1IntegrationTest extends vn.gaugaugau.fooddelivery.auth.AuthTest
         oneWinner(race(()->orders.updateOrderStatus(id,OrderStatus.CONFIRMED),()->orders.updateOrderStatus(id,OrderStatus.CONFIRMED)));
         assertEquals(1,jdbc.queryForObject("select count(*) from deliveries where order_id=?",Integer.class,id));
     }
+    @Test void cancellationMustSeeDeliveryCreatedAfterItsRepeatableReadSnapshot() throws Exception {
+        var f=fixture();long id=create(f);
+        var snapshotTaken=new CountDownLatch(1);
+        var confirmationCommitted=new CountDownLatch(1);
+        var pool=Executors.newSingleThreadExecutor();
+        var cancellation=pool.submit(()->{
+            asActor(vn.gaugaugau.fooddelivery.auth.model.Role.CUSTOMER,f.customer());
+            try {
+                var tx=new TransactionTemplate(manager);
+                tx.setIsolationLevel(org.springframework.transaction.TransactionDefinition.ISOLATION_REPEATABLE_READ);
+                tx.executeWithoutResult(status->{
+                    assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM deliveries WHERE order_id=?",Integer.class,id));
+                    snapshotTaken.countDown();
+                    try { assertTrue(confirmationCommitted.await(15,TimeUnit.SECONDS)); }
+                    catch(InterruptedException exception){Thread.currentThread().interrupt();throw new IllegalStateException(exception);}
+                    // Prove the ambient nonlocking snapshot is stale before the writer's current read.
+                    assertEquals(0,jdbc.queryForObject("SELECT COUNT(*) FROM deliveries WHERE order_id=?",Integer.class,id));
+                    orders.cancelOrder(id);
+                });
+            } finally { clearActor(); }
+        });
+        try {
+            assertTrue(snapshotTaken.await(15,TimeUnit.SECONDS));
+            asActor(vn.gaugaugau.fooddelivery.auth.model.Role.RESTAURANT,f.restaurant());
+            orders.updateOrderStatus(id,OrderStatus.CONFIRMED);
+            confirmationCommitted.countDown();
+            cancellation.get(20,TimeUnit.SECONDS);
+            assertEquals("CANCELLED",jdbc.queryForObject("SELECT order_status FROM orders WHERE order_id=?",String.class,id));
+            assertEquals("CANCELLED",jdbc.queryForObject("SELECT payment_status FROM payments WHERE order_id=?",String.class,id));
+            assertEquals("CANCELLED",jdbc.queryForObject("SELECT delivery_status FROM deliveries WHERE order_id=?",String.class,id),
+                "Cancellation must include the Delivery committed after its initial snapshot; orderId="+id);
+        } finally {confirmationCommitted.countDown();pool.shutdownNow();}
+    }
+    @Test void cancellationKeepsDriverAssignedAfterItsManagedDeliverySnapshot() throws Exception {
+        var f=fixture();long id=create(f);
+        asActor(vn.gaugaugau.fooddelivery.auth.model.Role.RESTAURANT,f.restaurant());
+        long deliveryId=orders.updateOrderStatus(id,OrderStatus.CONFIRMED).getDeliveryOutputDTO().getDeliveryId();
+        var snapshotTaken=new CountDownLatch(1);var assignmentCommitted=new CountDownLatch(1);
+        var pool=Executors.newSingleThreadExecutor();
+        var cancellation=pool.submit(()->{
+            asActor(vn.gaugaugau.fooddelivery.auth.model.Role.CUSTOMER,f.customer());
+            try {
+                var tx=new TransactionTemplate(manager);
+                tx.setIsolationLevel(org.springframework.transaction.TransactionDefinition.ISOLATION_REPEATABLE_READ);
+                tx.executeWithoutResult(status->{
+                    var cached=entityManager.find(Order.class,id).getDelivery();
+                    assertNotNull(cached);assertNull(cached.getDriver());snapshotTaken.countDown();
+                    try {assertTrue(assignmentCommitted.await(15,TimeUnit.SECONDS));}
+                    catch(InterruptedException exception){Thread.currentThread().interrupt();throw new IllegalStateException(exception);}
+                    orders.cancelOrder(id);
+                });
+            } finally {clearActor();}
+        });
+        try {
+            assertTrue(snapshotTaken.await(15,TimeUnit.SECONDS));
+            asActor(vn.gaugaugau.fooddelivery.auth.model.Role.DRIVER,f.driver1());
+            shipping.acceptDelivery(deliveryId,DeliveryRequestDTO.builder().driverId(f.driver1()).build());
+            assignmentCommitted.countDown();cancellation.get(20,TimeUnit.SECONDS);
+            assertEquals(f.driver1(),jdbc.queryForObject("SELECT driver_id FROM deliveries WHERE delivery_id=?",Long.class,deliveryId));
+            assertEquals("CANCELLED",jdbc.queryForObject("SELECT delivery_status FROM deliveries WHERE delivery_id=?",String.class,deliveryId));
+        } finally {assignmentCommitted.countDown();pool.shutdownNow();}
+    }
     @Test void concurrentCodConfirmationHasOneWinner() throws Exception {
         var f=fixture();long id=create(f);useCod(id);long d=ready(id);delivering(f,id,d);
         var detached=Order.builder().orderId(id).build();

@@ -1,4 +1,4 @@
-# HanoiFood Frontend — Giai đoạn 4 — Customer ordering
+# HanoiFood Frontend — Giai đoạn 6
 
 React + TypeScript strict + Vite. Kết nối backend thật; không có mock runtime hoặc credential mặc định. Frontend độc lập trong frontend/, không thay cấu trúc Maven.
 
@@ -56,7 +56,7 @@ Trace/video/screenshot tự động khi lỗi được tắt để tránh ghi pa
 
 Bộ E2E hiện có 16 kịch bản: 10 luồng chức năng, 4 bài responsive tại 375/768/1024/1440px và 2 bài kiểm tra ảnh local, tải chunk, tương phản, sticky header và reduced motion. Có 22 ảnh cho mỗi breakpoint; modal/dropdown chụp viewport, các trang chụp full page. Khi chụp bằng chứng, animation được hoàn tất để tránh ảnh dừng giữa hiệu ứng mở. Console guard ghi loại lỗi và đường dẫn đã bỏ query, không ghi nội dung request/response hoặc credential; phân biệt 401 dự kiến và lỗi mạng được cố ý tạo trong test.
 
-## Phạm vi
+## Phạm vi nền tảng Giai đoạn 3 (lịch sử)
 
 Hoàn thiện public pages, login/register/session/refresh/logout/logout-all/password, hồ sơ đọc thật, guard và bốn workspace. Cart/order/menu-management/delivery/admin-management là màn hình giới thiệu Giai đoạn 4–7, không số liệu giả và không mutation nghiệp vụ. Hồ sơ cơ bản hiện đọc thông tin; chỉnh sửa hồ sơ chưa thuộc lượt này. Xem ../docs/phase3-architecture.md, phase3-routes.md, phase3-api-integration.md, phase3-result.md.
 
@@ -92,3 +92,15 @@ Backend phải có bốn GET management và conditional PUT đã phê duyệt. S
 Chạy typecheck, lint, format:check, test, build và test:e2e như phần trên. Đổi biến FOOD_E2E_CREDENTIAL_FILE/RESULTS_FILE/SCREENSHOT_DIR/DIAGNOSTIC_DIR sang thư mục Stage5; credential còn khóa stage4 để hồi quy cũ và bổ sung OTHER_RESTAURANT. Chuẩn bị PASSWORD_CUSTOMER mới mỗi lượt auth password E2E. Không đưa credential vào VITE env, source, Git hoặc output báo cáo. Chỉ một frontend origin localhost4173 với backend18080.
 
 Thống kê tiền là SUM(subtotal) COMPLETED+SUCCESS theo paidAt, loại shipping, trước đối soát; không phải thực nhận hoặc lợi nhuận. Không có ảnh/upload/review reply/payout giả. Sau test dừng đúng backend/preview/MySQL test do mình tạo, giữ datadir/log, không dừng MySQL80.
+
+## Giai đoạn 6 — Driver Management
+
+Tài xế dùng auth/session hiện có. Bảy route mới dưới /driver: dashboard,deliveries,available,deliveries/:id,history,profile,analytics. Chỉ own Driver; cơ chế tự nhận chuyến đã có, không giả Admin assignment/GPS hoặc thu nhập. Pickup→Delivering→Delivered/COD giữ nguyên backend. Khi mất response, chỉ refetch; accept có kiểm tra own detail/pool và khóa nếu chưa rõ.
+
+Xem [architecture](../docs/phase6-architecture.md), [routes](../docs/phase6-driver-routes.md), [API](../docs/phase6-api-integration.md), [rules](../docs/phase6-business-rules.md), [security](../docs/phase6-security-tests.md), [test results](../docs/phase6-test-results.md), [result](../docs/phase6-result.md). Backend có bốn GET Driver đã phê duyệt; quyền65route cũ, schema/dependency/isolation giữ nguyên. Bản sửa cancelOrder đọc lại Delivery dưới khóa Order→Delivery đã được phê duyệt riêng, kèm test snapshot và assertion hồi quy.
+
+Test mới chỉ fooddelivery_stage6_e2e ở127.0.0.1:3307, validate/OSIV=false, backend18080/previewlocalhost4173. Evidence/config bên ngoài Git tại F:/New folder/food-delivery-mysql-test/phase6-20261109. Credential schema giữ stage4 cho hồi quy và thêm DRIVER_OTHER. Không reset rehearsal Stage1–5 hoặc ghi3306/fooddelivery. Chuẩn bị PASSWORD_CUSTOMER mới cho auth regression.
+
+Chạy các lệnh typecheck/lint/format:check/test/build ở trên; chạy E2E Driver bằng npm.cmd exec playwright -- test driver.spec.ts và hồi quy bằng: npm.cmd exec playwright -- test auth.spec.ts customer.spec.ts restaurant.spec.ts responsive.spec.ts ui-upgrade.spec.ts. Đổi FOOD_E2E_* evidence sang Stage6. Hai batch chạy riêng với backend test được sở hữu khởi động lại giữa lượt, giữ nguyên limiter10/email100/IP/15phút, không nâng/tắt bảo mật để đạt PASS. Không chạy song song cùng fixture hoặc hai frontend origin chung cookie.
+
+Sau test dừng đúng backend/preview/MySQL test mình tạo, giữ datadir/log, MySQL80 tiếp tục chạy. Chưa deploy production. Không có map API có phí hoặc gửi địa chỉ đến bên thứ ba.

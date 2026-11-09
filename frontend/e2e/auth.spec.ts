@@ -94,7 +94,9 @@ test('driver reaches its own mobile-oriented workspace', async ({ page }) => {
   await login(page, 'DRIVER');
   await expect(page.getByRole('heading', { name: 'Chào mừng tài xế' })).toBeVisible();
   await page.goto('/driver/deliveries');
-  await expect(page.getByRole('heading', { name: 'Sẽ hoàn thiện ở Giai đoạn 6' })).toBeVisible();
+  await expect(
+    page.getByRole('heading', { name: 'Chuyến giao của bạn', exact: true }),
+  ).toBeVisible();
   await page.goto('/admin/accounts');
   await expect(page).toHaveURL(/\/403$/);
 });

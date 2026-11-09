@@ -1,3 +1,4 @@
+import { driverApi, driverKey } from '@/features/driver-management/api';
 import { AccountMenu } from '@/components/layout/AccountMenu';
 import { FoodImage } from '@/components/ui/FoodImage';
 import { useState } from 'react';
@@ -50,6 +51,9 @@ export const workspaceNav: Record<Role, Item[]> = {
     { to: '/driver/dashboard', label: 'Tổng quan', icon: LayoutDashboard },
     { to: '/driver/profile', label: 'Hồ sơ tài xế', icon: UserRound },
     { to: '/driver/deliveries', label: 'Chuyến giao hàng', icon: Truck },
+    { to: '/driver/available', label: 'Chuyến có thể nhận', icon: Bike },
+    { to: '/driver/history', label: 'Lịch sử giao hàng', icon: ClipboardList },
+    { to: '/driver/analytics', label: 'Thống kê hoạt động', icon: ChartColumn },
   ],
   ADMIN: [
     { to: '/admin/dashboard', label: 'Tổng quan', icon: LayoutDashboard },
@@ -67,6 +71,17 @@ export function WorkspaceLayout() {
     queryFn: ({ signal }) => restaurantApi.profile(signal),
     enabled: role === 'RESTAURANT',
   });
+  const driver = useQuery({
+    queryKey: [...driverKey(account.accountId, account.driverId || 0), 'profile'],
+    queryFn: ({ signal }) => driverApi.profile(signal),
+    enabled: role === 'DRIVER',
+  });
+  const profileName =
+    role === 'RESTAURANT'
+      ? restaurant.data?.name
+      : role === 'DRIVER'
+        ? driver.data?.name
+        : undefined;
   const links = (
     <nav aria-label={`Điều hướng ${roleName[role]}`}>
       {workspaceNav[role].map((item) => (
@@ -95,9 +110,7 @@ export function WorkspaceLayout() {
             <Utensils size={23} />
           </span>
           <div>
-            <strong>
-              {role === 'RESTAURANT' && restaurant.data ? restaurant.data.name : roleName[role]}
-            </strong>
+            <strong>{profileName || roleName[role]}</strong>
             <small>HanoiFood workspace</small>
           </div>
         </div>
@@ -138,21 +151,36 @@ export function WorkspaceLayout() {
           <div className="workspace-context management-profile-title">
             <span>HanoiFood</span>
             <span>/</span>
-            <strong>
-              {role === 'RESTAURANT' && restaurant.data ? restaurant.data.name : roleName[role]}
-            </strong>
+            <strong>{profileName || roleName[role]}</strong>
           </div>
           <div className="workspace-topbar-actions">
-            <Badge tone="success">
+            <Badge
+              tone={
+                role === 'DRIVER' && driver.data && driver.data.driveStatus !== true
+                  ? 'neutral'
+                  : 'success'
+              }
+            >
               <CheckCircle2 size={13} />
-              Đang hoạt động
+              {role === 'DRIVER' && driver.data
+                ? driver.data.driveStatus
+                  ? 'Nhận chuyến mới'
+                  : 'Tạm ngừng nhận'
+                : 'Đang hoạt động'}
             </Badge>
             <AccountMenu />
           </div>
         </div>
         {role === 'DRIVER' && (
           <nav className="driver-bottom-nav" aria-label="Điều hướng nhanh tài xế">
-            {workspaceNav.DRIVER.map((item) => (
+            {workspaceNav.DRIVER.filter((item) =>
+              [
+                '/driver/dashboard',
+                '/driver/deliveries',
+                '/driver/history',
+                '/driver/profile',
+              ].includes(item.to),
+            ).map((item) => (
               <NavLink end key={item.to} to={item.to}>
                 <item.icon size={22} />
                 <span>{item.label}</span>

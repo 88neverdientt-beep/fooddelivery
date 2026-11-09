@@ -28,7 +28,7 @@ class BackendServiceTest {
     final PaymentService paymentService = new PaymentService(payments, methods, orders);
     final jakarta.persistence.EntityManager entityManager = mock(jakarta.persistence.EntityManager.class);
     final DeliveryService deliveryService = new DeliveryService(deliveries, entityManager, orders, drivers, paymentService);
-    final OrderService orderService = new OrderService(carts, menus, customers, restaurants, items, orders, paymentService, deliveryService);
+    final OrderService orderService = new OrderService(carts, menus, customers, restaurants, items, orders, paymentService, deliveryService, deliveries, entityManager);
     final CartItemService itemService = new CartItemService(items, carts, customers, menus);
     final CartService cartService = new CartService(carts, customers, itemService);
     Customer customer;
@@ -69,6 +69,7 @@ class BackendServiceTest {
         when(deliveries.save(any(Delivery.class))).thenAnswer(i -> i.getArgument(0));
         when(deliveries.findOrderId(9L)).thenReturn(Optional.of(8L));
         when(deliveries.findLockedById(9L)).thenReturn(Optional.of(delivery));
+        when(deliveries.findLockedByOrderId(8L)).thenAnswer(invocation -> Optional.ofNullable(order.getDelivery()));
     }
     OrderRequestDTO checkout() { return OrderRequestDTO.builder().deliveryAddress("Address").paymentMethodId(7L).build(); }
     void attachPayment() {
@@ -159,7 +160,7 @@ class BackendServiceTest {
     }
     @Test void checkoutSnapshotsPriceAndKeepsShippingPolicy() {
         var payment=mock(PaymentService.class);
-        var target=new OrderService(carts,menus,customers,restaurants,items,orders,payment,deliveryService);
+        var target=new OrderService(carts,menus,customers,restaurants,items,orders,payment,deliveryService,deliveries,entityManager);
         var result=target.createOrder(1L,checkout());
         assertEquals(new BigDecimal("55000.00"),result.getTotalAmount());
         assertEquals(new BigDecimal("15000"),result.getShippingFee());
@@ -249,6 +250,18 @@ class BackendServiceTest {
         assertEquals(OrderStatus.CANCELLED,order.getOrderStatus());
         assertEquals(DeliveryStatus.CANCELLED,delivery.getDeliveryStatus());
         assertEquals(PaymentStatus.CANCELLED,order.getPayment().getPaymentStatus());
+    }
+    @Test void cancellationReloadsDeliveryEvenWhenInverseReferenceWasNull() {
+        attachPayment(); order.setOrderStatus(OrderStatus.CONFIRMED);
+        assertNull(order.getDelivery());
+        when(deliveries.findLockedByOrderId(8L)).thenReturn(Optional.of(delivery));
+        orderService.cancelOrder(8L);
+        assertSame(delivery,order.getDelivery());
+        assertEquals(DeliveryStatus.CANCELLED,delivery.getDeliveryStatus());
+        assertEquals(PaymentStatus.CANCELLED,order.getPayment().getPaymentStatus());
+        var lockOrder=inOrder(orders,deliveries,entityManager);
+        lockOrder.verify(orders).findLockedById(8L);
+        lockOrder.verify(deliveries).findLockedByOrderId(8L);
     }
     @Test void deletingOneOfSeveralItemsKeepsRestaurant() {
         itemService.deleteCartItem(6L);

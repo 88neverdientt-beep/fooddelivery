@@ -46,6 +46,8 @@ public class OrderService {
 	private final OrderRepository orderRepository;
 	private final PaymentService paymentService;
 	private final DeliveryService deliveryService;
+    private final vn.gaugaugau.fooddelivery.repository.DeliveryRepository deliveryRepository;
+    private final jakarta.persistence.EntityManager entityManager;
 	private static final BigDecimal SHIPPING_FEE = BigDecimal.valueOf(15000);
 
 	public OrderResponseDTO.CustomerOutputDTO convertToCustomerOutputDTO(Customer customer) {
@@ -273,7 +275,16 @@ public class OrderService {
 			throw new ResponseStatusException(HttpStatus.CONFLICT,
 					"Cannot cancel order when status is " + order.getOrderStatus());
 		}
-		Delivery delivery = order.getDelivery();
+        // Order is locked first. Read the inverse relationship with a current locking
+        // read: an earlier REPEATABLE_READ snapshot may still report no Delivery
+        // even after the confirming transaction has committed one.
+        Delivery cachedDelivery = order.getDelivery();
+        if (cachedDelivery != null && entityManager.contains(cachedDelivery))
+            entityManager.detach(cachedDelivery);
+        // Reload under the lock instead of refresh(): Hibernate refresh may use
+        // the old read view and report a newly committed Delivery as nonexistent.
+        Delivery delivery = deliveryRepository.findLockedByOrderId(orderId).orElse(null);
+        order.setDelivery(delivery);
 		if (delivery != null) {
 			if (delivery.getDeliveryStatus() != DeliveryStatus.PENDING) {
 				throw new ResponseStatusException(HttpStatus.CONFLICT, "Delivery cannot be cancelled");

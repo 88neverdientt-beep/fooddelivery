@@ -386,6 +386,8 @@ test('restaurant ownership, simultaneous updates, confirmations and cancellation
   const cancelled = await race.actor.order(race.order.orderId);
   expect(cancelled.orderStatus).toBe('CANCELLED');
   expect(cancelled.paymentResponseDTO!.paymentStatus).toBe('CANCELLED');
+  if (cancelled.deliveryOutputDTO)
+    expect(cancelled.deliveryOutputDTO.deliveryStatus).toBe('CANCELLED');
   const pending = await freshCustomer(base);
   customerActors.push(pending.actor);
   await pending.actor.add(item.restaurantFoodItemId);

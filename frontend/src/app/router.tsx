@@ -101,6 +101,50 @@ const managementPages: Record<string, import('react').ReactNode> = {
   reviews: <ManagementReviews />,
   analytics: <ManagementAnalytics />,
 };
+const DriverDashboard = lazy(() =>
+  import('@/features/driver-management/DashboardPages').then((m) => ({
+    default: m.DriverDashboard,
+  })),
+);
+const DriverAnalytics = lazy(() =>
+  import('@/features/driver-management/DashboardPages').then((m) => ({
+    default: m.DriverAnalyticsPage,
+  })),
+);
+const DriverProfile = lazy(() =>
+  import('@/features/driver-management/ProfilePage').then((m) => ({
+    default: m.DriverProfilePage,
+  })),
+);
+const DriverDeliveries = lazy(() =>
+  import('@/features/driver-management/DeliveryPages').then((m) => ({
+    default: m.DriverDeliveriesPage,
+  })),
+);
+const DriverDetail = lazy(() =>
+  import('@/features/driver-management/DeliveryPages').then((m) => ({
+    default: m.DriverDeliveryDetailPage,
+  })),
+);
+const DriverAvailable = lazy(() =>
+  import('@/features/driver-management/DeliveryPages').then((m) => ({
+    default: m.DriverAvailablePage,
+  })),
+);
+const DriverHistory = lazy(() =>
+  import('@/features/driver-management/DeliveryPages').then((m) => ({
+    default: m.DriverHistoryPage,
+  })),
+);
+const driverPages: Record<string, import('react').ReactNode> = {
+  dashboard: <DriverDashboard />,
+  profile: <DriverProfile />,
+  deliveries: <DriverDeliveries />,
+  'deliveries/:id': <DriverDetail />,
+  available: <DriverAvailable />,
+  history: <DriverHistory />,
+  analytics: <DriverAnalytics />,
+};
 function LazyOutlet() {
   return (
     <Suspense fallback={<Spinner label="Đang mở trang…" />}>
@@ -136,7 +180,11 @@ const roleRoutes = (
         'analytics',
       ],
     ],
-    ['DRIVER', 'driver', ['dashboard', 'profile', 'deliveries']],
+    [
+      'DRIVER',
+      'driver',
+      ['dashboard', 'profile', 'deliveries', 'deliveries/:id', 'available', 'history', 'analytics'],
+    ],
     ['ADMIN', 'admin', ['dashboard', 'accounts', 'restaurants', 'drivers']],
   ] as const
 ).map(([role, path, children]) => ({
@@ -155,6 +203,8 @@ const roleRoutes = (
           element:
             role === 'RESTAURANT' ? (
               managementPages[child]
+            ) : role === 'DRIVER' ? (
+              driverPages[child]
             ) : child === 'profile' ? (
               <Account />
             ) : child === 'dashboard' ? (
