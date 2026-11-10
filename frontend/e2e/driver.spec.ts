@@ -225,9 +225,11 @@ test('full customer restaurant driver customer browser flow completes COD and ra
     expect((await accepted).status()).toBe(200);
     await expect(page).toHaveURL(new RegExp(`/driver/deliveries/${id}$`));
     await expect(page.getByText(customer.address, { exact: true }).first()).toBeVisible();
-    await expect(
-      page.getByText('Ha Noi - isolated Stage6 fixture', { exact: true }).first(),
-    ).toBeVisible();
+    const pickup = await restaurant.read(
+      `/api/restaurants/${stage4.otherRestaurantId}`,
+      z.object({ address: z.string().min(1) }),
+    );
+    await expect(page.getByText(pickup.address, { exact: true }).first()).toBeVisible();
     await confirmStep(page, 'Xác nhận đã lấy hàng', id, 'PICKED_UP');
     await confirmStep(page, 'Bắt đầu giao hàng', id, 'DELIVERING');
     await c.page.goto(`/customer/orders/${order.orderId}`);

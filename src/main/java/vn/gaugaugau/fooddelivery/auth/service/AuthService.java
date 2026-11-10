@@ -25,6 +25,7 @@ import vn.gaugaugau.fooddelivery.utils.exception.*;
 @Service @RequiredArgsConstructor
 @Transactional(isolation=Isolation.READ_COMMITTED)
 public class AuthService {
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
     private final AccountRepository accounts;
     private final AuthSessionRepository sessions;
     private final RefreshTokenRepository refresh;
@@ -135,8 +136,29 @@ public class AuthService {
     public List<Me> listAccounts(){return accounts.findAll().stream().map(this::view).toList();}
     @PreAuthorize("hasRole('ADMIN')")
     public Me setStatus(Long id,AccountStatus status) {
+        return setStatus(id,status,null);
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    public Me setStatus(Long id,AccountStatus status,AccountStatus expectedStatus) {
+        if(id==null || id<=0 || status==null)throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Valid account and status required");
+        // Serialize administrator status writers before taking any target-account lock.
+        // Refresh managed entries as disableProfile may have loaded an account earlier.
+        var administrators=accounts.findAdministratorsLocked();
+        administrators.forEach(a->entityManager.refresh(a,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE));
+        var actor=CurrentActor.get();
+        var acting=administrators.stream().filter(a->a.getAccountId().equals(actor.accountId())).findFirst().orElseThrow(AuthFailure::new);
+        if(acting.getStatus()!=AccountStatus.ACTIVE)throw new AuthFailure();
         var a=accounts.findLockedById(id).orElseThrow(()->new ResourceNotFoundException("Account not found"));
-        if(a.getAccountId().equals(CurrentActor.get().accountId()) && status==AccountStatus.DISABLED)throw new ResponseStatusException(HttpStatus.CONFLICT,"Cannot disable the current administrator");
+        entityManager.refresh(a,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        // Keep Account -> Session order used by refresh/logout; validate after waiting.
+        var session=sessions.findLockedById(actor.sessionId()).orElseThrow(AuthFailure::new);
+        entityManager.refresh(session,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        if(!session.getAccount().getAccountId().equals(acting.getAccountId()) || !session.isActiveAt(LocalDateTime.now(clock)))throw new AuthFailure();
+        if(a.getAccountId().equals(acting.getAccountId()) && status==AccountStatus.DISABLED)throw new ResponseStatusException(HttpStatus.CONFLICT,"Cannot disable the current administrator");
+        if(expectedStatus!=null && a.getStatus()!=expectedStatus)throw new ResponseStatusException(HttpStatus.CONFLICT,"Account status changed; reload before retrying");
+        if(a.getRole()==Role.ADMIN && a.getStatus()==AccountStatus.ACTIVE && status==AccountStatus.DISABLED
+            && administrators.stream().filter(admin->admin.getStatus()==AccountStatus.ACTIVE).count()<=1)
+            throw new ResponseStatusException(HttpStatus.CONFLICT,"Cannot disable the last active administrator");
         a.setStatus(status);if(status==AccountStatus.DISABLED)revoke(id);
         audit.info("Account {} status set to {} by account {}",id,status,CurrentActor.get().accountId());return view(a);
     }

@@ -5,6 +5,8 @@ import org.springframework.data.repository.query.Param;
 import jakarta.persistence.LockModeType;
 import vn.gaugaugau.fooddelivery.auth.model.Account;
 public interface AccountRepository extends JpaRepository<Account,Long> {
+    @Lock(LockModeType.PESSIMISTIC_WRITE) @Query("select a from Account a where a.role=vn.gaugaugau.fooddelivery.auth.model.Role.ADMIN order by a.accountId")
+    java.util.List<Account> findAdministratorsLocked();
     Optional<Account> findByEmail(String normalizedEmail);
     @Lock(LockModeType.PESSIMISTIC_WRITE) @Query("select a from Account a where a.email=:email")
     Optional<Account> findLockedByEmail(@Param("email") String email);

@@ -1,6 +1,7 @@
 import { driverApi, driverKey } from '@/features/driver-management/api';
 import { AccountMenu } from '@/components/layout/AccountMenu';
 import { FoodImage } from '@/components/ui/FoodImage';
+import { Breadcrumb } from '@/components/ui/Breadcrumb';
 import { useState } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import * as Dialog from '@radix-ui/react-dialog';
@@ -23,6 +24,7 @@ import {
   CheckCircle2,
   Star,
   ChartColumn,
+  CreditCard,
 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { restaurantApi, managementKey } from '@/features/restaurant-management/api';
@@ -57,12 +59,20 @@ export const workspaceNav: Record<Role, Item[]> = {
   ],
   ADMIN: [
     { to: '/admin/dashboard', label: 'Tổng quan', icon: LayoutDashboard },
-    { to: '/admin/accounts', label: 'Tài khoản', icon: Users },
+    { to: '/admin/accounts', label: 'Tài khoản hệ thống', icon: Users },
+    { to: '/admin/customers', label: 'Khách hàng', icon: UserRound },
     { to: '/admin/restaurants', label: 'Nhà hàng', icon: Store },
     { to: '/admin/drivers', label: 'Tài xế', icon: Truck },
+    { to: '/admin/orders', label: 'Đơn hàng', icon: ClipboardList },
+    { to: '/admin/deliveries', label: 'Giao hàng', icon: Bike },
+    { to: '/admin/payments', label: 'Thanh toán', icon: CreditCard },
+    { to: '/admin/reviews', label: 'Đánh giá', icon: Star },
+    { to: '/admin/analytics', label: 'Báo cáo', icon: ChartColumn },
+    { to: '/admin/profile', label: 'Hồ sơ quản trị', icon: ShieldCheck },
   ],
 };
 export function WorkspaceLayout() {
+  const location = useLocation();
   const account = useAuth().account!;
   const role = account.role;
   const [open, setOpen] = useState(false);
@@ -81,7 +91,9 @@ export function WorkspaceLayout() {
       ? restaurant.data?.name
       : role === 'DRIVER'
         ? driver.data?.name
-        : undefined;
+        : role === 'ADMIN'
+          ? account.email
+          : undefined;
   const links = (
     <nav aria-label={`Điều hướng ${roleName[role]}`}>
       {workspaceNav[role].map((item) => (
@@ -189,6 +201,24 @@ export function WorkspaceLayout() {
           </nav>
         )}
         <div className="workspace-content">
+          {role === 'ADMIN' && (
+            <Breadcrumb
+              items={[
+                { label: 'Quản trị', to: '/admin/dashboard' },
+                {
+                  label:
+                    workspaceNav.ADMIN.find(
+                      (item) =>
+                        location.pathname === item.to ||
+                        location.pathname.startsWith(item.to + '/'),
+                    )?.label || 'Chi tiết',
+                },
+                ...(/^\d+$/.test(location.pathname.split('/').at(-1) || '')
+                  ? [{ label: '#' + location.pathname.split('/').at(-1) }]
+                  : []),
+              ]}
+            />
+          )}
           <Outlet />
         </div>
       </div>

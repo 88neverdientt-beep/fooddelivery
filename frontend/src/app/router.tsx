@@ -145,6 +145,126 @@ const driverPages: Record<string, import('react').ReactNode> = {
   history: <DriverHistory />,
   analytics: <DriverAnalytics />,
 };
+const AdminProfile = lazy(() =>
+  import('@/features/admin-management/ExistingPages').then((m) => ({
+    default: m.AdminProfilePage,
+  })),
+);
+const AdminCustomerDetail = lazy(() =>
+  import('@/features/admin-management/ExistingPages').then((m) => ({
+    default: m.AdminCustomerDetail,
+  })),
+);
+const AdminDriverDetail = lazy(() =>
+  import('@/features/admin-management/ProfilePages').then((m) => ({
+    default: m.AdminDriverProfileDetail,
+  })),
+);
+const AdminOrderDetail = lazy(() =>
+  import('@/features/admin-management/ExistingPages').then((m) => ({
+    default: m.AdminOrderDetail,
+  })),
+);
+const AdminPaymentDetail = lazy(() =>
+  import('@/features/admin-management/ExistingPages').then((m) => ({
+    default: m.AdminPaymentDetail,
+  })),
+);
+const Phase70 = lazy(() =>
+  import('@/features/admin-management/DashboardPages').then((module) => ({
+    default: module.AdminDashboard,
+  })),
+);
+const Phase71 = lazy(() =>
+  import('@/features/admin-management/DashboardPages').then((module) => ({
+    default: module.AdminAnalyticsPage,
+  })),
+);
+const Phase72 = lazy(() =>
+  import('@/features/admin-management/ListPages').then((module) => ({
+    default: module.AdminAccountsPage,
+  })),
+);
+const Phase73 = lazy(() =>
+  import('@/features/admin-management/ListPages').then((module) => ({
+    default: module.AdminCustomersPage,
+  })),
+);
+const Phase74 = lazy(() =>
+  import('@/features/admin-management/ListPages').then((module) => ({
+    default: module.AdminRestaurantsPage,
+  })),
+);
+const Phase75 = lazy(() =>
+  import('@/features/admin-management/ListPages').then((module) => ({
+    default: module.AdminDriversPage,
+  })),
+);
+const Phase76 = lazy(() =>
+  import('@/features/admin-management/ListPages').then((module) => ({
+    default: module.AdminOrdersPage,
+  })),
+);
+const Phase77 = lazy(() =>
+  import('@/features/admin-management/ListPages').then((module) => ({
+    default: module.AdminDeliveriesPage,
+  })),
+);
+const Phase78 = lazy(() =>
+  import('@/features/admin-management/ListPages').then((module) => ({
+    default: module.AdminPaymentsPage,
+  })),
+);
+const Phase79 = lazy(() =>
+  import('@/features/admin-management/ListPages').then((module) => ({
+    default: module.AdminReviewsPage,
+  })),
+);
+const Phase710 = lazy(() =>
+  import('@/features/admin-management/AccountPage').then((module) => ({
+    default: module.AdminAccountDetail,
+  })),
+);
+const Phase711 = lazy(() =>
+  import('@/features/admin-management/ProfilePages').then((module) => ({
+    default: module.AdminRestaurantDetail,
+  })),
+);
+const Phase712 = lazy(() =>
+  import('@/features/admin-management/DeliveryDetail').then((module) => ({
+    default: module.AdminDeliveryDetail,
+  })),
+);
+const AdminCreateRestaurant = lazy(() =>
+  import('@/features/admin-management/CreatePages').then((m) => ({
+    default: m.AdminCreateRestaurant,
+  })),
+);
+const AdminCreateDriver = lazy(() =>
+  import('@/features/admin-management/CreatePages').then((m) => ({ default: m.AdminCreateDriver })),
+);
+const adminExistingPages: Record<string, import('react').ReactNode> = {
+  'restaurants/new': <AdminCreateRestaurant />,
+  'drivers/new': <AdminCreateDriver />,
+  dashboard: <Phase70 />,
+  analytics: <Phase71 />,
+  accounts: <Phase72 />,
+  customers: <Phase73 />,
+  restaurants: <Phase74 />,
+  drivers: <Phase75 />,
+  orders: <Phase76 />,
+  deliveries: <Phase77 />,
+  payments: <Phase78 />,
+  reviews: <Phase79 />,
+  'accounts/:id': <Phase710 />,
+  'restaurants/:id': <Phase711 />,
+  'deliveries/:id': <Phase712 />,
+  profile: <AdminProfile />,
+  'customers/:id': <AdminCustomerDetail />,
+  'drivers/:id': <AdminDriverDetail />,
+  'orders/:id': <AdminOrderDetail />,
+  'payments/orders/:orderId': <AdminPaymentDetail />,
+};
 function LazyOutlet() {
   return (
     <Suspense fallback={<Spinner label="Đang mở trang…" />}>
@@ -185,7 +305,32 @@ const roleRoutes = (
       'driver',
       ['dashboard', 'profile', 'deliveries', 'deliveries/:id', 'available', 'history', 'analytics'],
     ],
-    ['ADMIN', 'admin', ['dashboard', 'accounts', 'restaurants', 'drivers']],
+    [
+      'ADMIN',
+      'admin',
+      [
+        'dashboard',
+        'profile',
+        'accounts',
+        'accounts/:id',
+        'customers',
+        'customers/:id',
+        'restaurants',
+        'restaurants/new',
+        'restaurants/:id',
+        'drivers',
+        'drivers/new',
+        'drivers/:id',
+        'orders',
+        'orders/:id',
+        'deliveries',
+        'deliveries/:id',
+        'payments',
+        'payments/orders/:orderId',
+        'reviews',
+        'analytics',
+      ],
+    ],
   ] as const
 ).map(([role, path, children]) => ({
   element: <RoleProtectedRoute role={role} />,
@@ -205,6 +350,8 @@ const roleRoutes = (
               managementPages[child]
             ) : role === 'DRIVER' ? (
               driverPages[child]
+            ) : role === 'ADMIN' && adminExistingPages[child] ? (
+              adminExistingPages[child]
             ) : child === 'profile' ? (
               <Account />
             ) : child === 'dashboard' ? (

@@ -1,4 +1,4 @@
-# HanoiFood Frontend — Giai đoạn 6
+# HanoiFood Frontend — Giai đoạn 7
 
 React + TypeScript strict + Vite. Kết nối backend thật; không có mock runtime hoặc credential mặc định. Frontend độc lập trong frontend/, không thay cấu trúc Maven.
 
@@ -104,3 +104,29 @@ Test mới chỉ fooddelivery_stage6_e2e ở127.0.0.1:3307, validate/OSIV=false,
 Chạy các lệnh typecheck/lint/format:check/test/build ở trên; chạy E2E Driver bằng npm.cmd exec playwright -- test driver.spec.ts và hồi quy bằng: npm.cmd exec playwright -- test auth.spec.ts customer.spec.ts restaurant.spec.ts responsive.spec.ts ui-upgrade.spec.ts. Đổi FOOD_E2E_* evidence sang Stage6. Hai batch chạy riêng với backend test được sở hữu khởi động lại giữa lượt, giữ nguyên limiter10/email100/IP/15phút, không nâng/tắt bảo mật để đạt PASS. Không chạy song song cùng fixture hoặc hai frontend origin chung cookie.
 
 Sau test dừng đúng backend/preview/MySQL test mình tạo, giữ datadir/log, MySQL80 tiếp tục chạy. Chưa deploy production. Không có map API có phí hoặc gửi địa chỉ đến bên thứ ba.
+
+## Admin Management — Giai đoạn 7
+
+20route /admin/*: dashboard, accounts/list+detail, customers/list+detail, restaurants/list+new+detail, drivers/list+new+detail, orders/list+detail, deliveries/list+detail, payments/list+detail-by-order, reviews/dialog, analytics và profile. ADMIN ACTIVE; guard frontend và quyền backend độc lập. Không đăng nhập riêng hoặc credential mặc định.
+
+Backend thêm12GET đã phê duyệt dưới /admin-management; count/filter/page tại MySQL, tối đa50item/page. Tái dùng GET detail cũ khi phù hợp, POST /restaurants và /drivers cho tạo hồ sơ cùng Account, PUT hồ sơ cũ với confirmation. PUT /admin/accounts/{id}/status gửi expectedStatus, kiểm lại actor/session sau khóa và bảo vệ ADMIN ACTIVE. Không đổi role, assign/reassign, Order/Delivery/Payment status hoặc audit schema.
+
+KPI toàn tập có định nghĩa nguồn/kỳ: mọi thời gian tách cohort đơn tạo trong kỳ; thanh toán thành công ghi nhận tính paidAt với COMPLETED/SUCCESS/matching amount, không phải lợi nhuận/tiền thực nhận. Business timestamps LocalDateTime theo JVM; test chỉ định riêng Asia/Ho_Chi_Minh, auth ClockUTC giữ nguyên. Preset lấy businessToday từ backend, không UTC date của browser. Xem [định nghĩa reporting](../docs/phase7-reporting-definitions.md).
+
+Cache theo account; invalidate sau mutation, không optimistic hoặc tự retry POST/PUT khi chưa rõ kết quả. Status recovery GET đúng account, GET lỗi giữ khóa/manual check. Tạo profile response mất thì clear password, kiểm email/role chính xác trong GET có giới hạn; không thấy ở page đầu không chứng minh chưa tạo. Password chỉ memory, không trim/lowercase hoặc persist. Hồ sơ ADMIN dùng Me; không name/role editor giả.
+
+Test Giai đoạn7 chỉ fooddelivery_stage7_e2e ở127.0.0.1:3307, validate/OSIV=false. Schema-only từ Stage6, fixture mới;3QA lịch sử không copy/repair. Evidence/config/credential và scripts ở F:/New folder/food-delivery-mysql-test/phase7-20261110, ngoài Git. Không chạy server/test với datasource main3306. Không dùng các script test như migration production.
+
+Playwright dùng ba batch trên cùng artifact: admin.spec.ts (20), driver.spec.ts (16), rồi auth.spec.ts/customer.spec.ts/restaurant.spec.ts/responsive.spec.ts/ui-upgrade.spec.ts (34). Khởi động lại đúng backend test giữa batch để giữ limiter hiện có, không tắt/nâng hạn mức. Fixture credential JSON cần các role cũ, stage4/catalog metadata, DRIVER_OTHER/OTHER_RESTAURANT và ADMIN_OTHER/ADMIN_BROWSER_C/D/E/ADMIN_RACE_A/B; tất cả random và ngoài Git. Race actors/PASSWORD_CUSTOMER phải tạo fixture mới nếu chạy lại, không reset dữ liệu cũ để che kết quả. Các ADMIN browser được phân bổ để không vượt10login/email/15phút.
+
+```powershell
+$env:FOOD_E2E_BASE_URL = 'http://localhost:4173'
+$env:FOOD_E2E_CREDENTIAL_FILE = '<external-test-dir>\credentials.json'
+npm.cmd exec playwright -- test admin.spec.ts
+# Dừng/khởi động lại chỉ backend test đã xác minh sở hữu trước batch kế tiếp.
+npm.cmd exec playwright -- test driver.spec.ts
+# Fixture password mới và backend test mới trước batch auth/hồi quy.
+npm.cmd exec playwright -- test auth.spec.ts customer.spec.ts restaurant.spec.ts responsive.spec.ts ui-upgrade.spec.ts
+```
+
+Xem [architecture](../docs/phase7-architecture.md), [routes](../docs/phase7-admin-routes.md), [API](../docs/phase7-api-integration.md), [business rules](../docs/phase7-business-rules.md), [security](../docs/phase7-security-tests.md), [test results](../docs/phase7-test-results.md), [handover](../docs/phase7-result.md). Backend/runtime test và preview phải dừng sau nghiệm thu; giữ logs/data và không dừng MySQL80 hoặc tiến trình chưa xác minh chủ sở hữu. Không commit/push/deploy.

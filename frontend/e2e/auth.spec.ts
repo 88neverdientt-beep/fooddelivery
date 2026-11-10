@@ -102,9 +102,9 @@ test('driver reaches its own mobile-oriented workspace', async ({ page }) => {
 });
 test('admin reaches management navigation without invented metrics', async ({ page }) => {
   await login(page, 'ADMIN');
-  await expect(page.getByRole('heading', { name: 'Chào mừng quản trị viên' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Tổng quan quản trị', level: 1 })).toBeVisible();
   await page.goto('/admin/accounts');
-  await expect(page.getByRole('heading', { name: 'Sẽ hoàn thiện ở Giai đoạn 7' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Quản lý tài khoản', level: 1 })).toBeVisible();
   await page.goto('/customer/cart');
   await expect(page).toHaveURL(/\/403$/);
 });

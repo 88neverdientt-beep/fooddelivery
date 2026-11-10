@@ -81,7 +81,7 @@ for (const width of [375, 768, 1024, 1440])
         ).toBeVisible();
       else
         await expect(
-          page.getByRole('heading', { name: /Sẽ hoàn thiện ở Giai đoạn/ }),
+          page.getByRole('heading', { name: 'Quản lý tài khoản', level: 1 }),
         ).toBeVisible();
       await noHorizontalOverflow(page);
       if (evidence) await capture(page, evidence, `${width}-${role}-feature`);

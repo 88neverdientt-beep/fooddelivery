@@ -1,6 +1,6 @@
 # Endpoint authorization matrix
 
-69 endpoints: 59 business routes and 10 Auth/Admin routes. Deny all unmatched routes.
+81 endpoints: 71 business routes and 10 Auth/Admin routes. Deny all unmatched routes.
 
 Every route is tested with anonymous, CUSTOMER, RESTAURANT, DRIVER, ADMIN, DISABLED in the two inventory-driven security tests. Denied requests execute without test rollback and compare persistent checksums. Allowed mutation samples roll back; functional positives are verified separately. Common errors: 400 validation, 401 authentication, 403 role/CSRF, 404 ownership, 409 conflict.
 
@@ -73,3 +73,7 @@ GET /restaurant-management/profile, /catalog, /orders, /analytics: chỉ RESTAUR
 GET /driver-management/deliveries, /deliveries/{deliveryId}, /available, /analytics: chỉ DRIVER ACTIVE, CurrentActor.driverId; không impersonation từ ADMIN, không owner từ query. Detail/list/history chỉ own assigned; pool chỉ active Driver theo driveStatus=true và không lộ dropoff/customer/payment trước khi nhận. DriveStatus=false vẫn đọc/xử lý chuyến đã nhận, pool bị404 theo AccessRules cũ. List giới hạn50, query/date/scope/status/sort validation400; owner404/role403/auth401. Inventory hiện tại69route:59business+10auth,414tổ hợp6actor. Quyền65route trước và các mutation accept/status/profile không đổi. Xem phase6-api-integration.md, phase6-business-rules.md và phase6-security-tests.md.
 
 Bản sửa confirm/cancel đã được phê duyệt riêng: cancelOrder khóa và nạp lại Delivery sau Order để tránh inverse reference cũ trong REPEATABLE_READ; không thay endpoint, ACL, enum hoặc isolation toàn cục. Test tái hiện và bằng chứng dữ liệu QA trước sửa được ghi trong phase6-test-results.md.
+
+## Giai đoạn 7 — Admin (đã phê duyệt)
+
+12 GET /admin-management được liệt kê trong phase7-api-integration.md: chỉ ADMIN ACTIVE, không impersonation; danh sách phân trang database tối đa 50, projection không chứa secrets. Inventory kiểm tra 81 route × 6 actor = 486 tổ hợp. PUT /admin/accounts/{id}/status giữ ACL cũ, bổ sung expectedStatus optional và khóa/revalidate actor/session theo phê duyệt; không đổi JWT/refresh/CSRF. Xem phase7-security-tests.md và phase7-test-results.md. Các số 65/69 trong mục trước là inventory lịch sử.

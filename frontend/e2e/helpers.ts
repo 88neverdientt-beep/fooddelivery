@@ -59,7 +59,7 @@ export async function login(
         ? 'Chào mừng nhà hàng'
         : role === 'DRIVER'
           ? 'Chào mừng tài xế'
-          : 'Chào mừng quản trị viên';
+          : 'Tổng quan quản trị';
   await expect(page.getByRole('heading', { name: title, exact: true })).toBeVisible();
   return json.data.accessToken;
 }

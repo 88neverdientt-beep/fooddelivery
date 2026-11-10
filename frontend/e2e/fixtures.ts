@@ -24,13 +24,21 @@ export const test = base.extend<{ consoleGuard: void }>({
             /^\/api\/restaurant-food-items\/\d+$/.test(path) ||
             /^\/api\/deliveries\/\d+\/(?:accept|status)$/.test(path) ||
             /^\/api\/driver-management\/deliveries(?:\/\d+)?$/.test(path) ||
-            /^\/api\/customers\/\d+\/orders(?:\/page)?$/.test(path)) &&
+            /^\/api\/customers\/\d+\/orders(?:\/page)?$/.test(path) ||
+            (info.title.startsWith('admin ') &&
+              /^\/api\/(?:admin\/accounts\/\d+\/status|admin-management\/(?:accounts\/\d+|orders))$/.test(
+                path,
+              ))) &&
           /ERR_INTERNET_DISCONNECTED|Failed to load resource/.test(text);
         const ownership =
           info.title.includes('ownership') &&
           (/^\/api\/orders\/\d+$/.test(path) ||
             /^\/api\/driver-management\/deliveries\/\d+$/.test(path)) &&
           /404/.test(text);
+        const adminConflict =
+          info.title.startsWith('admin two tabs') &&
+          /^\/api\/admin\/accounts\/\d+\/status$/.test(path) &&
+          /409/.test(text);
         records.push({
           kind: 'console-error',
           path,
@@ -40,7 +48,9 @@ export const test = base.extend<{ consoleGuard: void }>({
               ? 'expected-network-test'
               : ownership
                 ? 'expected-ownership-404'
-                : 'unexpected',
+                : adminConflict
+                  ? 'expected-admin-stale-409'
+                  : 'unexpected',
         });
       });
       await use();

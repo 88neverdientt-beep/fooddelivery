@@ -200,7 +200,7 @@ class SecurityMySqlIntegrationTest extends AuthTestKeys {
             if(!entry.getValue().getBeanType().getPackageName().equals("vn.gaugaugau.fooddelivery.controller"))continue;
             for(var verb:entry.getKey().getMethodsCondition().getMethods())for(String pattern:entry.getKey().getPatternValues()) {
                 String method=verb.name(),path=pattern;Set<String> allowed=policy(method,pattern);endpoints++;
-                Map<String,Long> ids=Map.of("customerId",people.get("CUSTOMER").profile(),"restaurantId",people.get("RESTAURANT").profile(),"driverId",people.get("DRIVER").profile(),"orderId",order,"deliveryId",delivery,"cartItemId",cartItem,"restaurantFoodItemId",menu,"itemId",food,"ratingId",rating);
+                Map<String,Long> ids=Map.ofEntries(Map.entry("accountId",people.get("CUSTOMER").account()),Map.entry("customerId",people.get("CUSTOMER").profile()),Map.entry("restaurantId",people.get("RESTAURANT").profile()),Map.entry("driverId",people.get("DRIVER").profile()),Map.entry("orderId",order),Map.entry("deliveryId",delivery),Map.entry("cartItemId",cartItem),Map.entry("restaurantFoodItemId",menu),Map.entry("itemId",food),Map.entry("ratingId",rating));
                 for(var id:ids.entrySet())path=path.replace("{"+id.getKey()+"}",id.getValue().toString());
                 assertFalse(path.contains("{"),"Unresolved endpoint "+pattern);
                 final String target=path;
@@ -221,9 +221,10 @@ class SecurityMySqlIntegrationTest extends AuthTestKeys {
                 }
             }
         }
-        assertEquals(59,endpoints,"New or removed endpoints require matrix review");
+        assertEquals(71,endpoints,"New or removed endpoints require matrix review");
     }
     private Set<String> policy(String method,String p) {
+        if(p.startsWith("/admin-management/"))return Set.of("ADMIN");
         if(p.startsWith("/driver-management/"))return Set.of("DRIVER");
         if(p.startsWith("/restaurant-management/"))return Set.of("RESTAURANT");
         if(method.equals("GET") && (p.equals("/")||p.startsWith("/food-items")||p.equals("/food-categories")||p.startsWith("/restaurant-food-items")||p.equals("/restaurants")||p.equals("/restaurants/search")||p.equals("/restaurants/{restaurantId}")||p.equals("/restaurants/{restaurantId}/menu")||p.contains("/ratings")))return Set.of("PUBLIC");
