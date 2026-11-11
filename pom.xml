@@ -28,6 +28,9 @@
 	</scm>
 	<properties>
 		<java.version>25</java.version>
+        <!-- Phase8 SEC-02: targeted same-line patches for verified Jackson/Tomcat advisories. -->
+        <jackson-bom.version>3.1.7</jackson-bom.version>
+        <tomcat.version>11.0.27</tomcat.version>
 	</properties>
 	<dependencies>
 

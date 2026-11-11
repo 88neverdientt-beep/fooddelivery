@@ -15,6 +15,9 @@ import lombok.Setter;
 @Builder
 public class DriverUpdateRequestDTO extends StrictRequest {
 
+    @jakarta.validation.constraints.PositiveOrZero
+    private Long expectedVersion;
+
 	@NotBlank(message = "Name cannot be blank")
 	@Size(max = 100, message = "Name must not exceed 100 characters")
 	private String name;

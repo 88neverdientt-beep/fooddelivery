@@ -10,5 +10,5 @@ import vn.gaugaugau.fooddelivery.utils.ApiResponse;
 public class AccountAdminController {
     private final AuthService auth;
     @GetMapping public ResponseEntity<?> list(){return ApiResponse.success(auth.listAccounts());}
-    @PutMapping("/{id}/status") public ResponseEntity<?> status(@PathVariable Long id,@Valid @RequestBody Status status){return ApiResponse.success(auth.setStatus(id,status.status(),status.expectedStatus()));}
+    @PutMapping("/{id}/status") public ResponseEntity<?> status(@PathVariable Long id,@Valid @RequestBody Status status){return ApiResponse.success(auth.setStatus(id,status.status(),status.expectedStatus(),status.expectedVersion()));}
 }

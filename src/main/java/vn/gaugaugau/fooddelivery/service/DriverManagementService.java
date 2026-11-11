@@ -122,6 +122,7 @@ public class DriverManagementService {
     public Analytics analytics(String from, String to) {
         LocalDate end = date(to); if (end == null) end = LocalDate.now();
         LocalDate start = date(from); if (start == null) start = end.minusDays(29);
+        if (start.getYear() < 1) throw bad("Unsupported date");
         if (end.isBefore(start) || ChronoUnit.DAYS.between(start, end) >= 93) throw bad("Range must be 1..93 days");
         var states = new LinkedHashMap<String, Long>();
         for (var state : DeliveryStatus.values()) states.put(state.name(), 0L);

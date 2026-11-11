@@ -25,6 +25,7 @@ import vn.gaugaugau.fooddelivery.utils.exception.*;
 @Service @RequiredArgsConstructor
 @Transactional(isolation=Isolation.READ_COMMITTED)
 public class AuthService {
+    @org.springframework.beans.factory.annotation.Value("${fooddelivery.concurrency.require-preconditions:false}") private boolean requirePreconditions;
     @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
     private final AccountRepository accounts;
     private final AuthSessionRepository sessions;
@@ -140,6 +141,10 @@ public class AuthService {
     }
     @PreAuthorize("hasRole('ADMIN')")
     public Me setStatus(Long id,AccountStatus status,AccountStatus expectedStatus) {
+        return setStatus(id,status,expectedStatus,null);
+    }
+    @PreAuthorize("hasRole('ADMIN')")
+    public Me setStatus(Long id,AccountStatus status,AccountStatus expectedStatus,Long expectedVersion) {
         if(id==null || id<=0 || status==null)throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Valid account and status required");
         // Serialize administrator status writers before taking any target-account lock.
         // Refresh managed entries as disableProfile may have loaded an account earlier.
@@ -154,6 +159,7 @@ public class AuthService {
         var session=sessions.findLockedById(actor.sessionId()).orElseThrow(AuthFailure::new);
         entityManager.refresh(session,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
         if(!session.getAccount().getAccountId().equals(acting.getAccountId()) || !session.isActiveAt(LocalDateTime.now(clock)))throw new AuthFailure();
+        vn.gaugaugau.fooddelivery.utils.VersionPreconditions.check(expectedVersion,a.getVersion(),requirePreconditions);
         if(a.getAccountId().equals(acting.getAccountId()) && status==AccountStatus.DISABLED)throw new ResponseStatusException(HttpStatus.CONFLICT,"Cannot disable the current administrator");
         if(expectedStatus!=null && a.getStatus()!=expectedStatus)throw new ResponseStatusException(HttpStatus.CONFLICT,"Account status changed; reload before retrying");
         if(a.getRole()==Role.ADMIN && a.getStatus()==AccountStatus.ACTIVE && status==AccountStatus.DISABLED

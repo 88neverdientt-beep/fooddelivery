@@ -17,6 +17,19 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+    @ExceptionHandler({org.springframework.web.HttpRequestMethodNotSupportedException.class,
+        org.springframework.web.HttpMediaTypeNotSupportedException.class,
+        org.springframework.web.HttpMediaTypeNotAcceptableException.class,
+        org.springframework.web.bind.ServletRequestBindingException.class})
+    public ResponseEntity<ApiResponse<Object>> handleRequestContract(Exception exception) {
+        var error = (org.springframework.web.ErrorResponse) exception;
+        HttpStatus status = HttpStatus.valueOf(error.getStatusCode().value());
+        // Preserve protocol headers (notably Allow), without reflecting input or exception details.
+        return ResponseEntity.status(status).headers(error.getHeaders())
+            .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+            .body(new ApiResponse<>(status, status.getReasonPhrase(), null, String.valueOf(status.value())));
+    }
+
     @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
     public ResponseEntity<?> authentication(Exception e){return ApiResponse.error(HttpStatus.UNAUTHORIZED,"Authentication failed");}
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
@@ -24,6 +37,7 @@ public class GlobalExceptionHandler {
 
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleAllException(Exception e) {
+        org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class).atError().addKeyValue("exceptionType",e.getClass().getName()).log("Unhandled request failed");
 		return ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected server error occurred");
 	}
 

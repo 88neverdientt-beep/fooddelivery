@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 @Builder
 public class DriverResponseDTO {
 
+    private Long version;
+
 	private Long driverId;
 	private String name;
 	private String email;

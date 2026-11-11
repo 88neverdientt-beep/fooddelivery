@@ -29,6 +29,10 @@ import lombok.Setter;
 @Builder
 public class Customer {
 
+    @jakarta.persistence.Version
+    @Column(name="version",nullable=false)
+    private Long version;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "customer_id")

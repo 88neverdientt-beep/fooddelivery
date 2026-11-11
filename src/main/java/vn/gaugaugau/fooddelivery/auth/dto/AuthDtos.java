@@ -12,8 +12,9 @@ public final class AuthDtos {
         @JsonAnySetter public void unknown(String key,Object value){throw new IllegalArgumentException("Unexpected request field");}
         public String toString(){return "ChangePassword[redacted]";}
     }
-    public record Status(@NotNull AccountStatus status, AccountStatus expectedStatus) {
-        public Status(AccountStatus status){this(status,null);}
+    public record Status(@NotNull AccountStatus status, AccountStatus expectedStatus, @PositiveOrZero Long expectedVersion) {
+        public Status(AccountStatus status){this(status,null,null);}
+        public Status(AccountStatus status,AccountStatus expectedStatus){this(status,expectedStatus,null);}
         @JsonAnySetter public void unknown(String key,Object value){throw new IllegalArgumentException("Unexpected request field");}
     }
     public record Me(Long accountId,String email,Role role,AccountStatus status,Long customerId,Long restaurantId,Long driverId){}

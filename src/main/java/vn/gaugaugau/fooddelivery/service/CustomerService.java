@@ -20,6 +20,8 @@ import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 @Service
 @RequiredArgsConstructor
 public class CustomerService {
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
+    @org.springframework.beans.factory.annotation.Value("${fooddelivery.concurrency.require-preconditions:false}") private boolean requirePreconditions;
 
 	private final CustomerRepository customerRepository;
 	private final PasswordEncoder passwordEncoder;
@@ -28,6 +30,7 @@ public class CustomerService {
 	private CustomerResponseDTO customerToCustomerResponseDTO(Customer customer) {
 		CustomerResponseDTO response = new CustomerResponseDTO();
 		response.setCustomerId(customer.getCustomerId());
+        response.setVersion(customer.getVersion());
 		response.setName(customer.getName());
 		response.setEmail(customer.getEmail());
 		response.setPhoneNumber(customer.getPhoneNumber());
@@ -75,14 +78,16 @@ public class CustomerService {
 
 
 	public CustomerResponseDTO updateCustomerById(Long customerId, CustomerUpdateRequestDTO request) {
-		Customer customer = customerRepository.findById(customerId)
+		Customer customer = customerRepository.findLockedById(customerId)
 				.orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));
 
+        entityManager.refresh(customer,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        vn.gaugaugau.fooddelivery.utils.VersionPreconditions.check(request.getExpectedVersion(),customer.getVersion(),requirePreconditions);
 		customer.setName(request.getName());
 		customer.setPhoneNumber(request.getPhoneNumber());
 		customer.setAddress(request.getAddress());
 
-		Customer updatedCustomer = customerRepository.save(customer);
+		Customer updatedCustomer = customerRepository.saveAndFlush(customer);
 		return customerToCustomerResponseDTO(updatedCustomer);
 	}
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")

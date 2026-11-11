@@ -67,10 +67,42 @@ export async function logout(page: Page) {
   await page.getByRole('button', { name: 'Menu tài khoản' }).click();
   await page.getByRole('menuitem', { name: 'Đăng xuất', exact: true }).click();
   await expect(page).toHaveURL(/\/login$/);
+  // A URL change precedes completion of the lazy route. Starting the next hard
+  // navigation here aborted AuthPages and its imports in Firefox.
+  await expect(
+    page.getByRole('heading', { name: 'Chào mừng bạn trở lại', exact: true }),
+  ).toBeVisible();
 }
 export async function noHorizontalOverflow(page: Page) {
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
-    true,
+  const geometry = await page.evaluate(() => {
+    const width = document.documentElement.scrollWidth;
+    return {
+      documentWidth: width,
+      viewportWidth: window.innerWidth,
+      path: window.location.pathname,
+      overflowing:
+        width > window.innerWidth
+          ? [...document.querySelectorAll('*')]
+              .flatMap((element) => {
+                const rect = element.getBoundingClientRect();
+                return rect.right > window.innerWidth && rect.width > 0
+                  ? [
+                      {
+                        tag: element.tagName,
+                        class: element.getAttribute('class'),
+                        left: rect.left,
+                        right: rect.right,
+                        width: rect.width,
+                      },
+                    ]
+                  : [];
+              })
+              .slice(0, 30)
+          : [],
+    };
+  });
+  expect(geometry.documentWidth, JSON.stringify(geometry)).toBeLessThanOrEqual(
+    geometry.viewportWidth,
   );
 }
 export async function assertNoStoredSecrets(context: BrowserContext, page: Page) {
@@ -99,6 +131,16 @@ export async function capture(
   mkdirSync(directory, { recursive: true });
   for (const image of await page.locator('img:visible').all()) {
     await image.scrollIntoViewIfNeeded();
+    // Lazy image requests start after the scroll has been rendered. Firefox can
+    // reject decode() before that request exists, even for a valid local image.
+    await expect
+      .poll(() =>
+        image.evaluate((element) => {
+          const img = element as HTMLImageElement;
+          return img.complete && img.naturalWidth > 0;
+        }),
+      )
+      .toBe(true);
     await image.evaluate((element) => (element as HTMLImageElement).decode());
   }
   await page.evaluate(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }));
@@ -107,4 +149,12 @@ export async function capture(
     fullPage: options.fullPage ?? true,
     animations: 'disabled',
   });
+}
+
+/** Browser-only acceptance of the private localhost test CA; Node/API and independent TLS probes validate the CA. */
+export function isolatedBrowserOptions(baseURL: string) {
+  const localTls = process.env.FOOD_E2E_LOCAL_TLS === 'true';
+  if (localTls && baseURL !== 'https://localhost:18443')
+    throw new Error('Private CA browser exception is restricted to Stage8 loopback');
+  return { baseURL, ignoreHTTPSErrors: localTls };
 }

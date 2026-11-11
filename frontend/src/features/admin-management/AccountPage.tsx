@@ -19,7 +19,7 @@ export function AccountStatusActions({ row }: { row: AccountRow }) {
   const next = row.status === 'ACTIVE' ? 'DISABLED' : 'ACTIVE';
   const action = useAdminMutation(
     (input: { status: 'ACTIVE' | 'DISABLED'; expectedStatus: 'ACTIVE' | 'DISABLED' }) =>
-      adminApi.status(row.accountId, input.status, input.expectedStatus),
+      adminApi.status(row.accountId, input.status, input.expectedStatus, row.version),
     () => adminApi.account(row.accountId),
     (fresh) => cache.setQueryData([...key, 'account', row.accountId], fresh),
   );

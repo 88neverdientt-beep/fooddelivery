@@ -9,6 +9,9 @@ import vn.gaugaugau.fooddelivery.model.Restaurant;
 
 @Repository
 public interface RestaurantRepository extends JpaRepository<Restaurant, Long> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select p from Restaurant p where p.restaurantId=:id")
+    java.util.Optional<Restaurant> findLockedById(@org.springframework.data.repository.query.Param("id") Long id);
 
     @org.springframework.data.jpa.repository.Query("""
         select r from Restaurant r

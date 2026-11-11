@@ -66,7 +66,7 @@ Chỉ sử dụng một origin frontend chuẩn trong cùng browser profile: kh�
 
 Đã tích hợp nhà hàng/thực đơn phân trang server, chi tiết món, cart, checkout COD, đơn/history/detail, trạng thái, hủy/đổi địa chỉ, đánh giá và sửa hồ sơ. Xem [kiến trúc](../docs/phase4-architecture.md), [route](../docs/phase4-customer-routes.md), [API](../docs/phase4-api-integration.md), [test](../docs/phase4-test-results.md) và [bàn giao](../docs/phase4-result.md). Phần Phạm vi Giai đoạn3 phía trên mô tả lịch sử nền tảng; các chức năng Customer tương ứng đã được thay bằng luồng thật, các role khác vẫn theo giai đoạn riêng.
 
-Backend cần bản có6 GET chỉ đọc đã phê duyệt; không chạy migration/schema update khi khởi động. Kiểm thử độc lập dùng MySQL127.0.0.1:3307/fooddelivery_stage4_e2e và ddl-auto=validate. Không dùng database fooddelivery hoặc3306; không reset rehearsal. Bằng chứng/config/credential riêng nằm ngoài Git tại F:/New folder/food-delivery-mysql-test/phase4-20261109. App SQL account chỉ có SELECT/INSERT/UPDATE/DELETE trên database Stage4; migrator test riêng chỉ có quyền trên database này.
+Backend cần bản có6 GET chỉ đọc đã phê duyệt; không chạy migration/schema update khi khởi động. Kiểm thử độc lập dùng MySQL127.0.0.1:3307/fooddelivery_stage4_e2e và ddl-auto=validate. Không dùng database fooddelivery hoặc3309; không reset rehearsal. Bằng chứng/config/credential riêng nằm ngoài Git tại F:/New folder/food-delivery-mysql-test/phase4-20261109. App SQL account chỉ có SELECT/INSERT/UPDATE/DELETE trên database Stage4; migrator test riêng chỉ có quyền trên database này.
 
 Để chạy E2E, đặt FOOD_E2E_CREDENTIAL_FILE tới credentials.json bên ngoài repository; file giữ schema auth cũ và stage4 gồm các ID QA thật (restaurantId,otherRestaurantId,closedRestaurantId,menuId,secondMenuId,unavailableMenuId,otherMenuId,closedMenuId,codPaymentMethodId,restaurantName,foodName,secondFoodName,customerId,otherCustomerId). Không copy file này vào frontend, VITE env hoặc Git. Chuẩn bị PASSWORD_CUSTOMER mới cho mỗi lượt kiểm tra password. New Customer E2E tự đăng ký fixture riêng qua API; không sửa trạng thái đơn bằng SQL. API Restaurant/Driver chỉ dùng từ test được phân quyền để hoàn tất COD.
 
@@ -87,7 +87,7 @@ Sau kiểm thử phải dừng tiến trình mình khởi động, giữ datadir
 
 Dashboard/profile/menu/order processing/reviews/analytics đã dùng API thật. Xem [kiến trúc](../docs/phase5-architecture.md), [routes](../docs/phase5-restaurant-routes.md), [API](../docs/phase5-api-integration.md), [quy tắc](../docs/phase5-business-rules.md), [kết quả](../docs/phase5-test-results.md), [bàn giao](../docs/phase5-result.md). Chỉ RESTAURANT; giá và trạng thái bán thuộc menu riêng, FoodItem là catalog chung. Thêm/sửa/availability có baseline expected pair; không retry mutation. Khi kết quả chưa rõ phải đọc máy chủ; bản nháp cũ cần rebase tường minh.
 
-Backend phải có bốn GET management và conditional PUT đã phê duyệt. Schema/dependency/auth client giữ nguyên. Test mới dùng fooddelivery_stage5_e2e trên127.0.0.1:3307, Hibernate validate/OSIV=false; tuyệt đối không ghi3306/fooddelivery hoặc reset Stage1/2/4. External evidence tại F:/New folder/food-delivery-mysql-test/phase5-20261109.
+Backend phải có bốn GET management và conditional PUT đã phê duyệt. Schema/dependency/auth client giữ nguyên. Test mới dùng fooddelivery_stage5_e2e trên127.0.0.1:3307, Hibernate validate/OSIV=false; tuyệt đối không ghi3309/fooddelivery hoặc reset Stage1/2/4. External evidence tại F:/New folder/food-delivery-mysql-test/phase5-20261109.
 
 Chạy typecheck, lint, format:check, test, build và test:e2e như phần trên. Đổi biến FOOD_E2E_CREDENTIAL_FILE/RESULTS_FILE/SCREENSHOT_DIR/DIAGNOSTIC_DIR sang thư mục Stage5; credential còn khóa stage4 để hồi quy cũ và bổ sung OTHER_RESTAURANT. Chuẩn bị PASSWORD_CUSTOMER mới mỗi lượt auth password E2E. Không đưa credential vào VITE env, source, Git hoặc output báo cáo. Chỉ một frontend origin localhost4173 với backend18080.
 
@@ -99,7 +99,7 @@ Tài xế dùng auth/session hiện có. Bảy route mới dưới /driver: dash
 
 Xem [architecture](../docs/phase6-architecture.md), [routes](../docs/phase6-driver-routes.md), [API](../docs/phase6-api-integration.md), [rules](../docs/phase6-business-rules.md), [security](../docs/phase6-security-tests.md), [test results](../docs/phase6-test-results.md), [result](../docs/phase6-result.md). Backend có bốn GET Driver đã phê duyệt; quyền65route cũ, schema/dependency/isolation giữ nguyên. Bản sửa cancelOrder đọc lại Delivery dưới khóa Order→Delivery đã được phê duyệt riêng, kèm test snapshot và assertion hồi quy.
 
-Test mới chỉ fooddelivery_stage6_e2e ở127.0.0.1:3307, validate/OSIV=false, backend18080/previewlocalhost4173. Evidence/config bên ngoài Git tại F:/New folder/food-delivery-mysql-test/phase6-20261109. Credential schema giữ stage4 cho hồi quy và thêm DRIVER_OTHER. Không reset rehearsal Stage1–5 hoặc ghi3306/fooddelivery. Chuẩn bị PASSWORD_CUSTOMER mới cho auth regression.
+Test mới chỉ fooddelivery_stage6_e2e ở127.0.0.1:3307, validate/OSIV=false, backend18080/previewlocalhost4173. Evidence/config bên ngoài Git tại F:/New folder/food-delivery-mysql-test/phase6-20261109. Credential schema giữ stage4 cho hồi quy và thêm DRIVER_OTHER. Không reset rehearsal Stage1–5 hoặc ghi3309/fooddelivery. Chuẩn bị PASSWORD_CUSTOMER mới cho auth regression.
 
 Chạy các lệnh typecheck/lint/format:check/test/build ở trên; chạy E2E Driver bằng npm.cmd exec playwright -- test driver.spec.ts và hồi quy bằng: npm.cmd exec playwright -- test auth.spec.ts customer.spec.ts restaurant.spec.ts responsive.spec.ts ui-upgrade.spec.ts. Đổi FOOD_E2E_* evidence sang Stage6. Hai batch chạy riêng với backend test được sở hữu khởi động lại giữa lượt, giữ nguyên limiter10/email100/IP/15phút, không nâng/tắt bảo mật để đạt PASS. Không chạy song song cùng fixture hoặc hai frontend origin chung cookie.
 
@@ -115,7 +115,7 @@ KPI toàn tập có định nghĩa nguồn/kỳ: mọi thời gian tách cohort 
 
 Cache theo account; invalidate sau mutation, không optimistic hoặc tự retry POST/PUT khi chưa rõ kết quả. Status recovery GET đúng account, GET lỗi giữ khóa/manual check. Tạo profile response mất thì clear password, kiểm email/role chính xác trong GET có giới hạn; không thấy ở page đầu không chứng minh chưa tạo. Password chỉ memory, không trim/lowercase hoặc persist. Hồ sơ ADMIN dùng Me; không name/role editor giả.
 
-Test Giai đoạn7 chỉ fooddelivery_stage7_e2e ở127.0.0.1:3307, validate/OSIV=false. Schema-only từ Stage6, fixture mới;3QA lịch sử không copy/repair. Evidence/config/credential và scripts ở F:/New folder/food-delivery-mysql-test/phase7-20261110, ngoài Git. Không chạy server/test với datasource main3306. Không dùng các script test như migration production.
+Test Giai đoạn7 chỉ fooddelivery_stage7_e2e ở127.0.0.1:3307, validate/OSIV=false. Schema-only từ Stage6, fixture mới;3QA lịch sử không copy/repair. Evidence/config/credential và scripts ở F:/New folder/food-delivery-mysql-test/phase7-20261110, ngoài Git. Không chạy server/test với datasource main3309. Không dùng các script test như migration production.
 
 Playwright dùng ba batch trên cùng artifact: admin.spec.ts (20), driver.spec.ts (16), rồi auth.spec.ts/customer.spec.ts/restaurant.spec.ts/responsive.spec.ts/ui-upgrade.spec.ts (34). Khởi động lại đúng backend test giữa batch để giữ limiter hiện có, không tắt/nâng hạn mức. Fixture credential JSON cần các role cũ, stage4/catalog metadata, DRIVER_OTHER/OTHER_RESTAURANT và ADMIN_OTHER/ADMIN_BROWSER_C/D/E/ADMIN_RACE_A/B; tất cả random và ngoài Git. Race actors/PASSWORD_CUSTOMER phải tạo fixture mới nếu chạy lại, không reset dữ liệu cũ để che kết quả. Các ADMIN browser được phân bổ để không vượt10login/email/15phút.
 
@@ -130,3 +130,41 @@ npm.cmd exec playwright -- test auth.spec.ts customer.spec.ts restaurant.spec.ts
 ```
 
 Xem [architecture](../docs/phase7-architecture.md), [routes](../docs/phase7-admin-routes.md), [API](../docs/phase7-api-integration.md), [business rules](../docs/phase7-business-rules.md), [security](../docs/phase7-security-tests.md), [test results](../docs/phase7-test-results.md), [handover](../docs/phase7-result.md). Backend/runtime test và preview phải dừng sau nghiệm thu; giữ logs/data và không dừng MySQL80 hoặc tiến trình chưa xác minh chủ sở hữu. Không commit/push/deploy.
+
+## Phase 8 — audit and isolated HTTPS staging
+
+The UI now submits the revision displayed by Customer/Restaurant/Driver/Admin forms.
+A stale/ABA revision returns409, preserves the draft and requires explicit reload;
+background refetch must not silently replace the revision. New Zod bootstrap configuration
+uses `jitless` parsing so a strict `script-src self` CSP does not trigger dynamic-code probes.
+No unsafe-eval exception was added. Unit/component verification is309 tests at this revision.
+Authentication snapshots are published once by AuthProvider so route guards and protected
+children observe the same logout/account-switch state. Pointer-opened mobile navigation
+explicitly focuses its trigger so Escape also works on WebKit.
+
+Browser environment: FOOD_E2E_BROWSER=chromium|firefox|webkit. For the private local CA only,
+FOOD_E2E_BASE_URL=https://localhost:18443 and FOOD_E2E_LOCAL_TLS=true restrict browser TLS
+exceptions to that origin. Node/API probes additionally trust the external CA using
+NODE_EXTRA_CA_CERTS; independent Python probes verify the CA and hostname. This is not
+public production TLS certification. The Windows root trust store was not changed.
+
+The existing70 cases run for each engine; `e2e/phase8.spec.ts` adds strict precondition,
+actual ABA draft retention, concurrent cart and HTTP contract cases. Run these extra cases
+only with the isolated backend's `fooddelivery.concurrency.require-preconditions=true`.
+Invoke `npm.cmd exec playwright -- test --config playwright.phase8.config.ts` for those
+five cases. The added full-audit case verifies fractional menu/cart/checkout prices;
+the original four security/concurrency cases remain unchanged. The default config
+contains the 70 compatibility cases. Both configurations
+are mandatory acceptance gates; separating their server modes does not disable a gate.
+Compatibility regressions retain the defaultfalse. Do not run audit logins in parallel
+with shared E2E actors or weaken the login limiter after a harness-induced429.
+
+See [staging](../docs/phase8-staging-guide.md), [cross-browser results](../docs/phase8-cross-browser.md),
+[performance](../docs/phase8-performance-results.md) and [handover](../docs/phase8-result.md).
+Retain all failed/interrupted attempts as evidence and report them separately from the
+frozen-artifact acceptance run. No public hosting or frontend authentication rewrite.
+
+Full audit, 11 November 2026:315 frontend unit/component tests, plus70 compatibility
+and5 strict cases per browser. The current audit also fixes stale retry401 session
+invalidation and preserves two server decimal places when displaying money. See the
+[full-audit results](../docs/full-audit-test-results.md); Phase8 counts above are history.

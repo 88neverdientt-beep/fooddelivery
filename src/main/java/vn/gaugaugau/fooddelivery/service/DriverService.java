@@ -20,6 +20,8 @@ import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 @Service
 @RequiredArgsConstructor
 public class DriverService {
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
+    @org.springframework.beans.factory.annotation.Value("${fooddelivery.concurrency.require-preconditions:false}") private boolean requirePreconditions;
 
 	private final DriverRepository driverRepository;
 	private final PasswordEncoder passwordEncoder;
@@ -28,6 +30,7 @@ public class DriverService {
 	private DriverResponseDTO driverToDriverResponseDTO(Driver driver) {
 		DriverResponseDTO response = new DriverResponseDTO();
 		response.setDriverId(driver.getDriverId());
+        response.setVersion(driver.getVersion());
 		response.setName(driver.getName());
 		response.setEmail(driver.getEmail());
 		response.setPhoneNumber(driver.getPhoneNumber());
@@ -80,9 +83,11 @@ public class DriverService {
 
 
 	public DriverResponseDTO updateDriverById(Long driverId, DriverUpdateRequestDTO request) {
-		Driver driver = driverRepository.findById(driverId)
+		Driver driver = driverRepository.findLockedById(driverId)
 				.orElseThrow(() -> new ResourceNotFoundException("Driver not found with ID: " + driverId));
 
+        entityManager.refresh(driver,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        vn.gaugaugau.fooddelivery.utils.VersionPreconditions.check(request.getExpectedVersion(),driver.getVersion(),requirePreconditions);
 		driver.setName(request.getName());
 		driver.setPhoneNumber(request.getPhoneNumber());
 		driver.setAddress(request.getAddress());
@@ -93,7 +98,7 @@ public class DriverService {
 			driver.setDriveStatus(request.getDriveStatus());
 		}
 
-		Driver updatedDriver = driverRepository.save(driver);
+		Driver updatedDriver = driverRepository.saveAndFlush(driver);
 		return driverToDriverResponseDTO(updatedDriver);
 	}
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")

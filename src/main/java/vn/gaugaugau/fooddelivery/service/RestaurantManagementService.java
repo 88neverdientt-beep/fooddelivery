@@ -26,16 +26,21 @@ public class RestaurantManagementService {
     private Long own() { return CurrentActor.get().restaurantId(); }
     private static void bad(String message) { throw new ResponseStatusException(HttpStatus.BAD_REQUEST,message); }
     private static LocalDate date(String value) {
-        try { return value == null || value.isBlank() ? null : LocalDate.parse(value); }
+        try {
+            if(value==null || value.isBlank()) return null;
+            LocalDate date=LocalDate.parse(value);
+            if(date.getYear()<1 || date.getYear()>9998) bad("Unsupported date");
+            return date;
+        }
         catch (java.time.format.DateTimeParseException exception) { bad("Invalid ISO date"); return null; }
     }
     private <T> PageResponse<T> result(List<T> items,int page,int size,long total) {
         return new PageResponse<>(items,page,size,total,(int)((total+size-1)/size));
     }
     public Profile profile() {
-        return jdbc.queryForObject("SELECT restaurant_id,name,address,phone_number,restaurant_status,created_at FROM restaurants WHERE restaurant_id=?",
+        return jdbc.queryForObject("SELECT restaurant_id,name,address,phone_number,restaurant_status,created_at,version FROM restaurants WHERE restaurant_id=?",
             (rs,n)->new Profile(rs.getLong(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getBoolean(5),
-                rs.getTimestamp(6)==null?null:rs.getTimestamp(6).toLocalDateTime()),own());
+                rs.getTimestamp(6)==null?null:rs.getTimestamp(6).toLocalDateTime(),rs.getLong(7)),own());
     }
     public PageResponse<CatalogItem> catalog(String q,String category,int page,int size) {
         ReadQuery.page(page,size,org.springframework.data.domain.Sort.unsorted());
@@ -68,6 +73,7 @@ public class RestaurantManagementService {
     }
     public Analytics analytics(String from,String to) {
         LocalDate end=date(to);if(end==null)end=LocalDate.now();LocalDate start=date(from);if(start==null)start=end.minusDays(29);
+        if(start.getYear()<1 || end.getYear()>9998)bad("Unsupported date range");
         if(end.isBefore(start)||ChronoUnit.DAYS.between(start,end)>=93)bad("Range must be 1..93 days");
         Long id=own();Object[] period={id,start.atStartOfDay(),end.plusDays(1).atStartOfDay()};
         String cohort=" FROM orders o WHERE o.restaurant_id=? AND o.created_at>=? AND o.created_at<?";

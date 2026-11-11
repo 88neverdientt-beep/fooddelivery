@@ -160,3 +160,58 @@ it('does not retry a wrong current password or a network-uncertain mutation', as
   expect(g.changePassword).toHaveBeenCalledTimes(1);
   expect(g.refresh).not.toHaveBeenCalled();
 });
+
+it('does not clear a newer account when an older retried GET returns 401', async () => {
+  const g = gateway();
+  const s = new Session(g, immediateLock);
+  await s.login(credentials);
+  let rejectRetry!: (reason: unknown) => void;
+  const retried = vi.fn();
+  const transport = vi
+    .fn()
+    .mockRejectedValueOnce(new ApiError(401, '401'))
+    .mockImplementationOnce(() => {
+      retried();
+      return new Promise((_, reject) => {
+        rejectRetry = reject;
+      });
+    }) as unknown as Transport;
+  const request = s.request(transport, '/private');
+  const rejected = expect(request).rejects.toMatchObject({ name: 'AbortError' });
+  await vi.waitFor(() => expect(retried).toHaveBeenCalledOnce());
+  g.me = vi.fn().mockResolvedValue({ ...account(), accountId: 2, customerId: 2 });
+  await s.login({ ...credentials, email: 'user2@test.example' });
+  const current = s.getSnapshot();
+  rejectRetry(new ApiError(401, '401'));
+  await rejected;
+  expect(s.getSnapshot()).toBe(current);
+  expect(s.getSnapshot().account?.accountId).toBe(2);
+  expect(transport).toHaveBeenCalledTimes(2);
+});
+
+it('does not invalidate the current session for an aborted retried GET', async () => {
+  const g = gateway();
+  const s = new Session(g, immediateLock);
+  await s.login(credentials);
+  const abort = new AbortController();
+  let rejectRetry!: (reason: unknown) => void;
+  const retried = vi.fn();
+  const transport = vi
+    .fn()
+    .mockRejectedValueOnce(new ApiError(401, '401'))
+    .mockImplementationOnce(() => {
+      retried();
+      return new Promise((_, reject) => {
+        rejectRetry = reject;
+      });
+    }) as unknown as Transport;
+  const request = s.request(transport, '/private', { signal: abort.signal });
+  const rejected = expect(request).rejects.toMatchObject({ name: 'AbortError' });
+  await vi.waitFor(() => expect(retried).toHaveBeenCalledOnce());
+  const current = s.getSnapshot();
+  abort.abort();
+  rejectRetry(new ApiError(401, '401'));
+  await rejected;
+  expect(s.getSnapshot()).toBe(current);
+  expect(transport).toHaveBeenCalledTimes(2);
+});

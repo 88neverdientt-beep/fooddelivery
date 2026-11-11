@@ -7,5 +7,8 @@ import vn.gaugaugau.fooddelivery.model.Driver;
 
 @Repository
 public interface DriverRepository extends JpaRepository<Driver, Long> {
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select p from Driver p where p.driverId=:id")
+    java.util.Optional<Driver> findLockedById(@org.springframework.data.repository.query.Param("id") Long id);
 	boolean existsByEmail(String email);
 }

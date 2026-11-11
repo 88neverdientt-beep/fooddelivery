@@ -20,6 +20,8 @@ import vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException;
 @Service
 @RequiredArgsConstructor
 public class RestaurantService {
+    @jakarta.persistence.PersistenceContext private jakarta.persistence.EntityManager entityManager;
+    @org.springframework.beans.factory.annotation.Value("${fooddelivery.concurrency.require-preconditions:false}") private boolean requirePreconditions;
 
 	private final RestaurantRepository restaurantRepository;
 	private final PasswordEncoder passwordEncoder;
@@ -28,6 +30,7 @@ public class RestaurantService {
 	private RestaurantResponseDTO restaurantToRestaurantResponseDTO(Restaurant restaurant) {
 		RestaurantResponseDTO response = new RestaurantResponseDTO();
 		response.setRestaurantId(restaurant.getRestaurantId());
+        response.setVersion(restaurant.getVersion());
 		response.setName(restaurant.getName());
 		response.setEmail(restaurant.getEmail());
 		response.setPhoneNumber(restaurant.getPhoneNumber());
@@ -74,9 +77,11 @@ public class RestaurantService {
 
 
 	public RestaurantResponseDTO updateRestaurantById(Long restaurantId, RestaurantUpdateRequestDTO request) {
-		Restaurant restaurant = restaurantRepository.findById(restaurantId)
+		Restaurant restaurant = restaurantRepository.findLockedById(restaurantId)
 				.orElseThrow(() -> new ResourceNotFoundException("Restaurant not found with ID: " + restaurantId));
 
+        entityManager.refresh(restaurant,jakarta.persistence.LockModeType.PESSIMISTIC_WRITE);
+        vn.gaugaugau.fooddelivery.utils.VersionPreconditions.check(request.getExpectedVersion(),restaurant.getVersion(),requirePreconditions);
 		restaurant.setName(request.getName());
 		restaurant.setPhoneNumber(request.getPhoneNumber());
 		restaurant.setAddress(request.getAddress());
@@ -84,7 +89,7 @@ public class RestaurantService {
 			restaurant.setRestaurantStatus(request.getRestaurantStatus());
 		}
 
-		Restaurant updatedRestaurant = restaurantRepository.save(restaurant);
+		Restaurant updatedRestaurant = restaurantRepository.saveAndFlush(restaurant);
 		return restaurantToRestaurantResponseDTO(updatedRestaurant);
 	}
     @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")

@@ -20,6 +20,7 @@ export function DriverProfileForm({
   const form = useForm<ProfileInput>({
     resolver: zodResolver(profileInput),
     defaultValues: {
+      ...(profile.version === undefined ? {} : { expectedVersion: profile.version }),
       name: profile.name,
       phoneNumber: profile.phoneNumber,
       address: profile.address,
@@ -36,6 +37,7 @@ export function DriverProfileForm({
         const saved = await onSave(value);
         if (saved)
           form.reset({
+            ...(saved.version === undefined ? {} : { expectedVersion: saved.version }),
             name: saved.name,
             phoneNumber: saved.phoneNumber,
             address: saved.address,
@@ -83,6 +85,22 @@ export function DriverProfileForm({
             Lưu hồ sơ tài xế
           </Button>
         </div>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() =>
+            form.reset({
+              name: profile.name,
+              address: profile.address,
+              phoneNumber: profile.phoneNumber,
+              licensePlate: profile.licensePlate || '',
+              driveStatus: profile.driveStatus === true,
+              ...(profile.version === undefined ? {} : { expectedVersion: profile.version }),
+            })
+          }
+        >
+          Nạp hồ sơ hiện tại
+        </Button>
       </fieldset>
     </form>
   );

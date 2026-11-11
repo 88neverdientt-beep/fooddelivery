@@ -1,0 +1,63 @@
+# Review-only template. Never activate against an unmigrated database.
+# Supply secrets through an external protected environment/configuration provider.
+spring:
+  datasource:
+    url: ${FOOD_DB_URL} # require sslMode=VERIFY_IDENTITY and a trusted server CA
+    username: ${FOOD_DB_USERNAME}
+    password: ${FOOD_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: false
+  lifecycle:
+    timeout-per-shutdown-phase: 30s
+server:
+  address: 127.0.0.1
+  port: 18080
+  shutdown: graceful
+  forward-headers-strategy: none
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+management:
+  server:
+    address: 127.0.0.1
+    port: 19090
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      show-details: never
+      probes:
+        enabled: true
+fooddelivery:
+  auth:
+    persistence-enabled: true
+    access-token-ttl: 10m
+    refresh-session-ttl: 7d
+  jwt:
+    issuer: ${FOOD_JWT_ISSUER}
+    audience: ${FOOD_JWT_AUDIENCE}
+    private-key-path: ${FOOD_JWT_PRIVATE_KEY_PATH}
+    public-key-path: ${FOOD_JWT_PUBLIC_KEY_PATH}
+    allowed-origins:
+      - ${FOOD_WEB_ORIGIN}
+  concurrency:
+    # Mandatory preconditions were approved/tested only on isolated staging.
+    # Keep legacy consumers compatible; production activation needs separate review.
+    require-preconditions: false
+logging:
+  structured:
+    format:
+      console: logstash
+  level:
+    root: INFO
+    org.springframework.web: INFO
+    org.hibernate.SQL: WARN

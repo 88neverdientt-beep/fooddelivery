@@ -99,7 +99,12 @@ export function PublicLayout() {
               aria-expanded={open}
               aria-controls="mobile-navigation"
               aria-label={open ? 'Đóng điều hướng' : 'Mở điều hướng'}
-              onClick={() => setOpen(!open)}
+              onClick={(event) => {
+                // WebKit does not necessarily focus a button after a pointer click.
+                // Keep Escape events inside the header and restore a visible focus target.
+                event.currentTarget.focus();
+                setOpen(!open);
+              }}
             >
               {open ? <X /> : <Menu />}
             </button>

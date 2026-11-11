@@ -184,6 +184,8 @@ export class Session {
       try {
         result = await http<T>(path, { ...options, token: this.state.accessToken! });
       } catch (error) {
+        if (retryGeneration !== this.state.generation || options.signal?.aborted)
+          throw new DOMException('Request cancelled', 'AbortError');
         if (error instanceof ApiError && error.status === 401) this.clear();
         throw error;
       }

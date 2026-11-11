@@ -2,7 +2,6 @@ package vn.gaugaugau.fooddelivery.service;
 
 import java.math.BigDecimal;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.springframework.http.HttpStatus;
@@ -48,17 +47,22 @@ public class CartItemService {
 	}
 
 	public Cart getOrCreateCart(Customer customer) {
-		Optional<Cart> cart = this.cartRepository.findByCustomer_CustomerId(customer.getCustomerId());
-		if (cart.isPresent()) {
-			return cart.get();
-		} else {
-			return this.cartRepository.save(Cart.builder().customer(customer).build());
-		}
+		cartRepository.ensureCustomerCart(customer.getCustomerId());
+        Cart cart = cartRepository.findLockedByCustomerId(customer.getCustomerId())
+            .orElseThrow(() -> new ResourceNotFoundException("Cart not found"));
+        // The caller immediately rebuilds the restaurant reference from locked
+        // current item rows. Do not refresh this aggregate: CascadeType.ALL would
+        // also refresh its collection through a separate snapshot read.
+        return cart;
 	}
     @org.springframework.security.access.prepost.PreAuthorize("@access.profile('CUSTOMER',#customerId,false)")
 
 
 
+    // Customer serialization remains in place; READ_COMMITTED avoids next-key gap
+    // locks between empty item ranges belonging to different customers.
+    // Other writers and the server's default REPEATABLE_READ remain unchanged.
+    @org.springframework.transaction.annotation.Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
 	public CartItemResponseDTO addCartItemToCart(Long customerId, CartItemRequestDTO request) {
 		Customer customer = this.customerRepository.findLockedById(customerId)
 				.orElseThrow(() -> new ResourceNotFoundException("Customer not found with ID: " + customerId));

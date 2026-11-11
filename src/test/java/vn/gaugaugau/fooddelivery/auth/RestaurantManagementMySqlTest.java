@@ -139,7 +139,8 @@ class RestaurantManagementMySqlTest extends AuthTestKeys {
     @Test void managementProfileUsesPrincipalAndExcludesCredentialFields() throws Exception {
         var result=(Map<?,?>)body(mvc.perform(authenticated("/restaurant-management/profile?restaurantId="+otherRestaurant,"RESTAURANT")).andReturn()).get("data");
         assertEquals(restaurant.longValue(),((Number)result.get("restaurantId")).longValue());
-        assertEquals(Set.of("restaurantId","name","address","phoneNumber","restaurantStatus","createdAt"),result.keySet());
+        assertEquals(Set.of("restaurantId","name","address","phoneNumber","restaurantStatus","createdAt","version"),result.keySet());
+        assertEquals(0L,((Number)result.get("version")).longValue());
         for(String path:List.of("profile","catalog","orders","analytics")) {
             assertEquals(401,mvc.perform(get("/restaurant-management/"+path)).andReturn().getResponse().getStatus());
             for(String role:List.of("CUSTOMER","DRIVER","ADMIN"))assertEquals(403,mvc.perform(authenticated("/restaurant-management/"+path,role)).andReturn().getResponse().getStatus());

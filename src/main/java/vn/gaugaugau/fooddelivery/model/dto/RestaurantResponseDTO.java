@@ -15,6 +15,8 @@ import java.time.LocalDateTime;
 @Builder
 public class RestaurantResponseDTO {
 
+    private Long version;
+
 	private Long restaurantId;
 	private String name;
 	private String email;

@@ -25,6 +25,7 @@ export function RestaurantProfileForm({
   const form = useForm<ProfileInput>({
     resolver: zodResolver(profileInput),
     defaultValues: {
+      ...(profile.version === undefined ? {} : { expectedVersion: profile.version }),
       name: profile.name,
       address: profile.address,
       phoneNumber: profile.phoneNumber,
@@ -40,6 +41,7 @@ export function RestaurantProfileForm({
         const saved = await onSave(value);
         if (saved)
           form.reset({
+            ...(saved.version === undefined ? {} : { expectedVersion: saved.version }),
             name: saved.name,
             address: saved.address,
             phoneNumber: saved.phoneNumber,
@@ -73,6 +75,21 @@ export function RestaurantProfileForm({
         </Checkbox>
         <Button type="submit" busy={busy}>
           Lưu thông tin nhà hàng
+        </Button>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() =>
+            form.reset({
+              name: profile.name,
+              address: profile.address,
+              phoneNumber: profile.phoneNumber,
+              restaurantStatus: profile.restaurantStatus,
+              ...(profile.version === undefined ? {} : { expectedVersion: profile.version }),
+            })
+          }
+        >
+          Nạp hồ sơ hiện tại
         </Button>
       </fieldset>
     </form>

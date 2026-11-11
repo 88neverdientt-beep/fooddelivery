@@ -53,6 +53,7 @@ export const menuSchema = z.object({
 });
 export type MenuItem = z.infer<typeof menuSchema>;
 export const profileSchema = z.object({
+  version: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
   name: z.string(),
   address: z.string(),
   phoneNumber: z.string().optional(),

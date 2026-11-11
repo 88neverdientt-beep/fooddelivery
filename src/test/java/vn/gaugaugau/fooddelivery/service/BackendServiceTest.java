@@ -54,6 +54,7 @@ class BackendServiceTest {
         when(customers.existsById(1L)).thenReturn(true);
         when(customers.findLockedById(1L)).thenReturn(Optional.of(customer));
         when(carts.findByCustomer_CustomerId(1L)).thenReturn(Optional.of(cart));
+        when(carts.findLockedByCustomerId(1L)).thenReturn(Optional.of(cart));
         when(items.findByCart_CartId(5L)).thenReturn(new ArrayList<>(List.of(item)));
         when(items.findLockedByCartId(5L)).thenReturn(new ArrayList<>(List.of(item)));
         when(items.findLockedById(6L)).thenReturn(Optional.of(item));

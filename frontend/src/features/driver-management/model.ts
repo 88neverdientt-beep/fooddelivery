@@ -17,6 +17,7 @@ export const deliveryLabels: Record<DeliveryStatus, string> = {
   CANCELLED: 'Đã hủy',
 };
 export const profileSchema = z.object({
+  version: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
   driverId: idSchema,
   name: z.string(),
   email: z.string(),
@@ -27,6 +28,7 @@ export const profileSchema = z.object({
   createdAt: z.string().nullable(),
 });
 export const profileInput = z.object({
+  expectedVersion: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
   name: z.string().trim().min(1, 'Nhập họ tên.').max(100),
   phoneNumber: z.string().trim().min(1, 'Nhập số điện thoại.').max(15),
   address: z.string().trim().min(1, 'Nhập địa chỉ.').max(255),

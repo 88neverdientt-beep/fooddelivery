@@ -19,6 +19,7 @@ import vn.gaugaugau.fooddelivery.model.Driver;
     @UniqueConstraint(name="uq_accounts_driver",columnNames="driver_id")})
 @Getter @Setter @Builder @NoArgsConstructor @AllArgsConstructor
 public class Account {
+    @Version @Column(name="version",nullable=false) private Long version;
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY)
     @Column(name="account_id") private Long accountId;
     @Column(nullable=false,length=255) private String email;

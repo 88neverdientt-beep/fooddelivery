@@ -3,6 +3,7 @@ import { orderSchema } from '@/features/orders/model';
 import { menuSchema } from '@/types/domain';
 export const positiveId = z.number().int().positive().max(Number.MAX_SAFE_INTEGER);
 export const profileSchema = z.object({
+  version: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
   restaurantId: positiveId,
   name: z.string(),
   address: z.string(),
@@ -11,6 +12,7 @@ export const profileSchema = z.object({
   createdAt: z.string().nullable(),
 });
 export const profileInput = z.object({
+  expectedVersion: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
   name: z.string().trim().min(1, 'Nhập tên nhà hàng.').max(150),
   address: z.string().trim().min(1, 'Nhập địa chỉ.').max(255),
   phoneNumber: z.string().trim().min(1, 'Nhập số điện thoại.').max(15),

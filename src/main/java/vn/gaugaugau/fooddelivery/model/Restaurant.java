@@ -26,6 +26,10 @@ import java.util.List;
 @Builder
 public class Restaurant {
 
+    @jakarta.persistence.Version
+    @Column(name="version",nullable=false)
+    private Long version;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "restaurant_id")

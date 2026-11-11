@@ -2,6 +2,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { createTransport, ApiError } from '@/lib/api/http';
 import { createAuthGateway } from '@/features/auth/gateway';
 import { Session } from '@/features/auth/session';
+import { clearIdentityCaches } from '@/features/auth/query-cache';
 export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -18,10 +19,7 @@ const channel =
 export const session = new Session(
   createAuthGateway(http),
   undefined,
-  () => {
-    void queryClient.cancelQueries();
-    queryClient.clear();
-  },
+  () => clearIdentityCaches(queryClient),
   (event) => channel?.postMessage(event),
 );
 if (channel)

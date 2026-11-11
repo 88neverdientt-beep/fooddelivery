@@ -20,6 +20,7 @@ import { useAdminMutation, AdminActionNotice } from './shared';
 export const editProfileSchema = z
   .object({
     kind: z.enum(['restaurant', 'driver']),
+    expectedVersion: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
     name: z.string().trim().min(1, 'Nhập tên hồ sơ.').max(150),
     phoneNumber: z.string().trim().min(1, 'Nhập số liên hệ.').max(15),
     address: z.string().trim().min(1, 'Nhập địa chỉ.').max(255),
@@ -34,6 +35,7 @@ export const editProfileSchema = z
   });
 type EditProfile = z.infer<typeof editProfileSchema>;
 type Editable = {
+  version?: number;
   name: string;
   phoneNumber: string;
   address: string;
@@ -43,6 +45,7 @@ type Editable = {
 };
 const values = (kind: EditProfile['kind'], p: Editable): EditProfile => ({
   kind,
+  ...(p.version === undefined ? {} : { expectedVersion: p.version }),
   name: p.name,
   phoneNumber: p.phoneNumber,
   address: p.address,
@@ -81,7 +84,12 @@ export function AdminProfileEditor({
       if (!stillCurrent()) throw new DOMException('Account changed', 'AbortError');
       if (JSON.stringify(values(kind, fresh)) !== JSON.stringify(values(kind, profile)))
         throw new ApiError(409, 'STALE_PROFILE');
-      const common = { name: input.name, phoneNumber: input.phoneNumber, address: input.address };
+      const common = {
+        name: input.name,
+        phoneNumber: input.phoneNumber,
+        address: input.address,
+        ...(input.expectedVersion === undefined ? {} : { expectedVersion: input.expectedVersion }),
+      };
       if (kind === 'restaurant')
         await adminApi.saveRestaurant(id, {
           ...common,

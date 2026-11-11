@@ -42,7 +42,9 @@ async function openCart(page: Page) {
   await expect(page.getByRole('heading', { name: 'Giỏ hàng của bạn', exact: true })).toBeVisible();
 }
 async function addThroughFoodPage(page: Page, quantity = 1) {
-  await page.goto(foodPath());
+  // A link can publish this URL before its lazy component has mounted. Do not
+  // unload that document again while the component is starting its queries.
+  if (new URL(page.url()).pathname !== foodPath()) await page.goto(foodPath());
   await expect(page.getByRole('heading', { name: stage4.foodName, exact: true })).toBeVisible();
   await page.getByRole('spinbutton', { name: 'Số lượng', exact: true }).fill(String(quantity));
   const added = page.waitForResponse(
@@ -52,6 +54,10 @@ async function addThroughFoodPage(page: Page, quantity = 1) {
   );
   await page.getByRole('button', { name: 'Thêm vào giỏ hàng', exact: true }).click();
   expect((await added).status()).toBe(201);
+  // The response arrives before onSuccess has reconciled the cart. Starting a
+  // hard navigation here can start that refetch in the unloading document.
+  await expect(page.getByRole('link', { name: 'Xem giỏ hàng', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Thêm vào giỏ hàng', exact: true })).toBeEnabled();
 }
 async function checkoutThroughPage(page: Page, address: string, doubleClick = false) {
   await page.goto('/customer/checkout');
@@ -272,7 +278,10 @@ test('customer real COD ordering, address changes, cancellation, completion, rat
     expect(profileResponse.status()).toBe(200);
     expect(
       Object.keys(profileResponse.request().postDataJSON() as Record<string, unknown>).sort(),
-    ).toEqual(['address', 'name', 'phoneNumber']);
+    ).toEqual(['address', 'expectedVersion', 'name', 'phoneNumber']);
+    expect(Number.isSafeInteger(profileResponse.request().postDataJSON().expectedVersion)).toBe(
+      true,
+    );
     const profile = await customer.actor.read(
       `/api/customers/${customer.actor.account.customerId}`,
       profileSchema,
@@ -554,6 +563,11 @@ test('customer checkout network failure after real server commit reconciles with
     await expect(recover).toBeEnabled();
     await recover.click();
     await expect(page).toHaveURL(new RegExp(`/customer/orders/${committedOrderId}$`));
+    // The URL commits before the lazy detail module/CSS finishes loading.
+    // Reload only once the recovered order is actually rendered.
+    await expect(
+      page.getByRole('heading', { name: `Đơn hàng #${committedOrderId}`, exact: true }),
+    ).toBeVisible();
     await page.reload();
     await expect(
       page.getByRole('heading', { name: `Đơn hàng #${committedOrderId}`, exact: true }),

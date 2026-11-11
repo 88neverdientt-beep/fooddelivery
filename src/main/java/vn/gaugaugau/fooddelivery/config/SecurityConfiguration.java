@@ -30,6 +30,9 @@ public class SecurityConfiguration {
         var cors=new CorsConfiguration();cors.setAllowedOrigins(settings.allowedOrigins());cors.setAllowCredentials(true);
         cors.setAllowedMethods(List.of("GET","POST","PUT","PATCH","DELETE","OPTIONS"));cors.setAllowedHeaders(List.of("Authorization","Content-Type","X-XSRF-TOKEN"));
         var source=new UrlBasedCorsConfigurationSource();source.registerCorsConfiguration("/**",cors);http.cors(c->c.configurationSource(source));
+        http.headers(h->h.contentSecurityPolicy(p->p.policyDirectives("default-src 'none'; frame-ancestors 'none'; base-uri 'none'; form-action 'none'"))
+            .referrerPolicy(r->r.policy(org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER))
+            .addHeaderWriter(new org.springframework.security.web.header.writers.StaticHeadersWriter("Permissions-Policy","camera=(), microphone=(), geolocation=()")));
         http.formLogin(f->f.disable()).httpBasic(b->b.disable()).logout(l->l.disable()).requestCache(c->c.disable())
             .sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.exceptionHandling(e->e.authenticationEntryPoint((r,s,x)->error(s,401)).accessDeniedHandler((r,s,x)->error(s,403)));
@@ -74,4 +77,18 @@ public class SecurityConfiguration {
             .anyRequest().denyAll());
         return http.build();
     }
+    @Bean @org.springframework.core.annotation.Order(0)
+    SecurityFilterChain managementSecurity(HttpSecurity http,SessionJwtConverter converter,
+        @org.springframework.beans.factory.annotation.Value("${management.server.port:0}") int managementPort,
+        @org.springframework.beans.factory.annotation.Value("${server.port:8080}") int applicationPort) throws Exception {
+        http.securityMatcher(r->managementPort>0 && managementPort!=applicationPort && r.getLocalPort()==managementPort && path(r).startsWith("/actuator"))
+            .csrf(c->c.disable()).formLogin(c->c.disable()).httpBasic(c->c.disable()).logout(c->c.disable()).requestCache(c->c.disable())
+            .sessionManagement(c->c.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+            .authorizeHttpRequests(a->a.requestMatchers(HttpMethod.GET,"/actuator/health","/actuator/health/liveness","/actuator/health/readiness").permitAll()
+                .requestMatchers(HttpMethod.GET,"/actuator/metrics","/actuator/metrics/**").hasRole("ADMIN").anyRequest().denyAll())
+            .exceptionHandling(e->e.authenticationEntryPoint((r,s,x)->error(s,401)).accessDeniedHandler((r,s,x)->error(s,403)))
+            .oauth2ResourceServer(o->o.jwt(j->j.jwtAuthenticationConverter(converter)).authenticationEntryPoint((r,s,x)->error(s,401)).accessDeniedHandler((r,s,x)->error(s,403)));
+        return http.build();
+    }
+
 }

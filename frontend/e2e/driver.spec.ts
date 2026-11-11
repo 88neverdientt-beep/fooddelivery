@@ -1,3 +1,4 @@
+import { isolatedBrowserOptions } from './helpers';
 import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { randomBytes, randomUUID } from 'node:crypto';
@@ -98,7 +99,7 @@ async function confirmRestaurant(page: Page, name: string, id: number) {
   await expect(page.getByRole('dialog')).toHaveCount(0);
 }
 async function extraPage(browser: Browser) {
-  const context = await browser.newContext({ baseURL: base });
+  const context = await browser.newContext(isolatedBrowserOptions(base));
   const page = await context.newPage();
   let errors = 0;
   page.on('pageerror', () => errors++);

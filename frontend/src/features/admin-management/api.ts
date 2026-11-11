@@ -122,15 +122,21 @@ export function createAdminApi(request: Request, identity: () => Account | null)
       accountId: number,
       status: 'ACTIVE' | 'DISABLED',
       expectedStatus: 'ACTIVE' | 'DISABLED',
+      expectedVersion?: number,
     ) => {
       actor();
       const body = z
         .object({
           status: z.enum(['ACTIVE', 'DISABLED']),
           expectedStatus: z.enum(['ACTIVE', 'DISABLED']),
+          expectedVersion: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
         })
         .strict()
-        .parse({ status, expectedStatus });
+        .parse({
+          status,
+          expectedStatus,
+          ...(expectedVersion === undefined ? {} : { expectedVersion }),
+        });
       const raw = await request(`/admin/accounts/${id.parse(accountId)}/status`, {
         method: 'PUT',
         body,

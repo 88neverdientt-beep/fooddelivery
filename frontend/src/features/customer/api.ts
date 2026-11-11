@@ -4,6 +4,7 @@ import { http, session } from '@/lib/runtime';
 import type { Account } from '@/types/domain';
 
 export const customerProfileInput = z.object({
+  expectedVersion: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
   name: z.string().trim().min(1, 'Vui lòng nhập họ và tên.').max(100, 'Họ tên tối đa 100 ký tự.'),
   phoneNumber: z
     .string()
@@ -13,6 +14,7 @@ export const customerProfileInput = z.object({
   address: z.string().trim().min(1, 'Vui lòng nhập địa chỉ.').max(255, 'Địa chỉ tối đa 255 ký tự.'),
 });
 export const customerSchema = z.object({
+  version: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
   customerId: z.number().int().positive().max(Number.MAX_SAFE_INTEGER),
   name: z.string(),
   email: z.string(),

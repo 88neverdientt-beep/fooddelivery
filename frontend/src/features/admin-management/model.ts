@@ -35,6 +35,7 @@ export const managedAccountSchema = z
     'Invalid linked profile',
   );
 export const accountRowSchema = managedAccountSchema.safeExtend({
+  version: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
   createdAt: time,
   name: z.string().nullable(),
 });
@@ -60,6 +61,7 @@ export const restaurantRowSchema = z.object({
   menuCount: count,
 });
 export const restaurantDetailSchema = restaurantRowSchema.extend({
+  version: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER).optional(),
   email: z.string(),
   phoneNumber: z.string(),
 });

@@ -14,7 +14,7 @@ type Edit = { actor: Actor; input: CustomerProfileInput };
 export function CustomerProfile({
   profile,
 }: {
-  profile: { name: string; phoneNumber?: string; address: string };
+  profile: { name: string; phoneNumber?: string; address: string; version?: number };
 }) {
   const { account } = useAuth();
   const authSession = useSession();
@@ -24,6 +24,7 @@ export function CustomerProfile({
   const form = useForm<CustomerProfileInput>({
     resolver: zodResolver(customerProfileInput),
     defaultValues: {
+      ...(profile.version === undefined ? {} : { expectedVersion: profile.version }),
       name: profile.name,
       phoneNumber: profile.phoneNumber || '',
       address: profile.address,
@@ -55,7 +56,12 @@ export function CustomerProfile({
       cache.setQueryData(['account', actor.accountId, 'profile'], saved);
       await cache.invalidateQueries({ queryKey: ['account', actor.accountId, 'profile'] });
       if (!sameActor(actor)) return;
-      form.reset({ name: saved.name, phoneNumber: saved.phoneNumber, address: saved.address });
+      form.reset({
+        name: saved.name,
+        phoneNumber: saved.phoneNumber,
+        address: saved.address,
+        ...(saved.version === undefined ? {} : { expectedVersion: saved.version }),
+      });
       setEditing(false);
       toast('Đã cập nhật hồ sơ của bạn.');
     },
@@ -64,6 +70,7 @@ export function CustomerProfile({
   const open = () => {
     mutation.reset();
     form.reset({
+      ...(profile.version === undefined ? {} : { expectedVersion: profile.version }),
       name: profile.name,
       phoneNumber: profile.phoneNumber || '',
       address: profile.address,

@@ -1,3 +1,4 @@
+import './lib/schema-config';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import '@fontsource/be-vietnam-pro/latin-400.css';

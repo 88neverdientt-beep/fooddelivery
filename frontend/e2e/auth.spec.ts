@@ -1,3 +1,4 @@
+import { isolatedBrowserOptions } from './helpers';
 import { expect } from '@playwright/test';
 import { test } from './fixtures';
 import { randomUUID, randomBytes } from 'node:crypto';
@@ -136,7 +137,7 @@ test('logout-all revokes a second browser session and clears private UI', async 
 }) => {
   const user = fixtures.CUSTOMER_OTHER;
   await login(page, 'CUSTOMER', user);
-  const second = await browser.newContext({ baseURL: new URL(page.url()).origin });
+  const second = await browser.newContext(isolatedBrowserOptions(new URL(page.url()).origin));
   try {
     const other = await second.newPage();
     const token = await login(other, 'CUSTOMER', user);
@@ -180,14 +181,25 @@ test('two tabs serialize refresh rotation without revoking the shared session', 
 test('403, 404, empty catalog filtering and actual network failure have clear states', async ({
   page,
 }) => {
-  await page.goto('/403');
+  const visit = async (path: string) => {
+    // Public headings can render while guest restoration is still pending.
+    // Settle that request before the next hard navigation destroys its document.
+    const restoration = page.waitForResponse(
+      (response) =>
+        new URL(response.url()).pathname === '/api/auth/refresh' &&
+        response.request().method() === 'POST',
+    );
+    await page.goto(path);
+    expect((await restoration).status()).toBe(401);
+  };
+  await visit('/403');
   await expect(page.getByRole('heading', { name: 'Lối này dành cho vai trò khác' })).toBeVisible();
-  await page.goto('/does-not-exist');
+  await visit('/does-not-exist');
   await expect(page.getByRole('heading', { name: 'Có vẻ bạn đã đi lạc một chút' })).toBeVisible();
-  await page.goto('/restaurants?q=unmatchable-' + randomUUID());
+  await visit('/restaurants?q=unmatchable-' + randomUUID());
   await expect(page.getByRole('heading', { name: 'Chưa tìm thấy quán phù hợp' })).toBeVisible();
   await page.route('**/api/restaurants/search?*', (route) => route.abort('internetdisconnected'));
-  await page.goto('/restaurants');
+  await visit('/restaurants');
   await expect(page.getByRole('alert')).toContainText('Không kết nối được máy chủ');
   await page.unroute('**/api/restaurants/search?*');
   await page.getByRole('button', { name: 'Thử lại' }).click();

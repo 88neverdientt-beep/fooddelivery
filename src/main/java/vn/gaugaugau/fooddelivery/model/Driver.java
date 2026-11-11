@@ -26,6 +26,10 @@ import java.util.List;
 @Builder
 public class Driver {
 
+    @jakarta.persistence.Version
+    @Column(name="version",nullable=false)
+    private Long version;
+
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "driver_id")

@@ -18,3 +18,11 @@ it('retains Vietnamese category labels and handles empty catalog', () => {
   expect(categoriesFrom([])).toEqual([]);
 });
 it('formats server prices as Vietnamese đồng', () => expect(money(45000)).toContain('45.000'));
+it.each([
+  [0.01, '0,01'],
+  [25000.5, '25.000,5'],
+  [25000.25, '25.000,25'],
+  [9999999999.99, '9.999.999.999,99'],
+])('preserves the server decimal amount %s in the displayed price', (value, expected) => {
+  expect(money(value)).toContain(expected);
+});
