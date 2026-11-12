@@ -1,0 +1,57 @@
+# Review-only external Windows runtime configuration. Never activated automatically.
+# Use --spring.config.additional-location=file:<protected-runtime-file> after approval.
+spring:
+  datasource:
+    url: ${FOOD_DB_URL}
+    username: ${FOOD_DB_USERNAME}
+    password: ${FOOD_DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    show-sql: false
+  sql:
+    init:
+      mode: never
+server:
+  address: 127.0.0.1
+  port: 18090
+  shutdown: graceful
+  forward-headers-strategy: none
+  error:
+    include-message: never
+    include-stacktrace: never
+management:
+  server:
+    address: 127.0.0.1
+    port: 19100
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics
+  endpoint:
+    health:
+      show-details: never
+fooddelivery:
+  auth:
+    persistence-enabled: true
+    access-token-ttl: 10m
+    refresh-session-ttl: 7d
+  jwt:
+    issuer: ${FOOD_JWT_ISSUER}
+    audience: ${FOOD_JWT_AUDIENCE}
+    private-key-path: ${FOOD_JWT_PRIVATE_KEY_PATH}
+    public-key-path: ${FOOD_JWT_PUBLIC_KEY_PATH}
+    allowed-origins:
+      - ${FOOD_WEB_ORIGIN}
+  concurrency:
+    require-preconditions: false
+# AdminBootstrap is a separate CLI gated by FOOD_ADMIN_BOOTSTRAP_ENABLED.
+# Leave that environment flag false; YAML does not authorize the CLI.
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: WARN

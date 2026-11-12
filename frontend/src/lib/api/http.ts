@@ -33,6 +33,7 @@ export interface RequestOptions {
   token?: string;
   headers?: Record<string, string>;
   signal?: AbortSignal;
+  responseType?: 'blob';
 }
 export type Transport = <T>(path: string, options?: RequestOptions) => Promise<T>;
 export function createTransport(
@@ -72,6 +73,15 @@ export function createTransport(
       });
       if (!response.ok) throw new ApiError(response.status, String(response.status));
       if (response.status === 204) return undefined as T;
+      if (options.responseType === 'blob') {
+        if (
+          !response.headers
+            .get('Content-Type')
+            ?.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+        )
+          throw new ApiError(502, 'CONTRACT');
+        return (await response.blob()) as T;
+      }
       const body: unknown = await response.json();
       if (path === '/auth/csrf') return body as T;
       if (

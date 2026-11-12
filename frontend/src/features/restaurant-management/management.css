@@ -76,6 +76,13 @@
   align-items: center;
   flex-wrap: wrap;
 }
+.management-row.restaurant-menu-row {
+  grid-template-columns: minmax(0, 1fr);
+}
+.restaurant-menu-row .button {
+  max-width: 100%;
+  white-space: normal;
+}
 .management-form {
   max-width: 760px;
   background: var(--paper);

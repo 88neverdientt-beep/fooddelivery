@@ -41,8 +41,12 @@ public class SecurityConfiguration {
         http.oauth2ResourceServer(o->o.bearerTokenResolver(r->(publicAuth.contains(path(r)) || (r.getMethod().equals("POST") && path(r).equals("/customers")))?null:resolver.resolve(r))
             .jwt(j->j.jwtAuthenticationConverter(converter)).authenticationEntryPoint((r,s,x)->error(s,401)).accessDeniedHandler((r,s,x)->error(s,403)));
         http.authorizeHttpRequests(a->a
+            .requestMatchers(HttpMethod.GET,"/admin-management/orders/export.xlsx").hasRole("ADMIN")
+            .requestMatchers(HttpMethod.GET,"/restaurant-management/orders/export.xlsx").hasRole("RESTAURANT")
+            .requestMatchers(HttpMethod.GET,"/admin-management/restaurants/export.xlsx").hasRole("ADMIN")
             .requestMatchers(HttpMethod.GET,"/admin-management/accounts","/admin-management/accounts/*","/admin-management/customers","/admin-management/restaurants","/admin-management/restaurants/*","/admin-management/drivers","/admin-management/orders","/admin-management/deliveries","/admin-management/deliveries/*","/admin-management/payments","/admin-management/reviews","/admin-management/analytics").hasRole("ADMIN")
             .requestMatchers(HttpMethod.GET,"/driver-management/deliveries","/driver-management/deliveries/*","/driver-management/available","/driver-management/analytics").hasRole("DRIVER")
+            .requestMatchers(HttpMethod.GET,"/restaurant-management/menu/export.xlsx","/restaurant-management/menu/by-food/*").hasRole("RESTAURANT")
             .requestMatchers(HttpMethod.GET,"/restaurant-management/profile","/restaurant-management/catalog","/restaurant-management/orders","/restaurant-management/analytics").hasRole("RESTAURANT")
             .requestMatchers(HttpMethod.GET,"/","/auth/csrf","/food-items","/food-items/*","/food-categories","/restaurants","/restaurants/*","/restaurant-food-items","/restaurant-food-items/*","/restaurants/*/menu","/restaurants/*/ratings","/restaurants/*/ratings/average","/restaurants/*/ratings/page").permitAll()
             .requestMatchers(HttpMethod.POST,"/auth/login","/auth/register/customer","/auth/refresh","/auth/logout","/customers").permitAll()

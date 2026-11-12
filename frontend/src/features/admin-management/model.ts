@@ -248,6 +248,26 @@ export const createProfileSchema = z
     path: ['confirmPassword'],
     message: 'Mật khẩu xác nhận chưa khớp.',
   });
+// Restaurant-only rules: Driver/profile contracts remain unchanged.
+export const createRestaurantSchema = createProfileSchema.safeExtend({
+  name: z.string().trim().min(1, 'Nhập tên nhà hàng.').max(150, 'Tên nhà hàng tối đa 150 ký tự.'),
+  email: z
+    .string()
+    .trim()
+    .min(1, 'Nhập email đăng nhập.')
+    .max(255, 'Email tối đa 255 ký tự.')
+    .regex(
+      /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/,
+      'Email chưa đúng định dạng được hỗ trợ.',
+    ),
+  phoneNumber: z
+    .string()
+    .trim()
+    .min(1, 'Nhập số điện thoại.')
+    .max(15, 'Số điện thoại tối đa 15 ký tự.')
+    .regex(/^\+?[0-9]+$/, 'Số điện thoại chỉ gồm chữ số và có thể bắt đầu bằng dấu +.'),
+  address: z.string().trim().min(1, 'Nhập địa chỉ nhà hàng.').max(255, 'Địa chỉ tối đa 255 ký tự.'),
+});
 export type CreateProfileInput = z.infer<typeof createProfileSchema>;
 export function dateValid(value: string) {
   if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;

@@ -1,0 +1,14 @@
+docs/phase8-2-blocker-analysis.md
+docs/phase8-2-browser-matrix.md
+docs/phase8-2-files.txt
+docs/phase8-2-production-readiness.md
+docs/phase8-2-result.md
+docs/phase8-2-security-audit.md
+docs/phase8-2-test-results.md
+frontend/e2e/customer.spec.ts
+frontend/e2e/fixtures.ts
+frontend/e2e/helpers.ts
+src/main/java/vn/gaugaugau/fooddelivery/auth/migration/AuthMigrationPreflight.java
+src/test/java/vn/gaugaugau/fooddelivery/FullAuditTargetGuardTest.java
+src/test/java/vn/gaugaugau/fooddelivery/auth/ApprovedMySqlTestTarget.java
+src/test/java/vn/gaugaugau/fooddelivery/auth/Phase8ConcurrencyMySqlTest.java

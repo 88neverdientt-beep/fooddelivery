@@ -72,6 +72,55 @@ export function createRestaurantApi(request: Request, identity: () => Account | 
     },
     menuItem: async (id: number, signal?: AbortSignal) =>
       menuOwner(await read(`/restaurant-food-items/${positiveId.parse(id)}`, menuSchema, signal)),
+    ownByFood: async (foodId: number, signal?: AbortSignal) => {
+      const result = menuOwner(
+        await read(
+          `/restaurant-management/menu/by-food/${positiveId.parse(foodId)}`,
+          menuSchema,
+          signal,
+        ),
+      );
+      if (result.foodItem.itemId !== foodId) throw new ApiError(502, 'CONTRACT');
+      return result;
+    },
+    exportOrders: async (filters: Filters = {}, signal?: AbortSignal) => {
+      const owner = own();
+      const selected = Object.fromEntries(
+        Object.entries(filters).filter(([key]) =>
+          ['q', 'sort', 'status', 'from', 'to'].includes(key),
+        ),
+      );
+      const result = await request(
+        `/restaurant-management/orders/export.xlsx?${apiQuery(selected)}`,
+        { signal, responseType: 'blob' },
+      );
+      if (own() !== owner) throw new DOMException('Account changed', 'AbortError');
+      if (
+        !(result instanceof Blob) ||
+        !result.type.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      )
+        throw new ApiError(502, 'CONTRACT');
+      return result;
+    },
+    exportMenu: async (filters: Filters = {}, signal?: AbortSignal) => {
+      const restaurantId = own();
+      const selected = Object.fromEntries(
+        Object.entries(filters).filter(([key]) =>
+          ['q', 'category', 'available', 'sort'].includes(key),
+        ),
+      );
+      const result = await request(
+        `/restaurant-management/menu/export.xlsx?${apiQuery(selected)}`,
+        { signal, responseType: 'blob' },
+      );
+      if (own() !== restaurantId) throw new DOMException('Account changed', 'AbortError');
+      if (
+        !(result instanceof Blob) ||
+        !result.type.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      )
+        throw new ApiError(502, 'CONTRACT');
+      return result;
+    },
     catalog: (filters: Filters = {}, signal?: AbortSignal) =>
       read(
         `/restaurant-management/catalog?${apiQuery({ page: 0, size: 12, ...filters })}`,

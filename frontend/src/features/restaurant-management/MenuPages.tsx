@@ -11,6 +11,8 @@ import { Alert, EmptyState, ErrorState, Skeleton } from '@/components/feedback';
 import { money } from '@/features/public/api';
 import { pageFrom, validId } from '@/features/public/model';
 import { restaurantApi } from './api';
+import { MenuCreationPanel } from './MenuCreationPanel';
+import { MenuExport } from './MenuExport';
 import { menuInput, sameMenu, type MenuInput, type CatalogItem } from './model';
 import {
   useRestaurant,
@@ -108,7 +110,9 @@ export function RestaurantMenuPage() {
   const [params, setParams] = useSearchParams();
   const page = pageFrom(params);
   const q = (params.get('q') || '').slice(0, 100);
-  const status = params.get('available') || 'all';
+  const status = ['true', 'false'].includes(params.get('available') || '')
+    ? params.get('available')!
+    : 'all';
   const sort = ['price-asc', 'price-desc'].includes(params.get('sort') || '')
     ? params.get('sort')!
     : 'name';
@@ -145,10 +149,13 @@ export function RestaurantMenuPage() {
         title="Thực đơn nhà hàng"
         description="Quản lý giá và trạng thái bán của các món thuộc nhà hàng bạn."
         action={
-          <Link className="button button-primary" to="/restaurant/menu/new">
-            <Plus size={18} />
-            Thêm món
-          </Link>
+          <div className="management-actions">
+            <MenuExport key={JSON.stringify(filters)} filters={filters} />
+            <Link className="button button-primary" to="/restaurant/menu/new">
+              <Plus size={18} />
+              Thêm món
+            </Link>
+          </div>
         }
       />
       <form
@@ -194,7 +201,10 @@ export function RestaurantMenuPage() {
             />
           ) : (
             data.data.items.map((item) => (
-              <article className="management-row" key={item.restaurantFoodItemId}>
+              <article
+                className="management-row restaurant-menu-row"
+                key={item.restaurantFoodItemId}
+              >
                 <div>
                   <h2>
                     <Utensils size={19} /> {item.foodItem.name}
@@ -252,6 +262,7 @@ export function RestaurantMenuEditor() {
   const { key } = useRestaurant();
   const [params, setParams] = useSearchParams();
   const [selected, setSelected] = useState<CatalogItem>();
+  const [selectionLocked, setSelectionLocked] = useState(false);
   const q = (params.get('q') || '').slice(0, 100);
   const page = pageFrom(params);
   const valid = !id || validId(id);
@@ -319,7 +330,11 @@ export function RestaurantMenuEditor() {
                       {food.category} · {food.description}
                     </p>
                   </div>
-                  <Button variant="secondary" onClick={() => setSelected(food)}>
+                  <Button
+                    variant="secondary"
+                    disabled={selectionLocked}
+                    onClick={() => setSelected(food)}
+                  >
                     Chọn {food.name}
                   </Button>
                 </article>
@@ -337,16 +352,13 @@ export function RestaurantMenuEditor() {
               />
             </>
           )}
+          {!selected && <p>Chọn một món từ catalog để nhập giá bán và trạng thái.</p>}
           {selected && (
-            <>
-              <h2>Đã chọn: {selected.name}</h2>
-              <MenuForm
-                key={selected.itemId}
-                busy={action.busy}
-                blocked={action.notice.startsWith('Chưa nhận')}
-                onSave={(value) => action.run({ value, foodId: selected.itemId })}
-              />
-            </>
+            <MenuCreationPanel
+              key={selected.itemId}
+              food={selected}
+              onUncertain={() => setSelectionLocked(true)}
+            />
           )}
         </>
       )}

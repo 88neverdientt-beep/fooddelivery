@@ -35,7 +35,7 @@ class Phase8ConcurrencyMySqlTest extends AuthTestKeys {
  final String password=UUID.randomUUID()+"-stage8",hash=new BCryptPasswordEncoder(4).encode(password);
  @BeforeEach void fixture(){
   ApprovedMySqlTestTarget.assertTarget(jdbc);
-  assertTrue(Set.of("fooddelivery_stage8_e2e","fooddelivery_full_audit","fooddelivery_phase8_2").contains(ApprovedMySqlTestTarget.databaseName()));
+  assertTrue(Set.of("fooddelivery_stage8_e2e","fooddelivery_full_audit","fooddelivery_phase8_2","fooddelivery_coursework_a24").contains(ApprovedMySqlTestTarget.databaseName()));
   new TransactionTemplate(manager).executeWithoutResult(tx->{
    for(var role:Role.values()){
     String email=UUID.randomUUID()+"@stage8-cas.invalid";Long id=null;

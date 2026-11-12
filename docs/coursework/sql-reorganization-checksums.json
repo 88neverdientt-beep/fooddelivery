@@ -1,0 +1,62 @@
+{
+  "files": [
+    {
+      "originalPath": "deploy/mysql/001_fooddelivery_baseline.sql",
+      "currentPath": "database/baseline/001_fooddelivery_baseline.sql",
+      "beforeSha256": "8a64e0e4d3cfe1d05ddac6b8e9f69fef8eb5ecda8ad3e5defa54837ae72d6b9d",
+      "bytes": 11952,
+      "afterSha256": "8a64e0e4d3cfe1d05ddac6b8e9f69fef8eb5ecda8ad3e5defa54837ae72d6b9d"
+    },
+    {
+      "originalPath": "deploy/mysql/002_fooddelivery_app.sql",
+      "currentPath": "database/setup/002_fooddelivery_app.sql",
+      "beforeSha256": "cbee94a0bb1920f5fa53532f4a46f8088908247c51aba65803629d9292c8d284",
+      "bytes": 472,
+      "afterSha256": "cbee94a0bb1920f5fa53532f4a46f8088908247c51aba65803629d9292c8d284"
+    },
+    {
+      "originalPath": "deploy/mysql/003_cod.sql",
+      "currentPath": "database/setup/003_cod.sql",
+      "beforeSha256": "6ed1e8b0e9d0cca32c301ac5c28f7671f921d341189b92d7c1473c5e03bea674",
+      "bytes": 348,
+      "afterSha256": "6ed1e8b0e9d0cca32c301ac5c28f7671f921d341189b92d7c1473c5e03bea674"
+    },
+    {
+      "originalPath": "deploy/mysql/schema-reference.json",
+      "currentPath": "database/schema-reference.json",
+      "beforeSha256": "f306e32a5f22f74029db7c381163a23af01f7e14c61a206f0dbaa4d5da3c204f",
+      "bytes": 42568,
+      "afterSha256": "f306e32a5f22f74029db7c381163a23af01f7e14c61a206f0dbaa4d5da3c204f"
+    },
+    {
+      "originalPath": "src/main/resources/db/manual/00_preflight_readonly.sql",
+      "currentPath": "database/migrations/00_preflight_readonly.sql",
+      "beforeSha256": "1a06a9029b6053f530dbd658ad545f137a06ee3c15957f19ad359dcbe9bba580",
+      "bytes": 1683,
+      "afterSha256": "1a06a9029b6053f530dbd658ad545f137a06ee3c15957f19ad359dcbe9bba580"
+    },
+    {
+      "originalPath": "src/main/resources/db/manual/01_expand_auth.sql",
+      "currentPath": "database/migrations/01_expand_auth.sql",
+      "beforeSha256": "0ac7ddd802fff02eff543c2a3edfc78785e98732c224459c6235f8a6e74a79a4",
+      "bytes": 6323,
+      "afterSha256": "0ac7ddd802fff02eff543c2a3edfc78785e98732c224459c6235f8a6e74a79a4"
+    },
+    {
+      "originalPath": "src/main/resources/db/manual/02_backfill_accounts.sql",
+      "currentPath": "database/migrations/02_backfill_accounts.sql",
+      "beforeSha256": "1996cedacc10b25858e6964e037b3f210091d992a4c8fc25da2e2303707914b9",
+      "bytes": 4183,
+      "afterSha256": "1996cedacc10b25858e6964e037b3f210091d992a4c8fc25da2e2303707914b9"
+    },
+    {
+      "originalPath": "src/main/resources/db/manual/03_stage8_versions.sql",
+      "currentPath": "database/migrations/03_stage8_versions.sql",
+      "beforeSha256": "b6dc2c321a37d37a5a35ef8917cbb7f38fe1653e5662ad556ec5fdd89de0b7b8",
+      "bytes": 1399,
+      "afterSha256": "b6dc2c321a37d37a5a35ef8917cbb7f38fe1653e5662ad556ec5fdd89de0b7b8"
+    }
+  ],
+  "sqlFiles": 7,
+  "schemaReferenceBytePreserved": true
+}

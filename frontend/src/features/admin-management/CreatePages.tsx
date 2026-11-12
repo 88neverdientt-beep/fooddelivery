@@ -12,7 +12,12 @@ import { Alert, useToast } from '@/components/feedback';
 import { normalizeError } from '@/lib/api/http';
 import { adminApi } from './api';
 import { useAdminIdentity, AdminFacts } from './ExistingPages';
-import { createProfileSchema, type CreateProfileInput, type AccountRow } from './model';
+import {
+  createProfileSchema,
+  createRestaurantSchema,
+  type CreateProfileInput,
+  type AccountRow,
+} from './model';
 
 export function AdminCreateProfile({ kind }: { kind: 'RESTAURANT' | 'DRIVER' }) {
   const { account, key } = useAdminIdentity(),
@@ -45,7 +50,7 @@ export function AdminCreateProfile({ kind }: { kind: 'RESTAURANT' | 'DRIVER' }) 
     setError,
     formState: { errors, isDirty },
   } = useForm<CreateProfileInput>({
-    resolver: zodResolver(createProfileSchema),
+    resolver: zodResolver(kind === 'RESTAURANT' ? createRestaurantSchema : createProfileSchema),
     defaultValues: {
       name: '',
       email: '',
@@ -201,6 +206,13 @@ export function AdminCreateProfile({ kind }: { kind: 'RESTAURANT' | 'DRIVER' }) 
           />
           <Input
             label="Số điện thoại mới"
+            inputMode={kind === 'RESTAURANT' ? 'tel' : undefined}
+            maxLength={kind === 'RESTAURANT' ? 15 : undefined}
+            hint={
+              kind === 'RESTAURANT'
+                ? 'Chữ số, có thể bắt đầu bằng dấu +; tối đa 15 ký tự.'
+                : undefined
+            }
             {...register('phoneNumber')}
             error={errors.phoneNumber?.message}
           />

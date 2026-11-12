@@ -1,4 +1,9 @@
-import { it, expect, vi } from 'vitest';
+import { it, expect, vi, beforeEach } from 'vitest';
+import { webcrypto } from 'node:crypto';
+beforeEach(() => {
+  sessionStorage.clear();
+  vi.stubGlobal('crypto', webcrypto);
+});
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Routes, Route } from 'react-router-dom';
@@ -26,6 +31,7 @@ function mocks() {
       .mockResolvedValue({ name: 'Khách thử nghiệm', address: orderFixture.deliveryAddress }),
     methods: vi.spyOn(checkoutApi, 'paymentMethods').mockResolvedValue([codFixture]),
     latest: vi.spyOn(ordersApi, 'latest').mockResolvedValue([]),
+    detail: vi.spyOn(ordersApi, 'detail').mockResolvedValue(orderFixture),
     create: vi.spyOn(checkoutApi, 'create').mockResolvedValue(orderFixture),
   };
 }
@@ -154,4 +160,42 @@ it('does not repopulate private checkout/order cache after logout while POST res
     0,
   );
   expect(screen.queryByRole('heading', { name: 'Đơn máy chủ #71' })).not.toBeInTheDocument();
+});
+
+it('restores unresolved checkout after a full reload with a new QueryClient and never replays POST', async () => {
+  const mock = mocks();
+  mock.create.mockRejectedValue(new ApiError(0, 'NETWORK'));
+  const view = await mount();
+  await userEvent.click(await button());
+  await screen.findByText('Kết quả đặt hàng đang được xác minh');
+  view.unmount();
+  const next = await mount();
+  expect(await screen.findByText('Kết quả đặt hàng đang được xác minh')).toBeVisible();
+  expect(screen.queryByRole('button', { name: 'Xác nhận đặt hàng COD' })).not.toBeInTheDocument();
+  mock.latest.mockResolvedValue([orderFixture]);
+  await userEvent.click(screen.getByRole('button', { name: 'Kiểm tra trên máy chủ' }));
+  expect(await screen.findByRole('heading', { name: 'Đơn máy chủ #71' })).toBeVisible();
+  expect(mock.create).toHaveBeenCalledTimes(1);
+  expect(sessionStorage.length).toBe(0);
+  next.unmount();
+});
+it('does not report success before authoritative GET and keeps committed POST blocked if that GET fails', async () => {
+  const mock = mocks();
+  mock.detail.mockRejectedValue(new ApiError(404, '404'));
+  await mount();
+  await userEvent.click(await button());
+  expect(await screen.findByText('Kết quả đặt hàng đang được xác minh')).toBeVisible();
+  expect(mock.create).toHaveBeenCalledTimes(1);
+  expect(mock.detail).toHaveBeenCalledExactlyOnceWith(71);
+  expect(sessionStorage.length).toBe(1);
+});
+it('does not send checkout when pending marker cannot be durably saved', async () => {
+  const mock = mocks();
+  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+    throw new Error('Quota');
+  });
+  await mount();
+  await userEvent.click(await button());
+  expect(await screen.findByRole('alert')).toHaveTextContent('Chưa gửi đơn hàng');
+  expect(mock.create).not.toHaveBeenCalled();
 });

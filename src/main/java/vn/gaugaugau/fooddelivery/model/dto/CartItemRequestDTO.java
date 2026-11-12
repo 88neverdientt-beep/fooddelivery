@@ -18,10 +18,12 @@ public class CartItemRequestDTO extends StrictRequest {
 
 	@NotNull(message = "Restaurant food item ID cannot be null")
 	@jakarta.validation.constraints.Positive
+	@tools.jackson.databind.annotation.JsonDeserialize(using=CheckoutIdDeserializer.class)
 	private Long restaurantFoodItemId;
 
 	@NotNull(message = "Quantity cannot be null")
 	@Positive(message = "Quantity must be greater than 0")
+	@tools.jackson.databind.annotation.JsonDeserialize(using=CartQuantityDeserializer.class)
 	private Integer quantity;
 
 	@Size(max = 255, message = "Note cannot exceed 255 characters")

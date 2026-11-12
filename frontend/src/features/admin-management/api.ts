@@ -25,6 +25,7 @@ import {
   id,
   type Filters,
   createProfileSchema,
+  createRestaurantSchema,
   type CreateProfileInput,
 } from './model';
 type Request = (path: string, options?: RequestOptions) => Promise<unknown>;
@@ -54,7 +55,9 @@ export function createAdminApi(request: Request, identity: () => Account | null)
   return {
     createProfile: async (kind: 'RESTAURANT' | 'DRIVER', input: CreateProfileInput) => {
       actor();
-      const value = createProfileSchema.parse(input);
+      const value = (kind === 'RESTAURANT' ? createRestaurantSchema : createProfileSchema).parse(
+        input,
+      );
       if (kind === 'DRIVER' && value.name.length > 100) throw new ApiError(400, 'VALIDATION');
       const email = value.email.toLowerCase();
       const body = {
@@ -84,6 +87,57 @@ export function createAdminApi(request: Request, identity: () => Account | null)
     accounts: list('accounts', accountRowSchema),
     customers: list('customers', customerRowSchema),
     restaurants: list('restaurants', restaurantRowSchema),
+    exportOrders: async (
+      filters: Record<string, string | number | boolean | undefined> = {},
+      signal?: AbortSignal,
+    ) => {
+      const owner = actor().accountId;
+      const selected = Object.fromEntries(
+        Object.entries(filters).filter(([key]) =>
+          [
+            'q',
+            'sort',
+            'status',
+            'from',
+            'to',
+            'paymentStatus',
+            'restaurantId',
+            'customerId',
+          ].includes(key),
+        ),
+      );
+      const result = await request(`/admin-management/orders/export.xlsx?${apiQuery(selected)}`, {
+        signal,
+        responseType: 'blob',
+      });
+      if (actor().accountId !== owner) throw new DOMException('Account changed', 'AbortError');
+      if (
+        !(result instanceof Blob) ||
+        !result.type.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      )
+        throw new ApiError(502, 'CONTRACT');
+      return result;
+    },
+    exportRestaurants: async (filters: Filters = {}, signal?: AbortSignal) => {
+      const owner = actor();
+      const selected = Object.fromEntries(
+        Object.entries(filters).filter(([key]) =>
+          ['q', 'sort', 'accountStatus', 'activity'].includes(key),
+        ),
+      );
+      const result = await request(
+        `/admin-management/restaurants/export.xlsx?${apiQuery(selected)}`,
+        { signal, responseType: 'blob' },
+      );
+      if (actor().accountId !== owner.accountId)
+        throw new DOMException('Account changed', 'AbortError');
+      if (
+        !(result instanceof Blob) ||
+        !result.type.includes('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+      )
+        throw new ApiError(502, 'CONTRACT');
+      return result;
+    },
     drivers: list('drivers', driverRowSchema),
     orders: list('orders', orderRowSchema),
     deliveries: list('deliveries', deliveryRowSchema),

@@ -17,13 +17,14 @@ import vn.gaugaugau.fooddelivery.model.Customer;
 import vn.gaugaugau.fooddelivery.repository.CustomerRepository;
 
 // Run ONLY after resolving preflight and successfully migrating the approved test schema.
-@EnabledIfEnvironmentVariable(named="RUN_STAGE2_AUTH_SCHEMA_TESTS",matches="true")
+@org.junit.jupiter.api.condition.EnabledIf("enabled")
 @SpringBootTest(properties={
     "fooddelivery.auth.persistence-enabled=true",
     "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage2_rehearsal}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
     "spring.datasource.username=${FOOD_TEST_DB_USERNAME:stage2_app}","spring.datasource.password=${STAGE2_MYSQL_PASSWORD}",
     "spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false"})
 class AuthPersistenceMySqlTest extends AuthTestKeys {
+    static boolean enabled(){return ApprovedMySqlTestTarget.enabled("RUN_STAGE2_AUTH_SCHEMA_TESTS");}
     static final String HASH=new BCryptPasswordEncoder(4).encode("integration-test-password");
     @Autowired AccountRepository accounts;
     @Autowired AuthSessionRepository sessions;

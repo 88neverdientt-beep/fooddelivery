@@ -22,7 +22,7 @@ import vn.gaugaugau.fooddelivery.repository.*;
 import vn.gaugaugau.fooddelivery.service.*;
 
 // Explicit opt-in; hard-coded approved endpoint and validate prevent use of the development DB.
-@EnabledIfEnvironmentVariable(named="RUN_STAGE1_MYSQL_TESTS", matches="true")
+@org.junit.jupiter.api.condition.EnabledIf("enabled")
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.MOCK, properties={
     "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage2_rehearsal}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
     "spring.datasource.username=${FOOD_TEST_DB_USERNAME:stage2_app}", "spring.datasource.password=${STAGE2_MYSQL_PASSWORD}",
@@ -31,6 +31,7 @@ import vn.gaugaugau.fooddelivery.service.*;
     "spring.main.lazy-initialization=false", "logging.level.root=WARN"
 })
 class MySqlStage1IntegrationTest extends vn.gaugaugau.fooddelivery.auth.AuthTestKeys {
+    static boolean enabled(){return vn.gaugaugau.fooddelivery.auth.ApprovedMySqlTestTarget.enabled("RUN_STAGE1_MYSQL_TESTS");}
     static final String FIXTURE_HASH = new org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder(4).encode("stage1-test-fixture-password");
     @Autowired CustomerRepository customers;
     @Autowired RestaurantRepository restaurants;

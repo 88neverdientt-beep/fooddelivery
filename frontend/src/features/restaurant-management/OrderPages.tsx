@@ -25,6 +25,7 @@ import { restaurantApi } from './api';
 import { nextRestaurantStatus } from './model';
 import { ManagementSection, useRestaurant, useVisible, useAction, ActionNotice } from './shared';
 import '@/features/orders/orders.css';
+import { OrderExport } from '@/features/orders/OrderExport';
 export function RestaurantOrdersPage() {
   const { key } = useRestaurant();
   const [params, setParams] = useSearchParams();
@@ -64,9 +65,12 @@ export function RestaurantOrdersPage() {
         title="Đơn hàng nhà hàng"
         description="Chỉ các đơn thuộc nhà hàng của bạn, cập nhật theo trạng thái máy chủ."
         action={
-          <Button variant="secondary" onClick={() => void data.refetch()}>
-            Làm mới đơn hàng
-          </Button>
+          <div className="management-actions">
+            <OrderExport role="RESTAURANT" key={JSON.stringify(filters)} filters={filters} />
+            <Button variant="secondary" onClick={() => void data.refetch()}>
+              Làm mới đơn hàng
+            </Button>{' '}
+          </div>
         }
       />
       <form

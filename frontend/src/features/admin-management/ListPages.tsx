@@ -1,3 +1,4 @@
+import { OrderExport } from '@/features/orders/OrderExport';
 import { useState, type ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
@@ -9,6 +10,7 @@ import { money } from '@/features/public/api';
 import { orderLabels, paymentLabels, deliveryLabels } from '@/features/orders/model';
 import { roleName, roleSchema } from '@/types/domain';
 import { adminApi } from './api';
+import { RestaurantExport } from './RestaurantExport';
 import { useAdminIdentity, AdminReadState, AdminFacts } from './ExistingPages';
 import {
   dateValid,
@@ -267,6 +269,12 @@ export function AdminList<T>({
         description={description}
         action={
           <div className="admin-links">
+            {module === 'orders' && (
+              <OrderExport role="ADMIN" key={JSON.stringify(filters)} filters={filters} />
+            )}
+            {module === 'restaurants' && (
+              <RestaurantExport key={JSON.stringify(filters)} filters={filters} />
+            )}
             {create && (
               <Link className="button button-primary" to={create.to}>
                 {create.label}

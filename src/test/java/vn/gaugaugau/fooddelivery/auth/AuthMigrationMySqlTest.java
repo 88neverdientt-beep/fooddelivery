@@ -29,7 +29,7 @@ class AuthMigrationMySqlTest {
             ApprovedMySqlTestTarget.migratorUsername(),System.getenv("STAGE2_MIGRATION_PASSWORD"));
         jdbc=new JdbcTemplate(source);tx=new TransactionTemplate(new DataSourceTransactionManager(source));assertTarget();
         for(String file:List.of("01_expand_auth.sql","02_backfill_accounts.sql")) {
-            String script=new ClassPathResource("db/manual/"+file).getContentAsString(StandardCharsets.UTF_8);
+            String script=new ClassPathResource("database/migrations/"+file).getContentAsString(StandardCharsets.UTF_8);
             String routine=script.substring(script.indexOf("CREATE PROCEDURE"),script.lastIndexOf("END$$")+3);
             // Adapt only the explicit approved target in this test copy; preserve shipped manual SQL.
             routine=routine.replace("'fooddelivery_stage2_rehearsal'", "'"+ApprovedMySqlTestTarget.databaseName()+"'");

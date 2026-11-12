@@ -18,6 +18,7 @@ public class CartItemUpdateRequestDTO extends StrictRequest {
 
 	@NotNull(message = "Quantity cannot be null")
 	@Positive(message = "Quantity must be greater than 0")
+	@tools.jackson.databind.annotation.JsonDeserialize(using=CartQuantityDeserializer.class)
 	private Integer quantity;
 
 	@Size(max = 255, message = "Note cannot exceed 255 characters")

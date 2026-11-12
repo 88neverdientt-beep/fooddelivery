@@ -21,6 +21,7 @@ export const profileInput = z.object({
 export const priceInput = z
   .string()
   .trim()
+  .min(1, 'Nhập giá bán.')
   .regex(
     /^(?:0|[1-9]\d{0,9})(?:\.\d{1,2})?$/,
     'Giá tối đa 10 chữ số nguyên, 2 chữ số lẻ; không dùng dấu phân cách hàng nghìn.',

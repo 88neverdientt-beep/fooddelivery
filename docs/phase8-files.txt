@@ -86,7 +86,7 @@ src/main/java/vn/gaugaugau/fooddelivery/service/RestaurantManagementService.java
 src/main/java/vn/gaugaugau/fooddelivery/service/RestaurantService.java
 src/main/java/vn/gaugaugau/fooddelivery/utils/GlobalExceptionHandler.java
 src/main/java/vn/gaugaugau/fooddelivery/utils/VersionPreconditions.java
-src/main/resources/db/manual/03_stage8_versions.sql
+database/migrations/03_stage8_versions.sql
 src/test/java/vn/gaugaugau/fooddelivery/Phase8FoundationTest.java
 src/test/java/vn/gaugaugau/fooddelivery/Phase8MvcContractTest.java
 src/test/java/vn/gaugaugau/fooddelivery/Phase8RestaurantDateTest.java

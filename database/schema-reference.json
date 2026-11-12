@@ -1,0 +1,1670 @@
+{
+  "source": "A2.4 SHOW CREATE + information_schema, schema only, 2026-11-12",
+  "baselineSha256": "78173e7f31856cd4b8a7f8a42cc4127fc971ad8e00c176c56346e52d3fefb893",
+  "tableOrder": [
+    "customers",
+    "restaurants",
+    "drivers",
+    "food_items",
+    "payment_methods",
+    "restaurant_food_items",
+    "carts",
+    "cart_items",
+    "orders",
+    "order_details",
+    "deliveries",
+    "payments",
+    "ratings",
+    "accounts",
+    "auth_sessions",
+    "refresh_tokens"
+  ],
+  "signature": {
+    "columns": [
+      {
+        "name": "account_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "accounts",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "email",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "accounts",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_as_cs"
+      },
+      {
+        "name": "password_hash",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "accounts",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "role",
+        "type": "varchar(20)",
+        "extra": "",
+        "table": "accounts",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "status",
+        "type": "varchar(20)",
+        "extra": "",
+        "table": "accounts",
+        "default": "ACTIVE",
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "customer_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "accounts",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "restaurant_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "accounts",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "driver_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "accounts",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "created_at",
+        "type": "datetime(6)",
+        "extra": "DEFAULT_GENERATED",
+        "table": "accounts",
+        "default": "CURRENT_TIMESTAMP(6)",
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "password_changed_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "accounts",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "version",
+        "type": "bigint",
+        "extra": "",
+        "table": "accounts",
+        "default": "0",
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "session_id",
+        "type": "char(36)",
+        "extra": "",
+        "table": "auth_sessions",
+        "default": null,
+        "nullable": "NO",
+        "collation": "ascii_bin"
+      },
+      {
+        "name": "account_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "auth_sessions",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "created_at",
+        "type": "datetime(6)",
+        "extra": "DEFAULT_GENERATED",
+        "table": "auth_sessions",
+        "default": "CURRENT_TIMESTAMP(6)",
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "expires_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "auth_sessions",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "revoked_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "auth_sessions",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "quantity",
+        "type": "int",
+        "extra": "",
+        "table": "cart_items",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "cart_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "cart_items",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "cart_item_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "cart_items",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "restaurant_food_item_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "cart_items",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "note",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "cart_items",
+        "default": null,
+        "nullable": "YES",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "cart_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "carts",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "customer_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "carts",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "restaurant_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "carts",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "created_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "customers",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "customer_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "customers",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "phone_number",
+        "type": "varchar(15)",
+        "extra": "",
+        "table": "customers",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "name",
+        "type": "varchar(100)",
+        "extra": "",
+        "table": "customers",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "address",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "customers",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "email",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "customers",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "password",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "customers",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "version",
+        "type": "bigint",
+        "extra": "",
+        "table": "customers",
+        "default": "0",
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "delivered_time",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "deliveries",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "delivery_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "deliveries",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "driver_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "deliveries",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "order_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "deliveries",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "pickup_time",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "deliveries",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "delivery_status",
+        "type": "enum('CANCELLED','DELIVERED','DELIVERING','PENDING','PICKED_UP')",
+        "extra": "",
+        "table": "deliveries",
+        "default": null,
+        "nullable": "YES",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "drive_status",
+        "type": "bit(1)",
+        "extra": "",
+        "table": "drivers",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "created_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "drivers",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "driver_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "drivers",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "phone_number",
+        "type": "varchar(15)",
+        "extra": "",
+        "table": "drivers",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "license_plate",
+        "type": "varchar(20)",
+        "extra": "",
+        "table": "drivers",
+        "default": null,
+        "nullable": "YES",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "name",
+        "type": "varchar(100)",
+        "extra": "",
+        "table": "drivers",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "address",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "drivers",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "email",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "drivers",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "password",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "drivers",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "version",
+        "type": "bigint",
+        "extra": "",
+        "table": "drivers",
+        "default": "0",
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "item_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "food_items",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "category",
+        "type": "varchar(150)",
+        "extra": "",
+        "table": "food_items",
+        "default": null,
+        "nullable": "YES",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "name",
+        "type": "varchar(150)",
+        "extra": "",
+        "table": "food_items",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "description",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "food_items",
+        "default": null,
+        "nullable": "YES",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "quantity",
+        "type": "int",
+        "extra": "",
+        "table": "order_details",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "subtotal",
+        "type": "decimal(12,2)",
+        "extra": "",
+        "table": "order_details",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "unit_price",
+        "type": "decimal(12,2)",
+        "extra": "",
+        "table": "order_details",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "order_detail_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "order_details",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "order_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "order_details",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "restaurant_food_item_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "order_details",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "note",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "order_details",
+        "default": null,
+        "nullable": "YES",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "shipping_fee",
+        "type": "decimal(12,2)",
+        "extra": "",
+        "table": "orders",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "subtotal",
+        "type": "decimal(12,2)",
+        "extra": "",
+        "table": "orders",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "total_amount",
+        "type": "decimal(12,2)",
+        "extra": "",
+        "table": "orders",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "created_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "orders",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "customer_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "orders",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "order_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "orders",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "restaurant_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "orders",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "delivery_address",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "orders",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "order_status",
+        "type": "enum('CANCELLED','COMPLETED','CONFIRMED','DELIVERING','PENDING','PREPARING','READY')",
+        "extra": "",
+        "table": "orders",
+        "default": null,
+        "nullable": "YES",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "is_active",
+        "type": "bit(1)",
+        "extra": "",
+        "table": "payment_methods",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "method_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "payment_methods",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "method_code",
+        "type": "varchar(30)",
+        "extra": "",
+        "table": "payment_methods",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "method_name",
+        "type": "varchar(50)",
+        "extra": "",
+        "table": "payment_methods",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "amount",
+        "type": "decimal(12,2)",
+        "extra": "",
+        "table": "payments",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "created_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "payments",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "order_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "payments",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "paid_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "payments",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "payment_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "payments",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "payment_method_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "payments",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "refunded_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "payments",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "transaction_code",
+        "type": "varchar(100)",
+        "extra": "",
+        "table": "payments",
+        "default": null,
+        "nullable": "YES",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "payment_status",
+        "type": "enum('CANCELLED','PENDING','REFUNDED','SUCCESS')",
+        "extra": "",
+        "table": "payments",
+        "default": null,
+        "nullable": "YES",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "rating_score",
+        "type": "int",
+        "extra": "",
+        "table": "ratings",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "created_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "ratings",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "customer_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "ratings",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "rating_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "ratings",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "restaurant_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "ratings",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "comment",
+        "type": "text",
+        "extra": "",
+        "table": "ratings",
+        "default": null,
+        "nullable": "YES",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "refresh_token_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "refresh_tokens",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "session_id",
+        "type": "char(36)",
+        "extra": "",
+        "table": "refresh_tokens",
+        "default": null,
+        "nullable": "NO",
+        "collation": "ascii_bin"
+      },
+      {
+        "name": "token_hash",
+        "type": "binary(32)",
+        "extra": "",
+        "table": "refresh_tokens",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "created_at",
+        "type": "datetime(6)",
+        "extra": "DEFAULT_GENERATED",
+        "table": "refresh_tokens",
+        "default": "CURRENT_TIMESTAMP(6)",
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "expires_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "refresh_tokens",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "used_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "refresh_tokens",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "is_available",
+        "type": "bit(1)",
+        "extra": "",
+        "table": "restaurant_food_items",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "price",
+        "type": "decimal(12,2)",
+        "extra": "",
+        "table": "restaurant_food_items",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "item_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "restaurant_food_items",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "restaurant_food_item_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "restaurant_food_items",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "restaurant_id",
+        "type": "bigint",
+        "extra": "",
+        "table": "restaurant_food_items",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "restaurant_status",
+        "type": "bit(1)",
+        "extra": "",
+        "table": "restaurants",
+        "default": null,
+        "nullable": "YES",
+        "collation": null
+      },
+      {
+        "name": "created_at",
+        "type": "datetime(6)",
+        "extra": "",
+        "table": "restaurants",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "restaurant_id",
+        "type": "bigint",
+        "extra": "auto_increment",
+        "table": "restaurants",
+        "default": null,
+        "nullable": "NO",
+        "collation": null
+      },
+      {
+        "name": "phone_number",
+        "type": "varchar(15)",
+        "extra": "",
+        "table": "restaurants",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "name",
+        "type": "varchar(150)",
+        "extra": "",
+        "table": "restaurants",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "address",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "restaurants",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "email",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "restaurants",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "password",
+        "type": "varchar(255)",
+        "extra": "",
+        "table": "restaurants",
+        "default": null,
+        "nullable": "NO",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "version",
+        "type": "bigint",
+        "extra": "",
+        "table": "restaurants",
+        "default": "0",
+        "nullable": "NO",
+        "collation": null
+      }
+    ],
+    "indexes": [
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "accounts",
+        "column": "account_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "uq_accounts_customer",
+        "table": "accounts",
+        "column": "customer_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "uq_accounts_driver",
+        "table": "accounts",
+        "column": "driver_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "uq_accounts_email",
+        "table": "accounts",
+        "column": "email",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "uq_accounts_restaurant",
+        "table": "accounts",
+        "column": "restaurant_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "ix_sessions_account",
+        "table": "auth_sessions",
+        "column": "account_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "ix_sessions_expiry",
+        "table": "auth_sessions",
+        "column": "expires_at",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "auth_sessions",
+        "column": "session_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "FKog89jg3e4pp958ldf2dtk0jf2",
+        "table": "cart_items",
+        "column": "restaurant_food_item_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "FKpcttvuq4mxppo8sxggjtn5i2c",
+        "table": "cart_items",
+        "column": "cart_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "cart_items",
+        "column": "cart_item_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "FK1wwmot9772p901aismub7pd5c",
+        "table": "carts",
+        "column": "restaurant_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "carts",
+        "column": "cart_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "UK88sv4i13lo80s74ox7rsb5a2c",
+        "table": "carts",
+        "column": "customer_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "customers",
+        "column": "customer_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "UKrfbvkrffamfql7cjmen8v976v",
+        "table": "customers",
+        "column": "email",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "FK8ateuqis5a8je9rimyvt1nmps",
+        "table": "deliveries",
+        "column": "driver_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "deliveries",
+        "column": "delivery_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "UKk36n9p5v7dd96hpgkwybvbogt",
+        "table": "deliveries",
+        "column": "order_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "drivers",
+        "column": "driver_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "UKre66mdta4hy6pxm2w1rqu08jv",
+        "table": "drivers",
+        "column": "email",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "food_items",
+        "column": "item_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "FKc5cccl4giure8wvnrwt4v5xdn",
+        "table": "order_details",
+        "column": "restaurant_food_item_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "FKjyu2qbqt8gnvno9oe9j2s2ldk",
+        "table": "order_details",
+        "column": "order_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "order_details",
+        "column": "order_detail_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "FK2m9qulf12xm537bku3jnrrbup",
+        "table": "orders",
+        "column": "restaurant_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "FKpxtb8awmi0dk6smoh2vp1litg",
+        "table": "orders",
+        "column": "customer_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "orders",
+        "column": "order_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "payment_methods",
+        "column": "method_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "UKpu3rxdcaus39di8g7s6xv4sk6",
+        "table": "payment_methods",
+        "column": "method_code",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "FKce1n8pa67lq4l57l9mhugdgab",
+        "table": "payments",
+        "column": "payment_method_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "payments",
+        "column": "payment_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "UK8vo36cen604as7etdfwmyjsxt",
+        "table": "payments",
+        "column": "order_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "FKb0aai9hp9gtd2don8c08qxn3y",
+        "table": "ratings",
+        "column": "customer_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "FKntiwrmxidegn417oxunmtnjpa",
+        "table": "ratings",
+        "column": "restaurant_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "ratings",
+        "column": "rating_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "ix_refresh_expiry",
+        "table": "refresh_tokens",
+        "column": "expires_at",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "ix_refresh_session",
+        "table": "refresh_tokens",
+        "column": "session_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "refresh_tokens",
+        "column": "refresh_token_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "uq_refresh_hash",
+        "table": "refresh_tokens",
+        "column": "token_hash",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "FKoh4v7c17s0jry1so965x2yiy5",
+        "table": "restaurant_food_items",
+        "column": "item_id",
+        "prefix": null,
+        "unique": false
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "restaurant_food_items",
+        "column": "restaurant_food_item_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "UKgkbdxkabiy3ijm702fqc7y7ci",
+        "table": "restaurant_food_items",
+        "column": "restaurant_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 2,
+        "name": "UKgkbdxkabiy3ijm702fqc7y7ci",
+        "table": "restaurant_food_items",
+        "column": "item_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "PRIMARY",
+        "table": "restaurants",
+        "column": "restaurant_id",
+        "prefix": null,
+        "unique": true
+      },
+      {
+        "seq": 1,
+        "name": "UKfe6aq2gbudopv20yl6b77798m",
+        "table": "restaurants",
+        "column": "email",
+        "prefix": null,
+        "unique": true
+      }
+    ],
+    "foreignKeys": [
+      {
+        "ref": "customers",
+        "name": "fk_accounts_customer",
+        "table": "accounts",
+        "column": "customer_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "customer_id"
+      },
+      {
+        "ref": "drivers",
+        "name": "fk_accounts_driver",
+        "table": "accounts",
+        "column": "driver_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "driver_id"
+      },
+      {
+        "ref": "restaurants",
+        "name": "fk_accounts_restaurant",
+        "table": "accounts",
+        "column": "restaurant_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "restaurant_id"
+      },
+      {
+        "ref": "accounts",
+        "name": "fk_sessions_account",
+        "table": "auth_sessions",
+        "column": "account_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "account_id"
+      },
+      {
+        "ref": "restaurant_food_items",
+        "name": "FKog89jg3e4pp958ldf2dtk0jf2",
+        "table": "cart_items",
+        "column": "restaurant_food_item_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "restaurant_food_item_id"
+      },
+      {
+        "ref": "carts",
+        "name": "FKpcttvuq4mxppo8sxggjtn5i2c",
+        "table": "cart_items",
+        "column": "cart_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "cart_id"
+      },
+      {
+        "ref": "restaurants",
+        "name": "FK1wwmot9772p901aismub7pd5c",
+        "table": "carts",
+        "column": "restaurant_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "restaurant_id"
+      },
+      {
+        "ref": "customers",
+        "name": "FK8ba3sryid5k8a9kidpkvqipyt",
+        "table": "carts",
+        "column": "customer_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "customer_id"
+      },
+      {
+        "ref": "orders",
+        "name": "FK7isx0rnbgqr1dcofd5putl6jw",
+        "table": "deliveries",
+        "column": "order_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "order_id"
+      },
+      {
+        "ref": "drivers",
+        "name": "FK8ateuqis5a8je9rimyvt1nmps",
+        "table": "deliveries",
+        "column": "driver_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "driver_id"
+      },
+      {
+        "ref": "restaurant_food_items",
+        "name": "FKc5cccl4giure8wvnrwt4v5xdn",
+        "table": "order_details",
+        "column": "restaurant_food_item_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "restaurant_food_item_id"
+      },
+      {
+        "ref": "orders",
+        "name": "FKjyu2qbqt8gnvno9oe9j2s2ldk",
+        "table": "order_details",
+        "column": "order_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "order_id"
+      },
+      {
+        "ref": "restaurants",
+        "name": "FK2m9qulf12xm537bku3jnrrbup",
+        "table": "orders",
+        "column": "restaurant_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "restaurant_id"
+      },
+      {
+        "ref": "customers",
+        "name": "FKpxtb8awmi0dk6smoh2vp1litg",
+        "table": "orders",
+        "column": "customer_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "customer_id"
+      },
+      {
+        "ref": "orders",
+        "name": "FK81gagumt0r8y3rmudcgpbk42l",
+        "table": "payments",
+        "column": "order_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "order_id"
+      },
+      {
+        "ref": "payment_methods",
+        "name": "FKce1n8pa67lq4l57l9mhugdgab",
+        "table": "payments",
+        "column": "payment_method_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "method_id"
+      },
+      {
+        "ref": "customers",
+        "name": "FKb0aai9hp9gtd2don8c08qxn3y",
+        "table": "ratings",
+        "column": "customer_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "customer_id"
+      },
+      {
+        "ref": "restaurants",
+        "name": "FKntiwrmxidegn417oxunmtnjpa",
+        "table": "ratings",
+        "column": "restaurant_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "restaurant_id"
+      },
+      {
+        "ref": "auth_sessions",
+        "name": "fk_refresh_session",
+        "table": "refresh_tokens",
+        "column": "session_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "session_id"
+      },
+      {
+        "ref": "restaurants",
+        "name": "FK86eyfbft1xsjbbgtd9f2g9tv4",
+        "table": "restaurant_food_items",
+        "column": "restaurant_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "restaurant_id"
+      },
+      {
+        "ref": "food_items",
+        "name": "FKoh4v7c17s0jry1so965x2yiy5",
+        "table": "restaurant_food_items",
+        "column": "item_id",
+        "delete": "NO ACTION",
+        "update": "NO ACTION",
+        "refColumn": "item_id"
+      }
+    ],
+    "checks": [
+      {
+        "name": "ck_accounts_email_normalized",
+        "table": "accounts",
+        "clause": "(`email` = lower(trim(`email`)))",
+        "enforced": "YES"
+      },
+      {
+        "name": "ck_accounts_profile",
+        "table": "accounts",
+        "clause": "(((`role` = _utf8mb4\\'CUSTOMER\\') and (`customer_id` is not null) and (`restaurant_id` is null) and (`driver_id` is null)) or ((`role` = _utf8mb4\\'RESTAURANT\\') and (`restaurant_id` is not null) and (`customer_id` is null) and (`driver_id` is null)) or ((`role` = _utf8mb4\\'DRIVER\\') and (`driver_id` is not null) and (`customer_id` is null) and (`restaurant_id` is null)) or ((`role` = _utf8mb4\\'ADMIN\\') and (`customer_id` is null) and (`restaurant_id` is null) and (`driver_id` is null)))",
+        "enforced": "YES"
+      },
+      {
+        "name": "ck_accounts_role",
+        "table": "accounts",
+        "clause": "(`role` in (_utf8mb4\\'CUSTOMER\\',_utf8mb4\\'RESTAURANT\\',_utf8mb4\\'DRIVER\\',_utf8mb4\\'ADMIN\\'))",
+        "enforced": "YES"
+      },
+      {
+        "name": "ck_accounts_status",
+        "table": "accounts",
+        "clause": "(`status` in (_utf8mb4\\'ACTIVE\\',_utf8mb4\\'DISABLED\\'))",
+        "enforced": "YES"
+      },
+      {
+        "name": "ck_sessions_expiry",
+        "table": "auth_sessions",
+        "clause": "(`expires_at` > `created_at`)",
+        "enforced": "YES"
+      },
+      {
+        "name": "ck_refresh_expiry",
+        "table": "refresh_tokens",
+        "clause": "(`expires_at` > `created_at`)",
+        "enforced": "YES"
+      }
+    ],
+    "tables": [
+      {
+        "name": "accounts",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "auth_sessions",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "cart_items",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "carts",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "customers",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "deliveries",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "drivers",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "food_items",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "order_details",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "orders",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "payment_methods",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "payments",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "ratings",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "refresh_tokens",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "restaurant_food_items",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      },
+      {
+        "name": "restaurants",
+        "engine": "InnoDB",
+        "collation": "utf8mb4_0900_ai_ci"
+      }
+    ]
+  }
+}

@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Local credentials, signing material and database backups must stay outside Git.
+.env
+.env.*
+!.env.example
+*.cnf
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+backups/
+*.dump

@@ -31,6 +31,7 @@ public class RestaurantRequestDTO extends StrictRequest {
 
 	@NotBlank(message = "Phone number cannot be blank")
 	@Size(max = 15, message = "Phone number must not exceed 15 characters")
+	@jakarta.validation.constraints.Pattern(regexp="\\+?[0-9]+", message="Số điện thoại chỉ gồm chữ số và có thể bắt đầu bằng dấu +")
 	private String phoneNumber;
 
 	@NotBlank(message = "Address cannot be blank")

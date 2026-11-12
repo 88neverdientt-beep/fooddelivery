@@ -25,6 +25,13 @@ import {
 } from './model';
 import '@/features/cart/cart.css';
 import './checkout.css';
+import {
+  rememberPending,
+  restorePending,
+  forgetPending,
+  restoredMatches,
+  type PendingCheckout,
+} from './pending';
 
 export function CheckoutPage() {
   const auth = useAuth();
@@ -58,17 +65,18 @@ export function CheckoutPage() {
     queryFn: async ({ signal }) =>
       profileSchema.parse(await api.get(`/customers/${customerId}`, signal)),
   });
-  // This is transient UI state, not a fabricated server result. Identity cleanup clears it.
-  const attempt = useQuery<CheckoutAttempt | null>({
+  // Reload restores only a hashed reconciliation marker; no address/cart/token is persisted.
+  const attempt = useQuery<PendingCheckout | null>({
     queryKey: attemptKey,
     queryFn: async () => null,
-    initialData: null,
+    initialData: () => restorePending(account.accountId, customerId),
     enabled: false,
     staleTime: Infinity,
     gcTime: Infinity,
   });
   const finish = async (order: Order, reconciled = false) => {
     if (!current()) return;
+    forgetPending(account.accountId);
     client.setQueryData(attemptKey, null);
     await client.cancelQueries({ queryKey: key });
     await client.cancelQueries({ queryKey: orderKeys.all(account.accountId) });
@@ -86,7 +94,13 @@ export function CheckoutPage() {
     );
     navigate(`/customer/orders/${order.orderId}`, { replace: true });
   };
-  const reconcile = async (value: CheckoutAttempt) => {
+  const reconcile = async (value: PendingCheckout) => {
+    if (value.kind === 'unavailable') {
+      setError(
+        'Không đọc được trạng thái chống đặt trùng. Không gửi yêu cầu mới; hãy kiểm tra lịch sử đơn và quyền lưu trữ trình duyệt.',
+      );
+      return;
+    }
     if (!current()) return;
     setChecking(true);
     try {
@@ -96,7 +110,11 @@ export function CheckoutPage() {
       ]);
       if (!current()) return;
       client.setQueryData(key, latestCart);
-      const matches = matchingCheckoutOrders(value, latest);
+      const matches =
+        'signature' in value
+          ? await restoredMatches(value, latest)
+          : matchingCheckoutOrders(value, latest);
+      if (!current()) return;
       if (matches.length === 1) await finish(matches[0], true);
       else
         setError(
@@ -129,6 +147,7 @@ export function CheckoutPage() {
       const input = task.input;
       setError('');
       let sent = false;
+      let accepted = false;
       let snapshot: CheckoutAttempt | null = null;
       try {
         const [fresh, availableMethods, latest] = await Promise.all([
@@ -164,13 +183,21 @@ export function CheckoutPage() {
           address: input.deliveryAddress,
           baselineIds: latest.map((order) => order.orderId),
         };
+        await rememberPending(account.accountId, snapshot);
+        if (!current()) return;
         client.setQueryData(attemptKey, snapshot);
         sent = true;
-        const order = await checkoutApi.create(input);
+        const created = await checkoutApi.create(input);
+        accepted = true;
+        if (!current()) return;
+        const order = await ordersApi.detail(created.orderId);
+        if (!current()) return;
+        if (order.orderId !== created.orderId || order.customer.customerId !== customerId)
+          throw new ApiError(502, 'CONTRACT');
         await finish(order);
       } catch (problem) {
         if (!current()) return;
-        if (sent && snapshot && !isDefiniteCheckoutRejection(problem)) {
+        if (sent && snapshot && (accepted || !isDefiniteCheckoutRejection(problem))) {
           const uncertain: CheckoutAttempt = { ...snapshot, kind: 'uncertain' };
           client.setQueryData(attemptKey, uncertain);
           setError(
@@ -178,6 +205,7 @@ export function CheckoutPage() {
           );
           await reconcile(uncertain);
         } else {
+          forgetPending(account.accountId);
           client.setQueryData(attemptKey, null);
           setError(normalizeError(problem).message);
           if (sent) await client.invalidateQueries({ queryKey: key });

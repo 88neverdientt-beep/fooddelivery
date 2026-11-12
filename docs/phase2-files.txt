@@ -69,10 +69,10 @@ src/main/java/vn/gaugaugau/fooddelivery/service/RestaurantFoodItemService.java
 src/main/java/vn/gaugaugau/fooddelivery/service/RestaurantService.java
 src/main/java/vn/gaugaugau/fooddelivery/utils/GlobalExceptionHandler.java
 src/main/resources/application.properties
-src/main/resources/db/manual/00_preflight_readonly.sql
-src/main/resources/db/manual/01_expand_auth.sql
-src/main/resources/db/manual/02_backfill_accounts.sql
-src/main/resources/db/manual/README.md
+database/migrations/00_preflight_readonly.sql
+database/migrations/01_expand_auth.sql
+database/migrations/02_backfill_accounts.sql
+database/README.md
 src/test/java/vn/gaugaugau/fooddelivery/MySqlStage1IntegrationTest.java
 src/test/java/vn/gaugaugau/fooddelivery/auth/AuthMigrationMySqlTest.java
 src/test/java/vn/gaugaugau/fooddelivery/auth/AuthModelTest.java

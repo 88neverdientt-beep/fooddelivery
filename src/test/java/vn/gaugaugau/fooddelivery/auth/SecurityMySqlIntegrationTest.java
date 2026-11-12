@@ -29,11 +29,12 @@ import vn.gaugaugau.fooddelivery.auth.repository.*;
 import vn.gaugaugau.fooddelivery.model.*;
 import vn.gaugaugau.fooddelivery.model.enums.*;
 
-@EnabledIfEnvironmentVariable(named="RUN_STAGE2_AUTH_SCHEMA_TESTS",matches="true")
+@org.junit.jupiter.api.condition.EnabledIf("enabled")
 @SpringBootTest(properties={"spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage2_rehearsal}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
     "spring.datasource.username=${FOOD_TEST_DB_USERNAME:stage2_app}","spring.datasource.password=${STAGE2_MYSQL_PASSWORD}","spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false"})
 @AutoConfigureMockMvc(print=org.springframework.boot.webmvc.test.autoconfigure.MockMvcPrint.NONE)
 class SecurityMySqlIntegrationTest extends AuthTestKeys {
+    static boolean enabled(){return ApprovedMySqlTestTarget.enabled("RUN_STAGE2_AUTH_SCHEMA_TESTS");}
     @Autowired MockMvc mvc;
     @Autowired ObjectMapper json;
     @Autowired EntityManager em;
@@ -200,7 +201,7 @@ class SecurityMySqlIntegrationTest extends AuthTestKeys {
             if(!entry.getValue().getBeanType().getPackageName().equals("vn.gaugaugau.fooddelivery.controller"))continue;
             for(var verb:entry.getKey().getMethodsCondition().getMethods())for(String pattern:entry.getKey().getPatternValues()) {
                 String method=verb.name(),path=pattern;Set<String> allowed=policy(method,pattern);endpoints++;
-                Map<String,Long> ids=Map.ofEntries(Map.entry("accountId",people.get("CUSTOMER").account()),Map.entry("customerId",people.get("CUSTOMER").profile()),Map.entry("restaurantId",people.get("RESTAURANT").profile()),Map.entry("driverId",people.get("DRIVER").profile()),Map.entry("orderId",order),Map.entry("deliveryId",delivery),Map.entry("cartItemId",cartItem),Map.entry("restaurantFoodItemId",menu),Map.entry("itemId",food),Map.entry("ratingId",rating));
+                Map<String,Long> ids=Map.ofEntries(Map.entry("accountId",people.get("CUSTOMER").account()),Map.entry("customerId",people.get("CUSTOMER").profile()),Map.entry("restaurantId",people.get("RESTAURANT").profile()),Map.entry("driverId",people.get("DRIVER").profile()),Map.entry("orderId",order),Map.entry("deliveryId",delivery),Map.entry("cartItemId",cartItem),Map.entry("restaurantFoodItemId",menu),Map.entry("itemId",food),Map.entry("foodItemId",food),Map.entry("ratingId",rating));
                 for(var id:ids.entrySet())path=path.replace("{"+id.getKey()+"}",id.getValue().toString());
                 assertFalse(path.contains("{"),"Unresolved endpoint "+pattern);
                 final String target=path;
@@ -221,7 +222,7 @@ class SecurityMySqlIntegrationTest extends AuthTestKeys {
                 }
             }
         }
-        assertEquals(71,endpoints,"New or removed endpoints require matrix review");
+        assertEquals(76,endpoints,"New or removed endpoints require matrix review");
     }
     private Set<String> policy(String method,String p) {
         if(p.startsWith("/admin-management/"))return Set.of("ADMIN");

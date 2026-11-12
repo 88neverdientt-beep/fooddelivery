@@ -61,3 +61,27 @@ it('handles no-content logout', async () => {
   ).toBeUndefined();
   expect(new ApiError(0, 'TIMEOUT').message).toContain('thời gian');
 });
+
+it('downloads authenticated Excel bytes without requiring the JSON envelope', async () => {
+  const fetcher = vi.fn().mockResolvedValue(
+    new Response(new Uint8Array([80, 75, 3, 4]), {
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      },
+    }),
+  );
+  const data = await createTransport('/api', fetcher)<Blob>('/export', {
+    token: 'memory-only',
+    responseType: 'blob',
+  });
+  expect(data.size).toBe(4);
+  expect(fetcher.mock.calls[0][1].headers.Authorization).toBe('Bearer memory-only');
+});
+it('rejects a successful JSON response on an Excel request', async () => {
+  const fetcher = vi
+    .fn()
+    .mockResolvedValue(new Response('{}', { headers: { 'Content-Type': 'application/json' } }));
+  await expect(
+    createTransport('/api', fetcher)('/export', { responseType: 'blob' }),
+  ).rejects.toMatchObject({ code: 'CONTRACT' });
+});

@@ -71,6 +71,17 @@ public class RestaurantManagementService {
         orders.findPageDetails(ids).forEach(order->details.put(order.getOrderId(),order));
         return result(ids.stream().map(id->mapping.convertToOrderResponseDTO(details.get(id))).toList(),page,size,total);
     }
+    public OrderExcelExportService.Query orderExportQuery(Map<String,String> p) {
+        if(!Set.of("q","sort","status","from","to").containsAll(p.keySet()))bad("Tham số xuất đơn hàng không hợp lệ");
+        String sort=p.getOrDefault("sort","newest");
+        String ordering=switch(sort){case "newest"->"o.order_id DESC";case "oldest"->"o.order_id ASC";case "total-desc"->"o.total_amount DESC,o.order_id DESC";default->{bad("Invalid sort");yield "";}};
+        String pattern=ReadQuery.literalPattern(p.get("q"));LocalDate start=date(p.get("from")),end=date(p.get("to"));if(start!=null&&end!=null&&end.isBefore(start))bad("Invalid date range");
+        String where=" FROM orders o JOIN customers c ON c.customer_id=o.customer_id JOIN restaurants r ON r.restaurant_id=o.restaurant_id LEFT JOIN payments p ON p.order_id=o.order_id LEFT JOIN deliveries d ON d.order_id=o.order_id WHERE o.restaurant_id=? AND (CAST(o.order_id AS CHAR) LIKE ? ESCAPE '!' OR LOWER(c.name) LIKE ? ESCAPE '!')";
+        var args=new ArrayList<Object>(List.of(own(),pattern,pattern));
+        String state=p.get("status");if(state!=null&&!state.isBlank()){try{OrderStatus.valueOf(state);}catch(IllegalArgumentException e){bad("Invalid status");}where+=" AND o.order_status=?";args.add(state);}
+        if(start!=null){where+=" AND o.created_at>=?";args.add(start.atStartOfDay());}if(end!=null){where+=" AND o.created_at<?";args.add(end.plusDays(1).atStartOfDay());}
+        return new OrderExcelExportService.Query(OrderExcelExportService.SELECT+where+" ORDER BY "+ordering,List.copyOf(args));
+    }
     public Analytics analytics(String from,String to) {
         LocalDate end=date(to);if(end==null)end=LocalDate.now();LocalDate start=date(from);if(start==null)start=end.minusDays(29);
         if(start.getYear()<1 || end.getYear()>9998)bad("Unsupported date range");

@@ -22,5 +22,6 @@ public class OrderRequestDTO extends StrictRequest {
 
 	@NotNull(message = "Payment method ID cannot be null")
 	@jakarta.validation.constraints.Positive
+	@tools.jackson.databind.annotation.JsonDeserialize(using=CheckoutIdDeserializer.class)
 	private Long paymentMethodId;
 }

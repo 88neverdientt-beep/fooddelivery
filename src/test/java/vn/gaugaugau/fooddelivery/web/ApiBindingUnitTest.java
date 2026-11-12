@@ -86,4 +86,20 @@ class ApiBindingUnitTest {
             .andReturn().getResponse().getStatus());
         verify(menus).createRestaurantFoodItem(any());
     }
+    @Test void fractionalOrOverflowingCartQuantityNeverReachesEitherWriter()throws Exception {
+        for(String quantity:new String[]{"1.5","1.0","1e0","2147483648","9223372036854775808"}) {
+            assertEquals(400,mvc.perform(post("/1/cart-items").contentType(MediaType.APPLICATION_JSON).content("{\"restaurantFoodItemId\":2,\"quantity\":"+quantity+"}")).andReturn().getResponse().getStatus());
+            assertEquals(400,mvc.perform(put("/cart-items/1").contentType(MediaType.APPLICATION_JSON).content("{\"quantity\":"+quantity+"}")).andReturn().getResponse().getStatus());
+        }verifyNoInteractions(items);
+    }
+    @Test void integralCartQuantityStillReachesTheExistingWriter()throws Exception {
+        assertEquals(201,mvc.perform(post("/1/cart-items").contentType(MediaType.APPLICATION_JSON).content("{\"restaurantFoodItemId\":2,\"quantity\":2}")).andReturn().getResponse().getStatus());
+        verify(items).addCartItemToCart(eq(1L),argThat(input->input.getQuantity()==2));
+    }
+    @Test void fractionalCheckoutReferencesNeverReachBusinessWriters()throws Exception {
+        for(String id:new String[]{"1.5","1.0","1e0","9223372036854775808"}) {
+            assertEquals(400,mvc.perform(post("/customers/1/orders").contentType(MediaType.APPLICATION_JSON).content("{\"deliveryAddress\":\"Hà Nội\",\"paymentMethodId\":"+id+"}")).andReturn().getResponse().getStatus());
+            assertEquals(400,mvc.perform(post("/1/cart-items").contentType(MediaType.APPLICATION_JSON).content("{\"restaurantFoodItemId\":"+id+",\"quantity\":1}")).andReturn().getResponse().getStatus());
+        }verifyNoInteractions(orders,items);
+    }
 }
