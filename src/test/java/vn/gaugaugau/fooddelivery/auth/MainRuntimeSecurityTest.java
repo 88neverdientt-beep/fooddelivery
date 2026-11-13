@@ -45,7 +45,7 @@ import vn.gaugaugau.fooddelivery.repository.*;
 class MainRuntimeSecurityTest {
     static final String ORIGIN="https://runtime-security.test";
     @Configuration @EnableWebMvc @EnableWebSecurity @EnableAspectJAutoProxy(proxyTargetClass=true)
-    @Import({SecurityConfiguration.class,AuthController.class,vn.gaugaugau.fooddelivery.utils.GlobalExceptionHandler.class})
+    @Import({SecurityConfiguration.class,AuthController.class,vn.gaugaugau.fooddelivery.utils.GlobalExceptionHandler.class,vn.gaugaugau.fooddelivery.controller.BusinessReportController.class})
     static class Config {
         @Bean JwtSettings settings(){return new JwtSettings(ORIGIN,"test-runtime",Path.of("unused-private"),Path.of("unused-public"),List.of(ORIGIN));}
         @Bean KeyPair pair() throws Exception {var g=KeyPairGenerator.getInstance("RSA");g.initialize(2048);return g.generateKeyPair();}
@@ -58,6 +58,7 @@ class MainRuntimeSecurityTest {
         @Bean CustomerRepository customers(){return mock(CustomerRepository.class);}
         @Bean RestaurantRepository restaurants(){return mock(RestaurantRepository.class);}
         @Bean DriverRepository drivers(){return mock(DriverRepository.class);}
+        @Bean vn.gaugaugau.fooddelivery.service.BusinessReportService businessReports(){return mock(vn.gaugaugau.fooddelivery.service.BusinessReportService.class);}
         @Bean jakarta.persistence.EntityManagerFactory entityManagerFactory(){return mock(jakarta.persistence.EntityManagerFactory.class);}
         @Bean org.springframework.transaction.PlatformTransactionManager transactions(){return new org.springframework.transaction.support.AbstractPlatformTransactionManager(){
             protected Object doGetTransaction(){return new Object();}
@@ -135,6 +136,17 @@ class MainRuntimeSecurityTest {
     @Test void logoutAllRevokesBothSessions() throws Exception {var a=login();var b=login();assertEquals(204,send("/auth/logout-all","{}",null,a.access).getResponse().getStatus());assertEquals(401,me(a.access));assertEquals(401,me(b.access));}
     @Test void disabledAccountRejected() throws Exception {var l=login();account.setStatus(AccountStatus.DISABLED);assertEquals(401,me(l.access));assertThrows(AuthFailure.class,()->auth.rotate(l.raw));}
     @Test void expiredSessionRejected() throws Exception {var l=login();sessionRows.values().iterator().next().setExpiresAt(LocalDateTime.now(Clock.systemUTC()).minusSeconds(1));assertEquals(401,me(l.access));}
+    @Test void reportEndpointsRequireAdminForAllFourRolesAndAnonymous() throws Exception {
+        String[] paths={"/admin-management/reports/orders","/admin-management/reports/delivery","/admin-management/reports/orders/export.xlsx","/admin-management/reports/delivery/export.xlsx"};
+        for(String path:paths)assertEquals(401,mvc.perform(get(path).secure(true)).andReturn().getResponse().getStatus());
+        for(Role role:Role.values()){
+            account.setRole(role);account.setCustomer(null);account.setRestaurant(null);account.setDriver(null);
+            if(role==Role.CUSTOMER)account.setCustomer(Customer.builder().customerId(91L).build());
+            if(role==Role.RESTAURANT)account.setRestaurant(vn.gaugaugau.fooddelivery.model.Restaurant.builder().restaurantId(92L).build());
+            if(role==Role.DRIVER)account.setDriver(vn.gaugaugau.fooddelivery.model.Driver.builder().driverId(93L).build());
+            var l=login();for(String path:paths)assertEquals(role==Role.ADMIN?200:403,mvc.perform(get(path).secure(true).header("Authorization","Bearer "+l.access)).andReturn().getResponse().getStatus());
+        }
+    }
     String signed(String issuer,String audience,String typ,Instant issued,Instant expires,String subject,JwtEncoder signing,String sid){return signing.encode(JwtEncoderParameters.from(JwsHeader.with(SignatureAlgorithm.RS256).type(typ).build(),JwtClaimsSet.builder().issuer(issuer).audience(List.of(audience)).subject(subject).id(UUID.randomUUID().toString()).issuedAt(issued).notBefore(issued).expiresAt(expires).claim("sid",sid).claim("role","ADMIN").build())).getTokenValue();}
     @Test void wrongSignatureIssuerAudienceTypeExpiredSubjectRejected() throws Exception {
         var now=Instant.now();var sid=UUID.randomUUID().toString();var g=KeyPairGenerator.getInstance("RSA");g.initialize(2048);var foreign=new JwtConfiguration().jwtEncoder(g.generateKeyPair());

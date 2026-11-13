@@ -67,7 +67,8 @@ export const workspaceNav: Record<Role, Item[]> = {
     { to: '/admin/deliveries', label: 'Giao hàng', icon: Bike },
     { to: '/admin/payments', label: 'Thanh toán', icon: CreditCard },
     { to: '/admin/reviews', label: 'Đánh giá', icon: Star },
-    { to: '/admin/analytics', label: 'Báo cáo', icon: ChartColumn },
+    { to: '/admin/analytics', label: 'Thống kê tổng quan', icon: ChartColumn },
+    { to: '/admin/reports', label: 'Báo cáo', icon: ChartColumn },
     { to: '/admin/profile', label: 'Hồ sơ quản trị', icon: ShieldCheck },
   ],
 };

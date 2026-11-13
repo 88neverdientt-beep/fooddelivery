@@ -1,4 +1,8 @@
 import { lazy, Suspense } from 'react';
+import {
+  BusinessReportCenter,
+  BusinessReportPage,
+} from '@/features/admin-management/BusinessReports';
 import { createBrowserRouter, Outlet, Link, Navigate } from 'react-router-dom';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 import { AuthenticatedRoute, GuestOnlyRoute, RoleProtectedRoute, SessionGate } from './guards';
@@ -244,6 +248,9 @@ const AdminCreateDriver = lazy(() =>
   import('@/features/admin-management/CreatePages').then((m) => ({ default: m.AdminCreateDriver })),
 );
 const adminExistingPages: Record<string, import('react').ReactNode> = {
+  reports: <BusinessReportCenter />,
+  'reports/orders': <BusinessReportPage key="orders-report" kind="orders" />,
+  'reports/delivery': <BusinessReportPage key="delivery-report" kind="delivery" />,
   'restaurants/new': <AdminCreateRestaurant />,
   'drivers/new': <AdminCreateDriver />,
   dashboard: <Phase70 />,
@@ -309,6 +316,9 @@ const roleRoutes = (
       'ADMIN',
       'admin',
       [
+        'reports',
+        'reports/orders',
+        'reports/delivery',
         'dashboard',
         'profile',
         'accounts',
