@@ -76,3 +76,8 @@ Chốt CK/FD và NULL từng quan hệ, chứng minh trên tập FD đã công b
 - [FoodItemService.java:35](<F:/New folder/food-delivery/src/main/java/vn/gaugaugau/fooddelivery/service/FoodItemService.java:35>) — `existsByName`.
 
 - [AuthService.java:131](<F:/New folder/food-delivery/src/main/java/vn/gaugaugau/fooddelivery/auth/service/AuthService.java:131>) — `a.setPasswordHash`.
+
+
+## Phụ lục thực đơn độc lập — 14/11/2026
+
+Kết quả A1 phía trên giữ nguyên như bằng chứng lịch sử. Source mới và DB fooddelivery_independent_menu sau migration04 dùng FoodItem như nội dung riêng của một menu: item_id ở restaurant_food_items UNIQUE, nên FoodItem→Menu đổi từ0..N thành0..1. Main chưa được migration, không đổi kết luận schema Main ở phần lịch sử. Xem [ERD, quan hệ và FD/3NF version04](../independent-menu-data-model.md) cùng schema-reference-independent-menu.json. Không có bảng mới/cascade mới; mọi cart/order FK theo menuID và giá snapshot giữ nguyên.

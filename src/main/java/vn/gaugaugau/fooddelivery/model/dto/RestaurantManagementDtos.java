@@ -10,7 +10,6 @@ public final class RestaurantManagementDtos {
     private RestaurantManagementDtos() {}
     public record Profile(Long restaurantId, String name, String address, String phoneNumber,
             Boolean restaurantStatus, LocalDateTime createdAt, Long version) {}
-    public record CatalogItem(Long itemId, String name, String category, String description) {}
     public record DayCount(LocalDate date, long count) {}
     public record DayMoney(LocalDate date, BigDecimal amount) {}
     public record TopItem(Long restaurantFoodItemId, String name, long quantity, BigDecimal amount) {}

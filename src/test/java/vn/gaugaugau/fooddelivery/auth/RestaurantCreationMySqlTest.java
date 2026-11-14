@@ -21,7 +21,7 @@ import vn.gaugaugau.fooddelivery.model.dto.RestaurantRequestDTO;
 import vn.gaugaugau.fooddelivery.service.*;
 
 @org.junit.jupiter.api.condition.EnabledIf("enabled")
-@SpringBootTest(properties={"spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_coursework_a21}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
+@SpringBootTest(properties={"spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_coursework_a21}?sslMode=REQUIRED",
  "spring.datasource.username=${FOOD_TEST_DB_USERNAME:coursework_a21_app}","spring.datasource.password=${STAGE2_MYSQL_PASSWORD}","spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false"})
 class RestaurantCreationMySqlTest extends AuthTestKeys {
     static boolean enabled(){return ApprovedMySqlTestTarget.enabled("RUN_A21_MYSQL_TESTS");}

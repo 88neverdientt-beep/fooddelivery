@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useParams, useSearchParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -13,7 +13,7 @@ import { pageFrom, validId } from '@/features/public/model';
 import { restaurantApi } from './api';
 import { MenuCreationPanel } from './MenuCreationPanel';
 import { MenuExport } from './MenuExport';
-import { menuInput, sameMenu, type MenuInput, type CatalogItem } from './model';
+import { menuInput, sameMenu, type MenuInput } from './model';
 import {
   useRestaurant,
   useAction,
@@ -106,6 +106,7 @@ export function MenuForm({
   );
 }
 export function RestaurantMenuPage() {
+  const location = useLocation();
   const { key } = useRestaurant();
   const [params, setParams] = useSearchParams();
   const page = pageFrom(params);
@@ -186,6 +187,9 @@ export function RestaurantMenuPage() {
         </Select>
         <Button type="submit">Tìm món</Button>
       </form>
+      {typeof location.state?.notice === 'string' && (
+        <Alert tone="success">{location.state.notice}</Alert>
+      )}
       <ActionNotice action={update} />
       {data.isPending ? (
         <Skeleton />
@@ -197,7 +201,7 @@ export function RestaurantMenuPage() {
           {!data.data.items.length ? (
             <EmptyState
               title="Chưa có món phù hợp"
-              description="Chọn món từ catalog chung để thêm vào thực đơn."
+              description="Tạo món ăn đầu tiên cho thực đơn của nhà hàng."
             />
           ) : (
             data.data.items.map((item) => (
@@ -206,6 +210,14 @@ export function RestaurantMenuPage() {
                 key={item.restaurantFoodItemId}
               >
                 <div>
+                  {item.foodItem.imageUrl && (
+                    <img
+                      className="dish-thumbnail"
+                      src={item.foodItem.imageUrl}
+                      alt={item.foodItem.name}
+                      loading="lazy"
+                    />
+                  )}
                   <h2>
                     <Utensils size={19} /> {item.foodItem.name}
                   </h2>
@@ -260,107 +272,28 @@ export function RestaurantMenuPage() {
 export function RestaurantMenuEditor() {
   const { id } = useParams();
   const { key } = useRestaurant();
-  const [params, setParams] = useSearchParams();
-  const [selected, setSelected] = useState<CatalogItem>();
-  const [selectionLocked, setSelectionLocked] = useState(false);
-  const q = (params.get('q') || '').slice(0, 100);
-  const page = pageFrom(params);
   const valid = !id || validId(id);
   const item = useQuery({
     queryKey: [...key, 'menu-item', id],
     queryFn: ({ signal }) => restaurantApi.menuItem(Number(id), signal),
     enabled: !!id && valid,
   });
-  const catalog = useQuery({
-    queryKey: [...key, 'catalog', q, page],
-    queryFn: ({ signal }) => restaurantApi.catalog({ q, page, size: 12 }, signal),
-    enabled: !id,
-  });
-  const action = useAction(
-    ({ value, baseline, foodId }: { value: MenuInput; baseline?: MenuItem; foodId?: number }) =>
-      baseline ? restaurantApi.update(baseline, value) : restaurantApi.add(foodId!, value),
-  );
   if (!valid) return <ErrorState error={new Error('Invalid ID')} />;
   return (
     <ManagementSection>
       <PageHeader
-        title={id ? 'Chỉnh sửa món ăn' : 'Thêm món từ catalog'}
-        description="Tên, mô tả và danh mục thuộc catalog dùng chung. Nhà hàng chỉ quản lý giá và trạng thái bán."
+        title={id ? 'Chỉnh sửa món ăn' : 'Thêm món ăn'}
+        description="Tự tạo món, nhập giá và tải ảnh cho thực đơn riêng của nhà hàng."
       />
-      <ActionNotice action={action} />
-      {id ? (
-        item.isPending ? (
-          <Skeleton />
-        ) : item.isError ? (
-          <ErrorState error={item.error} onRetry={() => void item.refetch()} />
-        ) : (
-          <>
-            <h2>{item.data.foodItem.name}</h2>
-            <MenuForm
-              key={id}
-              item={item.data}
-              busy={action.busy}
-              onSave={(value) => action.run({ value, baseline: item.data })}
-            />
-          </>
-        )
+      {id && item.isPending ? (
+        <Skeleton />
+      ) : id && item.isError ? (
+        <ErrorState error={item.error} onRetry={() => void item.refetch()} />
       ) : (
-        <>
-          <form
-            className="management-toolbar"
-            onSubmit={(event) => {
-              event.preventDefault();
-              setParams({ q: String(new FormData(event.currentTarget).get('q') || '') });
-            }}
-          >
-            <Input key={q} name="q" label="Tìm trong catalog" defaultValue={q} maxLength={100} />
-            <Button type="submit">Tìm catalog</Button>
-          </form>
-          {catalog.isPending ? (
-            <Skeleton />
-          ) : catalog.isError ? (
-            <ErrorState error={catalog.error} onRetry={() => void catalog.refetch()} />
-          ) : (
-            <>
-              {catalog.data.items.map((food) => (
-                <article className="management-row" key={food.itemId}>
-                  <div>
-                    <h2>{food.name}</h2>
-                    <p>
-                      {food.category} · {food.description}
-                    </p>
-                  </div>
-                  <Button
-                    variant="secondary"
-                    disabled={selectionLocked}
-                    onClick={() => setSelected(food)}
-                  >
-                    Chọn {food.name}
-                  </Button>
-                </article>
-              ))}
-              {!catalog.data.items.length && (
-                <EmptyState
-                  title="Không có món catalog phù hợp"
-                  description="Catalog chỉ liệt kê các món chưa có trong thực đơn nhà hàng này."
-                />
-              )}
-              <Pagination
-                page={catalog.data.page + 1}
-                count={catalog.data.totalPages}
-                onChange={(n) => setParams({ q, page: String(n) })}
-              />
-            </>
-          )}
-          {!selected && <p>Chọn một món từ catalog để nhập giá bán và trạng thái.</p>}
-          {selected && (
-            <MenuCreationPanel
-              key={selected.itemId}
-              food={selected}
-              onUncertain={() => setSelectionLocked(true)}
-            />
-          )}
-        </>
+        <MenuCreationPanel
+          key={key.join(':') + ':' + (id || 'new')}
+          item={id ? item.data : undefined}
+        />
       )}
     </ManagementSection>
   );

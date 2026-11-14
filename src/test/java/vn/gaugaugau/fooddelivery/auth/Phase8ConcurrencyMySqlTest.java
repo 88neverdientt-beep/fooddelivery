@@ -23,7 +23,7 @@ import vn.gaugaugau.fooddelivery.auth.service.AuthService;
 import vn.gaugaugau.fooddelivery.model.*;
 
 @EnabledIfEnvironmentVariable(named="RUN_STAGE7_MYSQL_TESTS",matches="true")
-@SpringBootTest(properties={"spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage8_e2e}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
+@SpringBootTest(properties={"spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage8_e2e}?sslMode=REQUIRED",
  "spring.datasource.username=${FOOD_TEST_DB_USERNAME:stage8_app}","spring.datasource.password=${STAGE2_MYSQL_PASSWORD}","spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false","fooddelivery.concurrency.require-preconditions=true"})
 @AutoConfigureMockMvc(print=org.springframework.boot.webmvc.test.autoconfigure.MockMvcPrint.NONE)
 class Phase8ConcurrencyMySqlTest extends AuthTestKeys {
@@ -35,7 +35,7 @@ class Phase8ConcurrencyMySqlTest extends AuthTestKeys {
  final String password=UUID.randomUUID()+"-stage8",hash=new BCryptPasswordEncoder(4).encode(password);
  @BeforeEach void fixture(){
   ApprovedMySqlTestTarget.assertTarget(jdbc);
-  assertTrue(Set.of("fooddelivery_stage8_e2e","fooddelivery_full_audit","fooddelivery_phase8_2","fooddelivery_coursework_a24").contains(ApprovedMySqlTestTarget.databaseName()));
+  assertTrue(Set.of("fooddelivery_stage8_e2e","fooddelivery_full_audit","fooddelivery_phase8_2","fooddelivery_coursework_a24","fooddelivery_menu_release").contains(ApprovedMySqlTestTarget.databaseName()));
   new TransactionTemplate(manager).executeWithoutResult(tx->{
    for(var role:Role.values()){
     String email=UUID.randomUUID()+"@stage8-cas.invalid";Long id=null;

@@ -28,8 +28,7 @@ public class RestaurantFoodItemController {
 	@PostMapping("/restaurant-food-items")
 	public ResponseEntity<ApiResponse<RestaurantFoodItemResponseDTO>> createRestaurantFoodItem(
 			@Valid @RequestBody RestaurantFoodItemRequestDTO request) {
-		RestaurantFoodItemResponseDTO response = this.restaurantFoodItemService.createRestaurantFoodItem(request);
-		return ApiResponse.created(response);
+        throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.GONE,"Tạo món trực tiếp tại /restaurant-management/dishes; không còn liên kết catalog");
 	}
 
 	@GetMapping("/restaurant-food-items")

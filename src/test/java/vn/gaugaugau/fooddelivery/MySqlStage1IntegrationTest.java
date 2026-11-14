@@ -24,7 +24,7 @@ import vn.gaugaugau.fooddelivery.service.*;
 // Explicit opt-in; hard-coded approved endpoint and validate prevent use of the development DB.
 @org.junit.jupiter.api.condition.EnabledIf("enabled")
 @SpringBootTest(webEnvironment=SpringBootTest.WebEnvironment.MOCK, properties={
-    "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage2_rehearsal}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
+    "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage2_rehearsal}?sslMode=REQUIRED",
     "spring.datasource.username=${FOOD_TEST_DB_USERNAME:stage2_app}", "spring.datasource.password=${STAGE2_MYSQL_PASSWORD}",
     "spring.jpa.hibernate.ddl-auto=validate", "spring.jpa.open-in-view=false",
     "spring.jpa.properties.hibernate.generate_statistics=true", "spring.jpa.show-sql=false",

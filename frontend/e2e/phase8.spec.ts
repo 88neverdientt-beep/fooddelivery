@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, request as apiRequest } from '@playwright/test';
 import { z } from 'zod';
 import { randomUUID } from 'node:crypto';
 import { ApiActor, freshCustomer, responseData, stage4, orderSchema } from './customer-helpers';
@@ -20,6 +20,8 @@ test('full audit fractional menu cart and checkout display the exact server amou
   const admin = await ApiActor.login(request, fixtures.ADMIN);
   const customer = await freshCustomer(baseURL!);
   const suffix = randomUUID();
+  const restaurantPassword = randomUUID() + '-audit-test';
+  let restaurantActor: ApiActor | undefined;
   try {
     const browserErrors: string[] = [];
     page.on('pageerror', () => browserErrors.push('pageerror'));
@@ -40,7 +42,7 @@ test('full audit fractional menu cart and checkout display the exact server amou
       {
         name: `Fractional audit ${suffix}`,
         email: `money-${suffix}@full-audit.test`,
-        password: randomUUID() + '-audit-test',
+        password: restaurantPassword,
         phoneNumber: '0900000044',
         address: 'Isolated fractional checkout fixture',
         restaurantStatus: true,
@@ -48,21 +50,20 @@ test('full audit fractional menu cart and checkout display the exact server amou
       z.object({ restaurantId: z.number().int().positive() }),
       201,
     );
-    const food = await admin.mutate(
+    restaurantActor = await ApiActor.login(await apiRequest.newContext({ baseURL }), {
+      email: `money-${suffix}@full-audit.test`,
+      password: restaurantPassword,
+    });
+    const menu = await restaurantActor.mutate(
       'POST',
-      '/api/food-items',
-      { name: `Fractional food ${suffix}`, category: 'Audit', description: 'Decimal fixture' },
-      z.object({ itemId: z.number().int().positive() }),
-      201,
-    );
-    const menu = await admin.mutate(
-      'POST',
-      '/api/restaurant-food-items',
+      '/api/restaurant-management/dishes',
       {
-        restaurantId: restaurant.restaurantId,
-        foodItemId: food.itemId,
+        name: `Fractional food ${suffix}`,
+        category: 'Audit',
+        description: 'Decimal fixture',
         price: 25000.25,
         isAvailable: true,
+        creationKey: randomUUID(),
       },
       z.object({ restaurantFoodItemId: z.number().int().positive() }),
       201,
@@ -104,6 +105,7 @@ test('full audit fractional menu cart and checkout display the exact server amou
     expect((await customer.actor.cart()).cartItems).toHaveLength(0);
     expect(browserErrors).toEqual([]);
   } finally {
+    if (restaurantActor) await restaurantActor.close();
     await customer.actor.close();
   }
 });

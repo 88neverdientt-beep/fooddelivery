@@ -22,7 +22,9 @@ import java.util.List;
 
 @Entity
 @Table(name = "restaurant_food_items", uniqueConstraints = {
-		@UniqueConstraint(columnNames = { "restaurant_id", "item_id" })
+		@UniqueConstraint(columnNames = { "restaurant_id", "item_id" }),
+        @UniqueConstraint(name="uq_menu_private_food", columnNames="item_id"),
+        @UniqueConstraint(name="uq_menu_creation_key", columnNames="creation_key")
 })
 @Getter
 @Setter
@@ -35,6 +37,13 @@ public class RestaurantFoodItem {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name = "restaurant_food_item_id")
 	private Long restaurantFoodItemId;
+
+    @jakarta.persistence.Version
+    @Column(name="version", nullable=false)
+    private Long version;
+
+    @Column(name="creation_key", length=36)
+    private String creationKey;
 
 	@Column(name = "price", nullable = false, precision = 12, scale = 2)
 	private BigDecimal price;

@@ -17,6 +17,7 @@ public class RestaurantFoodItemResponseDTO {
 
 	private Long restaurantFoodItemId;
 	private BigDecimal price;
+    private Long version;
 	private Boolean isAvailable;
 	private RestaurantOutputDTO restaurant;
 	private FoodItemOutputDTO foodItem;
@@ -43,5 +44,6 @@ public class RestaurantFoodItemResponseDTO {
 		private String name;
 		private String category;
 		private String description;
+        private String imageUrl;
 	}
 }

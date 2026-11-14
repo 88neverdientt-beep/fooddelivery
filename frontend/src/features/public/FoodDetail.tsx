@@ -199,13 +199,19 @@ export function FoodDetailPage() {
       />
       <div className="customer-food-detail-grid">
         <div className="customer-food-detail-photo">
-          <FoodImage
-            kind={/cơm|rice/i.test(item.foodItem.category || '') ? 'rice' : 'pho'}
-            alt="Ảnh minh họa món ăn Việt"
-            priority
-            sizes="(max-width:767px) calc(100vw - 32px), 560px"
-          />
-          <span>Ảnh minh họa · hình ảnh món thực tế chưa được nhà hàng cung cấp</span>
+          {item.foodItem.imageUrl ? (
+            <img src={item.foodItem.imageUrl} alt={item.foodItem.name} loading="lazy" />
+          ) : (
+            <FoodImage
+              kind={/cơm|rice/i.test(item.foodItem.category || '') ? 'rice' : 'pho'}
+              alt="Ảnh minh họa món ăn Việt"
+              priority
+              sizes="(max-width:767px) calc(100vw - 32px), 560px"
+            />
+          )}
+          {!item.foodItem.imageUrl && (
+            <span>Ảnh minh họa · hình ảnh món thực tế chưa được nhà hàng cung cấp</span>
+          )}
         </div>
         <div className="customer-food-detail-copy">
           <p className="eyebrow">

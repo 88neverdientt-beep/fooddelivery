@@ -38,6 +38,9 @@ public class FoodItem {
 	@Column(name = "description", length = 255)
 	private String description;
 
+	@Column(name = "image_key", length = 64)
+	private String imageKey;
+
 	@OneToMany(mappedBy = "foodItem")
 	private List<RestaurantFoodItem> restaurantFoodItems;
 }

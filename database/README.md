@@ -92,3 +92,12 @@ The exact test-target guard must not be removed for production without separate 
 
 This step does NOT alter/delete old password columns, create ADMIN, issue JWTs, or enable
 mandatory authentication. Schema migration on the current development database is NOT authorized.
+
+
+## Version04 — thực đơn độc lập và ảnh (chưa áp dụng Main)
+
+`migrations/04_independent_menu.sql` là migration nghiệp vụ mới, không phải migration lịch sử đã được bao gồm trong baseline001. Source mới cần baseline001 +04; Main đang chạy artifact cũ vẫn dùng schema baseline. Không tự chạy04 khi ứng dụng khởi động; không Flyway/Liquibase, không update/create.
+
+Version04 thêm image_key, menu version/creation_key và hai UNIQUE; clone FoodItem dùng chung nhưng giữ menuID/giá/cart/order FK. `schema-reference-independent-menu.json` mô tả schema sau04; không ghi đè schema-reference.json baseline đã nghiệm thu. Chỉ thực hiện trong cửa sổ bảo trì sau backupMySQL+ảnh/restore test/approvalMain riêng. SQL có guard hostport/database/version, không dùng --force. DDL MySQL không rollback toàn bộ; nếu thất bại giữa chừng dừng và kiểm trạng thái, không tự chạy lại hoặc DROP.
+
+Đọc [mô hình dữ liệu](../docs/independent-menu-data-model.md) và [kế hoạch Main](../docs/independent-menu-main-plan.md) trước khi thao tác.

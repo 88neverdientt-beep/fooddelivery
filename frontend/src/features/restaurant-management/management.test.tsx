@@ -66,10 +66,21 @@ it('detects stale menu state and bounds analytics periods', () => {
 it('derives Restaurant identity instead of accepting owner IDs from callers', async () => {
   const request = vi.fn().mockResolvedValue(item);
   const api = createRestaurantApi(request, () => account('RESTAURANT'));
-  await api.add(7, { price: '25000.50', isAvailable: true });
-  expect(request).toHaveBeenCalledExactlyOnceWith('/restaurant-food-items', {
+  const creationKey = '11111111-1111-4111-8111-111111111111';
+  await api.createDish(
+    { name: 'Phở', category: 'Phở', description: 'Nóng', price: '25000.50', isAvailable: true },
+    creationKey,
+  );
+  expect(request).toHaveBeenCalledExactlyOnceWith('/restaurant-management/dishes', {
     method: 'POST',
-    body: { restaurantId: 1, foodItemId: 7, price: 25000.5, isAvailable: true },
+    body: {
+      name: 'Phở',
+      category: 'Phở',
+      description: 'Nóng',
+      price: 25000.5,
+      isAvailable: true,
+      creationKey,
+    },
   });
 });
 it('sends a frozen expected price/availability pair for conditional writes', async () => {

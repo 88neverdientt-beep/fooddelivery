@@ -46,32 +46,20 @@ const analyticsSchema = z.object({
   ratingsCount: z.number(),
 });
 let restaurant: ApiActor, other: ApiActor, admin: ApiActor, driver: ApiActor;
-let base: string, catalog: { itemId: number; name: string };
+let base: string, draft: { name: string };
 const proof: object[] = [];
 const customerActors: ApiActor[] = [];
-async function createFood() {
-  return admin.mutate(
+async function newMenu(price = 25000) {
+  return restaurant.mutate(
     'POST',
-    '/api/food-items',
+    '/api/restaurant-management/dishes',
     {
       name: 'Stage5 QA ' + randomUUID().slice(0, 8),
       category: 'Com',
-      description: 'Isolated restaurant acceptance fixture',
-    },
-    z.object({ itemId: z.number(), name: z.string() }),
-    201,
-  );
-}
-async function newMenu(price = 25000) {
-  const food = await createFood();
-  return restaurant.mutate(
-    'POST',
-    '/api/restaurant-food-items',
-    {
-      restaurantId: restaurant.account.restaurantId,
-      foodItemId: food.itemId,
+      description: 'Isolated independent-menu fixture',
       price,
       isAvailable: true,
+      creationKey: randomUUID(),
     },
     menuSchema,
     201,
@@ -88,9 +76,9 @@ async function saveMenu(page: Page, id: number, price: string) {
   const response = page.waitForResponse(
     (r) =>
       r.request().method() === 'PUT' &&
-      new URL(r.url()).pathname === `/api/restaurant-food-items/${id}`,
+      new URL(r.url()).pathname === `/api/restaurant-management/dishes/${id}`,
   );
-  await page.getByRole('button', { name: 'Lưu thay đổi món', exact: true }).click();
+  await page.getByRole('button', { name: 'Lưu món ăn', exact: true }).click();
   return responseData(await response, menuSchema);
 }
 async function transition(page: Page, label: string, orderId: number, state: string) {
@@ -118,7 +106,7 @@ test.beforeAll(async ({ baseURL }) => {
   admin = await actor(fixtures.ADMIN);
   driver = await actor(fixtures.DRIVER);
   expect(restaurant.account.restaurantId).toBe(stage4.otherRestaurantId);
-  catalog = await createFood();
+  draft = { name: 'Stage5 UI ' + randomUUID().slice(0, 8) };
 });
 test.afterAll(async () => {
   for (const actor of [restaurant, other, admin, driver, ...customerActors])
@@ -166,46 +154,41 @@ test('restaurant profile validation, real save and account cache isolation', asy
   });
 });
 
-test('restaurant catalog add, validation, availability, edit and delete through UI', async ({
+test('restaurant independent dish create, validation, availability, edit and delete through UI', async ({
   page,
 }) => {
   await login(page, 'RESTAURANT', credentials.OTHER_RESTAURANT);
   await page.goto('/restaurant/menu/new');
-  await page.getByLabel('Tìm trong catalog', { exact: true }).fill(catalog.name);
-  await page.getByRole('button', { name: 'Tìm catalog', exact: true }).click();
-  await page.getByRole('button', { name: 'Chọn ' + catalog.name, exact: true }).click();
+  await page.getByLabel('Tên món', { exact: true }).fill(draft.name);
   await page.getByLabel('Giá bán (VND)', { exact: true }).fill('-1');
-  await page.getByRole('button', { name: 'Thêm món vào thực đơn', exact: true }).click();
+  await page.getByRole('button', { name: 'Lưu món ăn', exact: true }).click();
   await expect(page.getByText(/Giá tối đa 10 chữ số nguyên/)).toBeVisible();
   await page.getByLabel('Giá bán (VND)', { exact: true }).fill('25000.50');
   const added = page.waitForResponse(
     (r) =>
-      r.request().method() === 'POST' && new URL(r.url()).pathname === '/api/restaurant-food-items',
+      r.request().method() === 'POST' &&
+      new URL(r.url()).pathname === '/api/restaurant-management/dishes',
   );
-  await page.getByRole('button', { name: 'Thêm món vào thực đơn', exact: true }).click();
+  await page.getByRole('button', { name: 'Lưu món ăn', exact: true }).click();
   const item = await responseData(await added, menuSchema, 201);
   expect(item.price).toBe(25000.5);
   expect(item.restaurant.restaurantId).toBe(restaurant.account.restaurantId);
-  await expect(
-    page.getByText(new RegExp('Đã lưu món #' + item.restaurantFoodItemId)),
-  ).toBeVisible();
+  await expect(page.getByText('Đã lưu món ăn thành công.', { exact: true })).toBeVisible();
   await page.goto(`/restaurant/menu/${item.restaurantFoodItemId}/edit`);
   expect((await saveMenu(page, item.restaurantFoodItemId, '28000.75')).price).toBe(28000.75);
-  await expect(
-    page.getByText(new RegExp('Đã lưu món #' + item.restaurantFoodItemId)),
-  ).toBeVisible();
-  await page.goto('/restaurant/menu?q=' + encodeURIComponent(catalog.name));
+  await expect(page.getByText('Đã lưu món ăn thành công.', { exact: true })).toBeVisible();
+  await page.goto('/restaurant/menu?q=' + encodeURIComponent(draft.name));
   const toggled = page.waitForResponse(
     (r) =>
       r.request().method() === 'PUT' &&
       new URL(r.url()).pathname === `/api/restaurant-food-items/${item.restaurantFoodItemId}`,
   );
-  await page.getByRole('button', { name: 'Ngừng bán ' + catalog.name, exact: true }).click();
+  await page.getByRole('button', { name: 'Ngừng bán ' + draft.name, exact: true }).click();
   expect((await responseData(await toggled, menuSchema)).isAvailable).toBe(false);
   await expect(
-    page.getByRole('button', { name: 'Bật bán ' + catalog.name, exact: true }),
+    page.getByRole('button', { name: 'Bật bán ' + draft.name, exact: true }),
   ).toBeVisible();
-  await page.getByRole('button', { name: 'Xóa ' + catalog.name, exact: true }).click();
+  await page.getByRole('button', { name: 'Xóa ' + draft.name, exact: true }).click();
   const removed = page.waitForResponse(
     (r) =>
       r.request().method() === 'DELETE' &&
@@ -352,7 +335,7 @@ test('restaurant ownership, simultaneous updates, confirmations and cancellation
         isAvailable: true,
       })
     ).status(),
-  ).toBe(404);
+  ).toBe(410);
   for (const path of ['/profile', '/catalog', '/orders', '/analytics'])
     expect((await order.actor.response('GET', '/api/restaurant-management' + path)).status()).toBe(
       403,
@@ -457,15 +440,14 @@ test('restaurant two tabs preserve stale drafts until explicit rebase', async ({
   const conflict = second.waitForResponse(
     (r) =>
       r.request().method() === 'PUT' &&
-      new URL(r.url()).pathname === `/api/restaurant-food-items/${item.restaurantFoodItemId}`,
+      new URL(r.url()).pathname ===
+        `/api/restaurant-management/dishes/${item.restaurantFoodItemId}`,
   );
-  await second.getByRole('button', { name: 'Lưu thay đổi món', exact: true }).click();
+  await second.getByRole('button', { name: 'Lưu món ăn', exact: true }).click();
   expect((await conflict).status()).toBe(409);
   await expect(second.getByText(/Dữ liệu máy chủ đã thay đổi/)).toBeVisible();
   await expect(second.getByLabel('Giá bán (VND)', { exact: true })).toHaveValue('28000');
-  await expect(
-    second.getByRole('button', { name: 'Lưu thay đổi món', exact: true }),
-  ).toBeDisabled();
+  await expect(second.getByRole('button', { name: 'Lưu món ăn', exact: true })).toBeDisabled();
   await second.getByRole('button', { name: 'Dùng bản mới', exact: true }).click();
   await second
     .getByRole('dialog')
@@ -488,15 +470,18 @@ test('restaurant network failure after commit refetches without repeating mutati
   await page.goto(`/restaurant/menu/${item.restaurantFoodItemId}/edit`);
   await expect(page.getByLabel('Giá bán (VND)', { exact: true })).toHaveValue('25000');
   let writes = 0;
-  await page.route(`**/api/restaurant-food-items/${item.restaurantFoodItemId}`, async (route) => {
-    if (route.request().method() !== 'PUT') return route.continue();
-    writes++;
-    const response = await route.fetch({ maxRetries: 0 });
-    expect(response.status()).toBe(200);
-    await route.abort('internetdisconnected');
-  });
+  await page.route(
+    `**/api/restaurant-management/dishes/${item.restaurantFoodItemId}`,
+    async (route) => {
+      if (route.request().method() !== 'PUT') return route.continue();
+      writes++;
+      const response = await route.fetch({ maxRetries: 0 });
+      expect(response.status()).toBe(200);
+      await route.abort('internetdisconnected');
+    },
+  );
   await page.getByLabel('Giá bán (VND)', { exact: true }).fill('31000');
-  await page.getByRole('button', { name: 'Lưu thay đổi món', exact: true }).click();
+  await page.getByRole('button', { name: 'Lưu món ăn', exact: true }).click();
   await expect(page.getByText(/Dữ liệu máy chủ đã thay đổi/)).toBeVisible();
   expect(
     (await restaurant.read(`/api/restaurant-food-items/${item.restaurantFoodItemId}`, menuSchema))
@@ -522,7 +507,7 @@ for (const width of [375, 768, 1024, 1440])
       ['dashboard', 'Chào mừng nhà hàng'],
       ['profile', 'Thông tin nhà hàng'],
       ['menu', 'Thực đơn nhà hàng'],
-      ['menu/new', 'Thêm món từ catalog'],
+      ['menu/new', 'Thêm món ăn'],
       [`menu/${item.restaurantFoodItemId}/edit`, 'Chỉnh sửa món ăn'],
       ['orders', 'Đơn hàng nhà hàng'],
       [`orders/${order.order.orderId}`, `Đơn hàng #${order.order.orderId}`],

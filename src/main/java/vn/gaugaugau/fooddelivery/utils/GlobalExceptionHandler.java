@@ -35,9 +35,23 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
     public ResponseEntity<?> authorization(Exception e){return ApiResponse.error(HttpStatus.FORBIDDEN,"Forbidden");}
 
+    @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
+    public ResponseEntity<?> uploadTooLarge(org.springframework.web.multipart.MaxUploadSizeExceededException ex) {
+        return ApiResponse.error(HttpStatus.PAYLOAD_TOO_LARGE, "Ảnh vượt dung lượng cho phép");
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.support.MissingServletRequestPartException.class)
+    public ResponseEntity<?> missingUpload(org.springframework.web.multipart.support.MissingServletRequestPartException ex) {
+        return ApiResponse.error(HttpStatus.BAD_REQUEST, "Cần chọn tệp ảnh");
+    }
+
+    @ExceptionHandler(org.springframework.web.multipart.MultipartException.class)
+    public ResponseEntity<?> malformedUpload(org.springframework.web.multipart.MultipartException ex) {
+        return ApiResponse.error(HttpStatus.BAD_REQUEST, "Yêu cầu upload ảnh không hợp lệ");
+    }
 	@ExceptionHandler(Exception.class)
 	public ResponseEntity<?> handleAllException(Exception e) {
-        org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class).atError().addKeyValue("exceptionType",e.getClass().getName()).log("Unhandled request failed");
+        org.slf4j.LoggerFactory.getLogger(GlobalExceptionHandler.class).atError().addKeyValue("exceptionType",e.getClass().getName()).log("Unhandled request failed ({})", e.getClass().getSimpleName());
 		return ApiResponse.error(HttpStatus.INTERNAL_SERVER_ERROR, "An unexpected server error occurred");
 	}
 

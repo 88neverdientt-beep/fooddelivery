@@ -42,10 +42,12 @@ public class RestaurantFoodItemService {
 				.name(restaurantFoodItem.getFoodItem().getName())
 				.category(restaurantFoodItem.getFoodItem().getCategory())
 				.description(restaurantFoodItem.getFoodItem().getDescription())
+                .imageUrl(restaurantFoodItem.getFoodItem().getImageKey()==null?null:"/uploads/food-items/"+restaurantFoodItem.getFoodItem().getImageKey())
 				.build();
 		return RestaurantFoodItemResponseDTO.builder()
 				.restaurantFoodItemId(restaurantFoodItem.getRestaurantFoodItemId())
-				.price(restaurantFoodItem.getPrice())
+				.version(restaurantFoodItem.getVersion())
+                .price(restaurantFoodItem.getPrice())
 				.isAvailable(restaurantFoodItem.getIsAvailable())
 				.restaurant(restaurantOutputDTO)
 				.foodItem(foodItemOutputDTO)
@@ -55,21 +57,7 @@ public class RestaurantFoodItemService {
 
 
 	public RestaurantFoodItemResponseDTO createRestaurantFoodItem(RestaurantFoodItemRequestDTO request) {
-		Restaurant restaurant = this.restaurantRepository.findById(request.getRestaurantId()).orElseThrow(
-				() -> new ResourceNotFoundException("Restaurant not found with ID: " + request.getRestaurantId()));
-		FoodItem foodItem = this.foodItemRepository.findById(request.getFoodItemId()).orElseThrow(
-				() -> new ResourceNotFoundException("Food item not found with ID: " + request.getFoodItemId()));
-		if (this.restaurantFoodItemRepository.existsByRestaurant_RestaurantIdAndFoodItem_ItemId(
-				restaurant.getRestaurantId(), foodItem.getItemId())) {
-			throw new vn.gaugaugau.fooddelivery.utils.exception.ResourceAlreadyExistsException("Restaurant food item already exists");
-		}
-		RestaurantFoodItem restaurantFoodItem = RestaurantFoodItem.builder()
-				.price(request.getPrice())
-				.isAvailable(request.getIsAvailable() != null ? request.getIsAvailable() : true)
-				.restaurant(restaurant)
-				.foodItem(foodItem)
-				.build();
-		return convertToRestaurantFoodItemResponseDTO(this.restaurantFoodItemRepository.save(restaurantFoodItem));
+        throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.GONE,"Catalog linking removed; create an independent dish");
 	}
 
 	@org.springframework.transaction.annotation.Transactional(readOnly = true)
@@ -108,7 +96,7 @@ public class RestaurantFoodItemService {
         }
 		restaurantFoodItem.setPrice(request.getPrice());
 		restaurantFoodItem.setIsAvailable(request.getIsAvailable() != null ? request.getIsAvailable() : true);
-		return convertToRestaurantFoodItemResponseDTO(this.restaurantFoodItemRepository.save(restaurantFoodItem));
+		return convertToRestaurantFoodItemResponseDTO(this.restaurantFoodItemRepository.saveAndFlush(restaurantFoodItem));
 	}
     @org.springframework.security.access.prepost.PreAuthorize("@access.menu(#restaurantFoodItemId)")
 

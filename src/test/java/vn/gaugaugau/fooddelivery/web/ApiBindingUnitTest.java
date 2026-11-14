@@ -79,12 +79,11 @@ class ApiBindingUnitTest {
         assertFalse(response.getContentAsString().contains("private-host"));
         assertFalse(response.getContentAsString().contains("secret"));
     }
-    @Test void validMenuRequestReachesService() throws Exception {
-        when(menus.createRestaurantFoodItem(any())).thenReturn(new RestaurantFoodItemResponseDTO());
-        assertEquals(201,mvc.perform(post("/restaurant-food-items").contentType(MediaType.APPLICATION_JSON)
+    @Test void oldCatalogLinkRequestIsGone() throws Exception {
+        assertEquals(410,mvc.perform(post("/restaurant-food-items").contentType(MediaType.APPLICATION_JSON)
             .content("{\"restaurantId\":1,\"foodItemId\":2,\"price\":20000.50}"))
             .andReturn().getResponse().getStatus());
-        verify(menus).createRestaurantFoodItem(any());
+        verify(menus,never()).createRestaurantFoodItem(any());
     }
     @Test void fractionalOrOverflowingCartQuantityNeverReachesEitherWriter()throws Exception {
         for(String quantity:new String[]{"1.5","1.0","1e0","2147483648","9223372036854775808"}) {

@@ -11,7 +11,7 @@ import vn.gaugaugau.fooddelivery.utils.ApiResponse;
 public class RestaurantManagementController {
     private final RestaurantManagementService service;
     @GetMapping("/profile") public ResponseEntity<?> profile(){return ApiResponse.success(service.profile());}
-    @GetMapping("/catalog") public ResponseEntity<?> catalog(@RequestParam(defaultValue="")String q,@RequestParam(defaultValue="")String category,@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="12")int size){return ApiResponse.success(service.catalog(q,category,page,size));}
+    @GetMapping("/catalog") public ResponseEntity<?> retiredCatalog(){throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.GONE,"Catalog đã ngừng sử dụng; tạo món trực tiếp trong thực đơn riêng");}
     @GetMapping("/orders") public ResponseEntity<?> orders(@RequestParam(defaultValue="")String q,@RequestParam(required=false)OrderStatus status,@RequestParam(required=false)String from,@RequestParam(required=false)String to,@RequestParam(defaultValue="newest")String sort,@RequestParam(defaultValue="0")int page,@RequestParam(defaultValue="12")int size){return ApiResponse.success(service.orders(q,status,from,to,sort,page,size));}
     @GetMapping("/analytics") public ResponseEntity<?> analytics(@RequestParam(required=false)String from,@RequestParam(required=false)String to){return ApiResponse.success(service.analytics(from,to));}
 }

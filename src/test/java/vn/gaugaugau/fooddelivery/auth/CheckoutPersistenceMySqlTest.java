@@ -26,7 +26,7 @@ import vn.gaugaugau.fooddelivery.model.dto.*;
 import vn.gaugaugau.fooddelivery.service.*;
 
 @org.junit.jupiter.api.condition.EnabledIf("enabled")
-@SpringBootTest(properties={"spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_coursework_a23}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
+@SpringBootTest(properties={"spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_coursework_a23}?allowPublicKeyRetrieval=true&sslMode=REQUIRED",
  "spring.datasource.username=${FOOD_TEST_DB_USERNAME:coursework_a23_app}","spring.datasource.password=${STAGE2_MYSQL_PASSWORD}","spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false","logging.level.root=WARN"})
 class CheckoutPersistenceMySqlTest extends AuthTestKeys {
     static boolean enabled(){return ApprovedMySqlTestTarget.enabled("RUN_A23_MYSQL_TESTS");}
@@ -53,10 +53,20 @@ class CheckoutPersistenceMySqlTest extends AuthTestKeys {
     void as(Actor a){SecurityContextHolder.getContext().setAuthentication(new ActorAuthentication(a));}
     @AfterEach void clear(){SecurityContextHolder.clearContext();}
     RestaurantFoodItemRequestDTO input(Long id,BigDecimal price,boolean active){return RestaurantFoodItemRequestDTO.builder().restaurantId(restaurant.restaurantId()).foodItemId(id).price(price).isAvailable(active).build();}
-    RestaurantFoodItemResponseDTO add(Long id){return menu.createRestaurantFoodItem(input(id,new BigDecimal("25000.50"),true));}
+    // Fixture setup for migrated rows. Catalog-linking is no longer a production writer.
+    @Autowired AccessRules access;
+    @Autowired vn.gaugaugau.fooddelivery.repository.RestaurantFoodItemRepository menuFixtures;
+    RestaurantFoodItemResponseDTO migratedFixture(RestaurantFoodItemRequestDTO request){
+        return new TransactionTemplate(manager).execute(tx->{
+            access.profile("RESTAURANT",request.getRestaurantId(),true);
+            var value=RestaurantFoodItem.builder().restaurant(em.getReference(Restaurant.class,request.getRestaurantId())).foodItem(em.getReference(FoodItem.class,request.getFoodItemId())).price(request.getPrice()).isAvailable(request.getIsAvailable()).build();
+            return menu.convertToRestaurantFoodItemResponseDTO(menuFixtures.saveAndFlush(value));
+        });
+    }
+    RestaurantFoodItemResponseDTO add(Long id){return migratedFixture(input(id,new BigDecimal("25000.50"),true));}
     String sheet(byte[] bytes)throws Exception{try(var zip=new ZipInputStream(new ByteArrayInputStream(bytes))){ZipEntry e;while((e=zip.getNextEntry())!=null)if(e.getName().equals("xl/worksheets/sheet1.xml"))return new String(zip.readAllBytes(),java.nio.charset.StandardCharsets.UTF_8);}throw new AssertionError("Missing sheet");}
-    @Test void createsAndReadsRealRelationsByIdAndOwnCatalogId(){
-        var saved=menu.createRestaurantFoodItem(input(food,new BigDecimal("9999999999.99"),false));var stored=menu.getRestaurantFoodItemById(saved.getRestaurantFoodItemId());
+    @Test void readsMigratedPrivateMenuRelationsById(){
+        var saved=migratedFixture(input(food,new BigDecimal("9999999999.99"),false));var stored=menu.getRestaurantFoodItemById(saved.getRestaurantFoodItemId());
         assertEquals(restaurant.restaurantId(),stored.getRestaurant().getRestaurantId());assertEquals(food,stored.getFoodItem().getItemId());assertEquals(0,new BigDecimal("9999999999.99").compareTo(stored.getPrice()));assertFalse(stored.getIsAvailable());assertEquals(saved.getRestaurantFoodItemId(),excel.ownByFood(food).getRestaurantFoodItemId());
         assertEquals(1,jdbc.queryForObject("SELECT COUNT(*) FROM restaurant_food_items WHERE restaurant_id=? AND item_id=?",Integer.class,restaurant.restaurantId(),food));
     }
@@ -77,12 +87,15 @@ class CheckoutPersistenceMySqlTest extends AuthTestKeys {
         Long cod=jdbc.queryForObject("SELECT method_id FROM payment_methods WHERE method_code='COD'",Long.class);
         var order=orders.createOrder(customer.customerId(),OrderRequestDTO.builder().deliveryAddress("12 Hà Nội").paymentMethodId(cod).build());
         as(restaurant);menu.updateRestaurantFoodItemById(item.getRestaurantFoodItemId(),RestaurantFoodItemUpdateDTO.builder().price(new BigDecimal("28000.75")).isAvailable(false).expectedPrice(new BigDecimal("25000.50")).expectedIsAvailable(true).build());
+        long revision=jdbc.queryForObject("SELECT version FROM restaurant_food_items WHERE restaurant_food_item_id=?",Long.class,item.getRestaurantFoodItemId());
+        var nonconditional=menu.updateRestaurantFoodItemById(item.getRestaurantFoodItemId(),RestaurantFoodItemUpdateDTO.builder().price(new BigDecimal("28001.75")).isAvailable(false).build());
+        assertTrue(nonconditional.getVersion()>revision);assertEquals(nonconditional.getVersion(),jdbc.queryForObject("SELECT version FROM restaurant_food_items WHERE restaurant_food_item_id=?",Long.class,item.getRestaurantFoodItemId()));
         assertEquals(0,new BigDecimal("25000.50").compareTo(jdbc.queryForObject("SELECT unit_price FROM order_details WHERE order_id=?",BigDecimal.class,order.getOrderId())));
         assertEquals(0,new BigDecimal("50001.00").compareTo(jdbc.queryForObject("SELECT subtotal FROM orders WHERE order_id=?",BigDecimal.class,order.getOrderId())));
         assertThrows(org.springframework.dao.DataIntegrityViolationException.class,()->menu.deleteRestaurantFoodItemById(item.getRestaurantFoodItemId()));
     }
     @Test void otherRestaurantCannotWriteLookupOrExportOurMenu(){
-        var stored=add(food);as(other);assertThrows(vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException.class,()->menu.createRestaurantFoodItem(input(otherFood,new BigDecimal("1"),true)));
+        var stored=add(food);as(other);assertThrows(vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException.class,()->migratedFixture(input(otherFood,new BigDecimal("1"),true)));
         assertThrows(vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException.class,()->menu.updateRestaurantFoodItemById(stored.getRestaurantFoodItemId(),RestaurantFoodItemUpdateDTO.builder().price(BigDecimal.ONE).build()));
         assertThrows(vn.gaugaugau.fooddelivery.utils.exception.ResourceNotFoundException.class,()->excel.ownByFood(food));
         var query=excel.prepare(Map.of());assertEquals(other.restaurantId(),query.arguments().getFirst());
@@ -90,7 +103,7 @@ class CheckoutPersistenceMySqlTest extends AuthTestKeys {
     }
     @Test void exportsAllOwnRowsWithLiteralFiltersTypedMoneyAndEmptyResult()throws Exception {
         var ids=new ArrayList<Long>();new TransactionTemplate(manager).executeWithoutResult(tx->{for(int i=0;i<15;i++)ids.add(food("Menu "+tag+" "+i,"Phở","Dữ liệu"));});
-        for(int i=0;i<ids.size();i++)menu.createRestaurantFoodItem(input(ids.get(i),new BigDecimal("25000.50").add(BigDecimal.valueOf(i)),i%2==0));
+        for(int i=0;i<ids.size();i++)migratedFixture(input(ids.get(i),new BigDecimal("25000.50").add(BigDecimal.valueOf(i)),i%2==0));
         add(food);var out=new ByteArrayOutputStream();excel.write(excel.prepare(Map.of("q",tag,"sort","price-desc")),out);String xml=sheet(out.toByteArray());assertEquals(17,xml.split("<row ",-1).length-1);assertTrue(xml.contains("t='n' s='2'"));assertFalse(xml.contains("<f>"));
         out.reset();excel.write(excel.prepare(Map.of("q","100%_!")),out);assertEquals(2,sheet(out.toByteArray()).split("<row ",-1).length-1);
         out.reset();excel.write(excel.prepare(Map.of("q","missing-"+UUID.randomUUID())),out);assertEquals(1,sheet(out.toByteArray()).split("<row ",-1).length-1);

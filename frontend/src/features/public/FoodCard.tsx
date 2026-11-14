@@ -15,12 +15,16 @@ export function FoodCard({ item }: { item: MenuItem }) {
         tabIndex={-1}
         aria-hidden="true"
       >
-        <FoodImage
-          kind={/cơm|rice/i.test(item.foodItem.category || '') ? 'rice' : 'pho'}
-          alt=""
-          sizes="(max-width:600px) calc(100vw - 32px), (max-width:1023px) 45vw, 350px"
-        />
-        <span>Ảnh minh họa</span>
+        {item.foodItem.imageUrl ? (
+          <img src={item.foodItem.imageUrl} alt={item.foodItem.name} loading="lazy" />
+        ) : (
+          <FoodImage
+            kind={/cơm|rice/i.test(item.foodItem.category || '') ? 'rice' : 'pho'}
+            alt=""
+            sizes="(max-width:600px) calc(100vw - 32px), (max-width:1023px) 45vw, 350px"
+          />
+        )}
+        {!item.foodItem.imageUrl && <span>Ảnh minh họa</span>}
       </Link>
       <div className="customer-food-card-content">
         <div className="customer-food-card-title">

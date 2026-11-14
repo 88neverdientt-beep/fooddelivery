@@ -208,3 +208,25 @@
     max-width: 100px;
   }
 }
+
+.dish-preview {
+  width: min(100%, 360px);
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 16px;
+}
+.dish-thumbnail {
+  width: 100px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 12px;
+}
+.management-form textarea {
+  display: block;
+  width: 100%;
+  min-height: 100px;
+  padding: 12px;
+  border: 1px solid var(--border, #d8dee7);
+  border-radius: 12px;
+  font: inherit;
+}

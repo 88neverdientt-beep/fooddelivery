@@ -1,5 +1,11 @@
 import { lazy, Suspense } from 'react';
 import {
+  AdminProfilePage as AdminProfile,
+  AdminCustomerDetail,
+  AdminOrderDetail,
+  AdminPaymentDetail,
+} from '@/features/admin-management/ExistingPages';
+import {
   BusinessReportCenter,
   BusinessReportPage,
 } from '@/features/admin-management/BusinessReports';
@@ -149,29 +155,9 @@ const driverPages: Record<string, import('react').ReactNode> = {
   history: <DriverHistory />,
   analytics: <DriverAnalytics />,
 };
-const AdminProfile = lazy(() =>
-  import('@/features/admin-management/ExistingPages').then((m) => ({
-    default: m.AdminProfilePage,
-  })),
-);
-const AdminCustomerDetail = lazy(() =>
-  import('@/features/admin-management/ExistingPages').then((m) => ({
-    default: m.AdminCustomerDetail,
-  })),
-);
 const AdminDriverDetail = lazy(() =>
   import('@/features/admin-management/ProfilePages').then((m) => ({
     default: m.AdminDriverProfileDetail,
-  })),
-);
-const AdminOrderDetail = lazy(() =>
-  import('@/features/admin-management/ExistingPages').then((m) => ({
-    default: m.AdminOrderDetail,
-  })),
-);
-const AdminPaymentDetail = lazy(() =>
-  import('@/features/admin-management/ExistingPages').then((m) => ({
-    default: m.AdminPaymentDetail,
   })),
 );
 const Phase70 = lazy(() =>

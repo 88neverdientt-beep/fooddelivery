@@ -5,6 +5,10 @@ import { fileURLToPath, URL } from 'node:url';
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   const proxy = {
+    '/uploads/food-items/': {
+      target: env.API_PROXY_TARGET || 'http://127.0.0.1:18080',
+      changeOrigin: false,
+    },
     '/api': {
       target: env.API_PROXY_TARGET || 'http://127.0.0.1:18080',
       changeOrigin: false,

@@ -28,12 +28,6 @@ export const priceInput = z
   )
   .refine((value) => Number(value) > 0, 'Giá phải lớn hơn 0.');
 export const menuInput = z.object({ price: priceInput, isAvailable: z.boolean() });
-export const catalogSchema = z.object({
-  itemId: positiveId,
-  name: z.string(),
-  category: z.string().nullable(),
-  description: z.string().nullable(),
-});
 export const pageOf = <T>(item: z.ZodType<T>) =>
   z.object({
     items: z.array(item).max(50),
@@ -67,12 +61,10 @@ export const analyticsSchema = z.object({
     .max(10),
 });
 export const menuPageSchema = pageOf(menuSchema),
-  orderPageSchema = pageOf(orderSchema),
-  catalogPageSchema = pageOf(catalogSchema);
+  orderPageSchema = pageOf(orderSchema);
 export type RestaurantProfile = z.infer<typeof profileSchema>;
 export type ProfileInput = z.infer<typeof profileInput>;
 export type MenuInput = z.infer<typeof menuInput>;
-export type CatalogItem = z.infer<typeof catalogSchema>;
 export type Analytics = z.infer<typeof analyticsSchema>;
 export const sameMenu = (
   a: { price: number; isAvailable: boolean | null },
@@ -96,3 +88,10 @@ export function periodValid(from: string, to: string) {
     (b - a) / 86400000 < 93
   );
 }
+
+export const dishInput = menuInput.extend({
+  name: z.string().trim().min(1, 'Nhập tên món.').max(150, 'Tên món tối đa 150 ký tự.'),
+  category: z.string().trim().max(150),
+  description: z.string().trim().max(255, 'Mô tả tối đa 255 ký tự.'),
+});
+export type DishInput = z.infer<typeof dishInput>;

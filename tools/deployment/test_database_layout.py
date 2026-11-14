@@ -17,9 +17,18 @@ class DatabaseLayout(unittest.TestCase):
             self.assertEqual(row['beforeSha256'],row['afterSha256'])
             self.assertEqual(row['beforeSha256'],hashlib.sha256(path.read_bytes()).hexdigest(),row['currentPath'])
     def test_exact_database_tree(self):
-        expected={r['currentPath'].removeprefix('database/') for r in self.manifest()['files']}|{'README.md'}
+        expected={r['currentPath'].removeprefix('database/') for r in self.manifest()['files']}|{'README.md','migrations/04_independent_menu.sql','schema-reference-independent-menu.json'}
         actual={p.relative_to(m.ROOT/'database').as_posix() for p in (m.ROOT/'database').rglob('*') if p.is_file()}
         self.assertEqual(expected,actual)
+    def test_independent_menu_sql_matches_the_final_rehearsal(self):
+        sql=(m.ROOT/'database/migrations/04_independent_menu.sql').read_bytes()
+        self.assertEqual('05f2a3cdb493e5cfc0607974a72cc5cb2175797c4093e523e460c79460fdefbf',hashlib.sha256(sql).hexdigest())
+        text=sql.decode('utf-8')
+        self.assertLess(text.index('PREPARE menu_v04_guard'),text.index('CREATE PROCEDURE migrate_independent_menu_v04'))
+        self.assertNotRegex(text.upper(),r'\b(?:DROP|TRUNCATE)\s+(?:DATABASE|TABLE)\b')
+        reference=json.loads((m.ROOT/'database/schema-reference-independent-menu.json').read_text(encoding='utf-8'))
+        self.assertEqual('04',reference['version']);self.assertEqual(16,len(reference['signature']['tables']))
+
     def test_old_locations_removed(self):
         for row in self.manifest()['files']:self.assertFalse((m.ROOT/row['originalPath']).exists())
     def test_operator_uses_new_locations(self):

@@ -43,3 +43,8 @@ Dòng Account chứa ba FK riêng: tổng bảng kiểm là 21 FK. Không bịa 
 ## Yêu cầu tối thiểu cho A2
 
 ERD khái niệm cần đối tượng, thuộc tính, định danh, quan hệ và quy tắc bắt buộc; Data Diagram cần đúng tên bảng/cột/kiểu/PK/UK/FK/CHECK. Cần chú giải khi quy tắc nghiệp vụ chặt hơn nullable SQL. Có thể trình bày lõi 13 bảng và phần auth hỗ trợ riêng cho dễ đọc nhưng không bỏ phạm vi 16 bảng/21 FK. Không đổi schema chỉ để sơ đồ đẹp. Chưa có artifact nên không chấm tối đa 2,5 điểm ERD hoặc toàn bộ 2 điểm mô hình quan hệ.
+
+
+## Phụ lục thực đơn độc lập — 14/11/2026
+
+Kết quả A1 phía trên giữ nguyên như bằng chứng lịch sử. Source mới và DB fooddelivery_independent_menu sau migration04 dùng FoodItem như nội dung riêng của một menu: item_id ở restaurant_food_items UNIQUE, nên FoodItem→Menu đổi từ0..N thành0..1. Main chưa được migration, không đổi kết luận schema Main ở phần lịch sử. Xem [ERD, quan hệ và FD/3NF version04](../independent-menu-data-model.md) cùng schema-reference-independent-menu.json. Không có bảng mới/cascade mới; mọi cart/order FK theo menuID và giá snapshot giữ nguyên.

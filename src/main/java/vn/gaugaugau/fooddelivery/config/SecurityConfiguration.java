@@ -41,6 +41,8 @@ public class SecurityConfiguration {
         http.oauth2ResourceServer(o->o.bearerTokenResolver(r->(publicAuth.contains(path(r)) || (r.getMethod().equals("POST") && path(r).equals("/customers")))?null:resolver.resolve(r))
             .jwt(j->j.jwtAuthenticationConverter(converter)).authenticationEntryPoint((r,s,x)->error(s,401)).accessDeniedHandler((r,s,x)->error(s,403)));
         http.authorizeHttpRequests(a->a
+            .requestMatchers("/restaurant-management/dishes","/restaurant-management/dishes/**").hasRole("RESTAURANT")
+            .requestMatchers(HttpMethod.GET,"/uploads/food-items/*").permitAll()
             .requestMatchers(HttpMethod.GET,"/admin-management/reports/**").hasRole("ADMIN")
             .requestMatchers(HttpMethod.GET,"/admin-management/orders/export.xlsx").hasRole("ADMIN")
             .requestMatchers(HttpMethod.GET,"/restaurant-management/orders/export.xlsx").hasRole("RESTAURANT")

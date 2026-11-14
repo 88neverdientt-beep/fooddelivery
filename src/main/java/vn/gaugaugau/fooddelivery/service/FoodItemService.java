@@ -32,15 +32,7 @@ public class FoodItemService {
 
 
 	public FoodItemResponseDTO createFoodItem(FoodItemRequestDTO request) {
-		if (this.foodItemRepository.existsByName(request.getName().toUpperCase())) {
-			throw new ResourceAlreadyExistsException("Food item name already exists!");
-		}
-		FoodItem foodItem = FoodItem.builder()
-				.name(request.getName().toUpperCase())
-				.category(request.getCategory())
-				.description(request.getDescription())
-				.build();
-		return foodItemToFoodItemResponseDTO(this.foodItemRepository.save(foodItem));
+        throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.GONE,"Tạo món trực tiếp bằng tài khoản nhà hàng tại /restaurant-management/dishes; catalog chung đã ngừng sử dụng");
 	}
 
 	public List<FoodItemResponseDTO> getAllFoodItems() {
@@ -59,6 +51,10 @@ public class FoodItemService {
 	public FoodItemResponseDTO updateFoodItemById(Long itemId, FoodItemRequestDTO request) {
 		FoodItem foodItem = this.foodItemRepository.findById(itemId)
 				.orElseThrow(() -> new ResourceNotFoundException("Food item not found with ID: " + itemId));
+
+        // Linked content is private to its menu; all edits must take that menu's revision lock.
+        if(foodItem.getRestaurantFoodItems()!=null && !foodItem.getRestaurantFoodItems().isEmpty())
+            throw new org.springframework.web.server.ResponseStatusException(org.springframework.http.HttpStatus.CONFLICT,"Món thuộc thực đơn riêng; chỉnh sửa bằng tài khoản nhà hàng qua API dishes");
 
 		if (this.foodItemRepository.existsByNameAndItemIdNot(request.getName().trim().toUpperCase(), itemId)) {
 			throw new ResourceAlreadyExistsException("Food item name already exists!");

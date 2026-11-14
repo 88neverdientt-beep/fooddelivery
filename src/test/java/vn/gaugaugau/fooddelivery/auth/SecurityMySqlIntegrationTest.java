@@ -30,7 +30,7 @@ import vn.gaugaugau.fooddelivery.model.*;
 import vn.gaugaugau.fooddelivery.model.enums.*;
 
 @org.junit.jupiter.api.condition.EnabledIf("enabled")
-@SpringBootTest(properties={"spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage2_rehearsal}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
+@SpringBootTest(properties={"spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage2_rehearsal}?sslMode=REQUIRED",
     "spring.datasource.username=${FOOD_TEST_DB_USERNAME:stage2_app}","spring.datasource.password=${STAGE2_MYSQL_PASSWORD}","spring.jpa.hibernate.ddl-auto=validate","spring.jpa.open-in-view=false"})
 @AutoConfigureMockMvc(print=org.springframework.boot.webmvc.test.autoconfigure.MockMvcPrint.NONE)
 class SecurityMySqlIntegrationTest extends AuthTestKeys {
@@ -172,9 +172,14 @@ class SecurityMySqlIntegrationTest extends AuthTestKeys {
     }
     @Test void ownershipDenialsDoNotChangeData() throws Exception {
         String customer=login("CUSTOMER2").access(),restaurant=login("RESTAURANT2").access(),driver=login("DRIVER2").access();var before=snapshot();
-        for(var spec:List.of(new Object[]{"GET","/cart/"+people.get("CUSTOMER").profile(),customer,null},new Object[]{"PUT","/cart-items/"+cartItem,customer,Map.of("quantity",3)},new Object[]{"GET","/orders/"+order,customer,null},new Object[]{"PUT","/orders/"+order+"/delivery-address",customer,Map.of("deliveryAddress","Attacker address")},new Object[]{"POST","/customers/"+people.get("CUSTOMER").profile()+"/orders",customer,Map.of("deliveryAddress","Attacker address","paymentMethodId",method)},new Object[]{"POST","/restaurant-food-items",restaurant,Map.of("restaurantId",people.get("RESTAURANT").profile(),"foodItemId",food,"price",25000)},new Object[]{"POST","/deliveries/"+delivery+"/accept",driver,Map.of("driverId",people.get("DRIVER").profile())},new Object[]{"PATCH","/orders/"+order+"/cancel",customer,null},new Object[]{"GET","/payments/orders/"+order,customer,null},new Object[]{"PUT","/restaurant-food-items/"+menu,restaurant,Map.of("price",25000)},new Object[]{"PATCH","/orders/"+order+"/status",restaurant,"CONFIRMED"},new Object[]{"PUT","/deliveries/"+delivery+"/status",driver,"PICKED_UP"},new Object[]{"GET","/orders/"+order,driver,null},new Object[]{"PUT","/ratings/"+rating+"/customers/"+people.get("CUSTOMER").profile(),customer,Map.of("ratingScore",4)})) {
+        for(var spec:List.of(new Object[]{"GET","/cart/"+people.get("CUSTOMER").profile(),customer,null},new Object[]{"PUT","/cart-items/"+cartItem,customer,Map.of("quantity",3)},new Object[]{"GET","/orders/"+order,customer,null},new Object[]{"PUT","/orders/"+order+"/delivery-address",customer,Map.of("deliveryAddress","Attacker address")},new Object[]{"POST","/customers/"+people.get("CUSTOMER").profile()+"/orders",customer,Map.of("deliveryAddress","Attacker address","paymentMethodId",method)},new Object[]{"PUT","/restaurant-management/dishes/"+menu,restaurant,Map.of("name","Attacker dish","price",25000,"isAvailable",true,"expectedVersion",0)},new Object[]{"POST","/deliveries/"+delivery+"/accept",driver,Map.of("driverId",people.get("DRIVER").profile())},new Object[]{"PATCH","/orders/"+order+"/cancel",customer,null},new Object[]{"GET","/payments/orders/"+order,customer,null},new Object[]{"PUT","/restaurant-food-items/"+menu,restaurant,Map.of("price",25000)},new Object[]{"PATCH","/orders/"+order+"/status",restaurant,"CONFIRMED"},new Object[]{"PUT","/deliveries/"+delivery+"/status",driver,"PICKED_UP"},new Object[]{"GET","/orders/"+order,driver,null},new Object[]{"PUT","/ratings/"+rating+"/customers/"+people.get("CUSTOMER").profile(),customer,Map.of("ratingScore",4)})) {
             assertEquals(404,request((String)spec[0],(String)spec[1],(String)spec[2],spec[3],null,false).getResponse().getStatus());assertEquals(before,snapshot());
         }
+    }
+    @Test void retiredCatalogWriterReturnsGoneWithoutChangingData() throws Exception {
+        var token=login("RESTAURANT").access();var before=snapshot();
+        assertEquals(410,request("POST","/restaurant-food-items",token,Map.of("restaurantId",people.get("RESTAURANT2").profile(),"foodItemId",food,"price",25000),null,false).getResponse().getStatus());
+        assertEquals(before,snapshot());
     }
     @Test void publicViewsExcludePrivateDataAndAssignedOnlyDeliveryDetails() throws Exception {
         for(String path:List.of("/restaurants","/restaurants/search","/food-categories","/restaurants/"+people.get("RESTAURANT").profile(),"/restaurant-food-items","/restaurants/"+people.get("RESTAURANT").profile()+"/menu","/restaurants/"+people.get("RESTAURANT").profile()+"/ratings","/restaurants/"+people.get("RESTAURANT").profile()+"/ratings/page")) {
@@ -200,7 +205,7 @@ class SecurityMySqlIntegrationTest extends AuthTestKeys {
         for(var entry:mappings.getHandlerMethods().entrySet()) {
             if(!entry.getValue().getBeanType().getPackageName().equals("vn.gaugaugau.fooddelivery.controller"))continue;
             for(var verb:entry.getKey().getMethodsCondition().getMethods())for(String pattern:entry.getKey().getPatternValues()) {
-                String method=verb.name(),path=pattern;Set<String> allowed=policy(method,pattern);endpoints++;
+                String method=verb.name(),path=pattern.replace("{id}",menu.toString()).replace("{key}","00000000-0000-0000-0000-000000000000.png");Set<String> allowed=policy(method,pattern);endpoints++;
                 Map<String,Long> ids=Map.ofEntries(Map.entry("accountId",people.get("CUSTOMER").account()),Map.entry("customerId",people.get("CUSTOMER").profile()),Map.entry("restaurantId",people.get("RESTAURANT").profile()),Map.entry("driverId",people.get("DRIVER").profile()),Map.entry("orderId",order),Map.entry("deliveryId",delivery),Map.entry("cartItemId",cartItem),Map.entry("restaurantFoodItemId",menu),Map.entry("itemId",food),Map.entry("foodItemId",food),Map.entry("ratingId",rating));
                 for(var id:ids.entrySet())path=path.replace("{"+id.getKey()+"}",id.getValue().toString());
                 assertFalse(path.contains("{"),"Unresolved endpoint "+pattern);
@@ -222,13 +227,13 @@ class SecurityMySqlIntegrationTest extends AuthTestKeys {
                 }
             }
         }
-        assertEquals(76,endpoints,"New or removed endpoints require matrix review");
+        assertEquals(84,endpoints,"New or removed endpoints require matrix review");
     }
     private Set<String> policy(String method,String p) {
         if(p.startsWith("/admin-management/"))return Set.of("ADMIN");
         if(p.startsWith("/driver-management/"))return Set.of("DRIVER");
         if(p.startsWith("/restaurant-management/"))return Set.of("RESTAURANT");
-        if(method.equals("GET") && (p.equals("/")||p.startsWith("/food-items")||p.equals("/food-categories")||p.startsWith("/restaurant-food-items")||p.equals("/restaurants")||p.equals("/restaurants/search")||p.equals("/restaurants/{restaurantId}")||p.equals("/restaurants/{restaurantId}/menu")||p.contains("/ratings")))return Set.of("PUBLIC");
+        if(method.equals("GET") && (p.equals("/")||p.startsWith("/uploads/food-items/")||p.startsWith("/food-items")||p.equals("/food-categories")||p.startsWith("/restaurant-food-items")||p.equals("/restaurants")||p.equals("/restaurants/search")||p.equals("/restaurants/{restaurantId}")||p.equals("/restaurants/{restaurantId}/menu")||p.contains("/ratings")))return Set.of("PUBLIC");
         if(method.equals("POST")&&p.equals("/customers"))return Set.of("PUBLIC");
         if(p.startsWith("/cart")||p.equals("/{customerId}/cart-items"))return Set.of("CUSTOMER");
         if(p.startsWith("/deliveries"))return Set.of("DRIVER");

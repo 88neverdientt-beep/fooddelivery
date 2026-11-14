@@ -9,7 +9,7 @@ public final class ApprovedMySqlTestTarget {
     private ApprovedMySqlTestTarget() {}
     public static String databaseName() {
         String name = System.getenv().getOrDefault("FOOD_TEST_DB_NAME", "fooddelivery_stage2_rehearsal");
-        if (!Set.of("fooddelivery_stage2_rehearsal", "fooddelivery_stage4_e2e", "fooddelivery_stage5_e2e", "fooddelivery_stage6_e2e", "fooddelivery_stage7_e2e", "fooddelivery_stage8_e2e", "fooddelivery_full_audit", "fooddelivery_phase8_2", "fooddelivery_coursework_a21", "fooddelivery_coursework_a22", "fooddelivery_coursework_a23", "fooddelivery_coursework_a24").contains(name))
+        if (!Set.of("fooddelivery_stage2_rehearsal", "fooddelivery_stage4_e2e", "fooddelivery_stage5_e2e", "fooddelivery_stage6_e2e", "fooddelivery_stage7_e2e", "fooddelivery_stage8_e2e", "fooddelivery_full_audit", "fooddelivery_phase8_2", "fooddelivery_coursework_a21", "fooddelivery_coursework_a22", "fooddelivery_coursework_a23", "fooddelivery_coursework_a24", "fooddelivery_independent_menu", "fooddelivery_menu_release").contains(name))
             throw new IllegalStateException("Unapproved MySQL test database");
         return name;
     }
@@ -19,10 +19,10 @@ public final class ApprovedMySqlTestTarget {
     }
     public static void assertCourseworkTarget(JdbcTemplate jdbc,String originalDatabase) {
         assertTarget(jdbc);
-        org.junit.jupiter.api.Assertions.assertTrue(Set.of(originalDatabase,"fooddelivery_coursework_a24").contains(databaseName()));
+        org.junit.jupiter.api.Assertions.assertTrue(Set.of(originalDatabase,"fooddelivery_coursework_a24","fooddelivery_independent_menu","fooddelivery_menu_release").contains(databaseName()));
     }
     public static String url() {
-        return "jdbc:mysql://127.0.0.1:3307/" + databaseName() + "?allowPublicKeyRetrieval=true&sslMode=DISABLED";
+        return "jdbc:mysql://127.0.0.1:3307/" + databaseName() + "?sslMode=REQUIRED";
     }
     public static String migratorUsername() {
         return System.getenv().getOrDefault("FOOD_TEST_DB_MIGRATOR", "stage2_migrator");

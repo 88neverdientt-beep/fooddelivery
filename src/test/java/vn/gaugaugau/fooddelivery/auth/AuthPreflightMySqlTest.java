@@ -9,7 +9,7 @@ import vn.gaugaugau.fooddelivery.auth.migration.AuthMigrationPreflight;
 @EnabledIfEnvironmentVariable(named="RUN_STAGE1_MYSQL_TESTS",matches="true")
 class AuthPreflightMySqlTest {
     @Test void dirtyLegacyHashesBlockBeforeAnyAuthDdlOrBackfill() {
-        var source=new DriverManagerDataSource("jdbc:mysql://127.0.0.1:3307/fooddelivery_stage1_test?allowPublicKeyRetrieval=true&sslMode=DISABLED",
+        var source=new DriverManagerDataSource("jdbc:mysql://127.0.0.1:3307/fooddelivery_stage1_test?sslMode=REQUIRED",
             "stage1_app",System.getenv("STAGE1_MYSQL_PASSWORD"));
         var jdbc=new JdbcTemplate(source);var audit=new AuthMigrationPreflight(jdbc);
         var report=audit.inspectApprovedTestDatabase();

@@ -42,17 +42,6 @@ public class RestaurantManagementService {
             (rs,n)->new Profile(rs.getLong(1),rs.getString(2),rs.getString(3),rs.getString(4),rs.getBoolean(5),
                 rs.getTimestamp(6)==null?null:rs.getTimestamp(6).toLocalDateTime(),rs.getLong(7)),own());
     }
-    public PageResponse<CatalogItem> catalog(String q,String category,int page,int size) {
-        ReadQuery.page(page,size,org.springframework.data.domain.Sort.unsorted());
-        String where=" FROM food_items f WHERE NOT EXISTS (SELECT 1 FROM restaurant_food_items m WHERE m.item_id=f.item_id AND m.restaurant_id=?) AND (LOWER(f.name) LIKE ? ESCAPE '!' OR LOWER(COALESCE(f.description,'')) LIKE ? ESCAPE '!') AND (?='' OR LOWER(TRIM(f.category))=LOWER(?))";
-        String pattern=ReadQuery.literalPattern(q),group=ReadQuery.category(category);
-        Object[] args={own(),pattern,pattern,group,group};
-        long total=jdbc.queryForObject("SELECT COUNT(*)"+where,Long.class,args);
-        var bind=new ArrayList<Object>(Arrays.asList(args));bind.add(size);bind.add((long)page*size);
-        var items=jdbc.query("SELECT f.item_id,f.name,f.category,f.description"+where+" ORDER BY f.name,f.item_id LIMIT ? OFFSET ?",
-            (rs,n)->new CatalogItem(rs.getLong(1),rs.getString(2),rs.getString(3),rs.getString(4)),bind.toArray());
-        return result(items,page,size,total);
-    }
     public PageResponse<OrderResponseDTO> orders(String q,OrderStatus status,String from,String to,String sort,int page,int size) {
         ReadQuery.page(page,size,org.springframework.data.domain.Sort.unsorted());
         String ordering=switch(sort){case "newest"->"o.order_id DESC";case "oldest"->"o.order_id ASC";case "total-desc"->"o.total_amount DESC,o.order_id DESC";default->{bad("Invalid sort");yield "";}};

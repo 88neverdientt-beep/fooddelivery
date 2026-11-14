@@ -30,7 +30,7 @@ import vn.gaugaugau.fooddelivery.model.enums.*;
 /** Real MySQL/filter-chain tests. Concurrency fixtures commit only in the isolated test database. */
 @EnabledIfEnvironmentVariable(named = "RUN_STAGE4_MYSQL_TESTS", matches = "true")
 @SpringBootTest(properties = {
-    "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage4_e2e}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
+    "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage4_e2e}?sslMode=REQUIRED",
     "spring.datasource.username=${FOOD_TEST_DB_USERNAME:stage4_app}", "spring.datasource.password=${STAGE2_MYSQL_PASSWORD}",
     "spring.jpa.hibernate.ddl-auto=validate", "spring.jpa.open-in-view=false",
     "spring.jpa.properties.hibernate.generate_statistics=true", "spring.jpa.show-sql=false", "logging.level.root=WARN"
@@ -146,11 +146,12 @@ class RestaurantManagementMySqlTest extends AuthTestKeys {
             for(String role:List.of("CUSTOMER","DRIVER","ADMIN"))assertEquals(403,mvc.perform(authenticated("/restaurant-management/"+path,role)).andReturn().getResponse().getStatus());
         }
     }
-    @Test void catalogExcludesOwnLinkedItemsAndBoundsInput() throws Exception {
-        var f=FoodItem.builder().name(tag+" unused 100%_!").category("Test").description("Catalog").build();em.persist(f);em.flush();
-        var value=page(mvc.perform(authenticated("/restaurant-management/catalog","RESTAURANT").param("q",tag).param("size","1")).andReturn());
-        assertEquals(1L,((Number)value.get("totalElements")).longValue());assertEquals(f.getItemId().longValue(),((Number)((Map<?,?>)items(value).getFirst()).get("itemId")).longValue());
-        assertEquals(400,mvc.perform(authenticated("/restaurant-management/catalog","RESTAURANT").param("size","51")).andReturn().getResponse().getStatus());
+    @Test void retiredCatalogCannotReadOrChangeDishData() throws Exception {
+        var before=jdbc.queryForList("CHECKSUM TABLE food_items,restaurant_food_items EXTENDED");
+        for(String size:List.of("1","51","invalid")) {
+            assertEquals(410,mvc.perform(authenticated("/restaurant-management/catalog","RESTAURANT").param("q",tag).param("size",size)).andReturn().getResponse().getStatus());
+            assertEquals(before,jdbc.queryForList("CHECKSUM TABLE food_items,restaurant_food_items EXTENDED"));
+        }
     }
     @Test void orderListIsOwnerScopedFilteredAndSearchable() throws Exception {
         var value=page(mvc.perform(authenticated("/restaurant-management/orders","RESTAURANT").param("status","COMPLETED").param("size","2")).andReturn());

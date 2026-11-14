@@ -65,11 +65,18 @@ export function createTransport(
         signal,
         headers: {
           Accept: 'application/json',
-          ...(options.body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+          ...(options.body !== undefined && !(options.body instanceof FormData)
+            ? { 'Content-Type': 'application/json' }
+            : {}),
           ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
           ...options.headers,
         },
-        body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+        body:
+          options.body instanceof FormData
+            ? options.body
+            : options.body !== undefined
+              ? JSON.stringify(options.body)
+              : undefined,
       });
       if (!response.ok) throw new ApiError(response.status, String(response.status));
       if (response.status === 204) return undefined as T;

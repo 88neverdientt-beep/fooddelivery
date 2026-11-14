@@ -21,7 +21,7 @@ public class MenuExcelExportService {
     private final JdbcTemplate jdbc;
     private final RestaurantFoodItemRepository menus;
     private final RestaurantFoodItemService mapping;
-    public static final String[] HEADERS={"Mã món thực đơn","Mã món catalog","Tên món","Danh mục","Mô tả","Giá bán (VND)","Trạng thái"};
+    public static final String[] HEADERS={"Mã món thực đơn","Mã nội dung món","Tên món","Danh mục","Mô tả","Giá bán (VND)","Trạng thái"};
     public record Query(String sql,List<Object> arguments) {}
     public Query prepare(Map<String,String> parameters) {
         if(!Set.of("q","category","available","sort").containsAll(parameters.keySet()))bad("Tham số xuất thực đơn không hợp lệ");

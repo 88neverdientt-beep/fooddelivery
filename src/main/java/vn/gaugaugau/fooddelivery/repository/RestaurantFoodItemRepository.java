@@ -10,8 +10,12 @@ public interface RestaurantFoodItemRepository extends JpaRepository<RestaurantFo
     @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
     @org.springframework.data.jpa.repository.Query("select m from RestaurantFoodItem m where m.restaurantFoodItemId=:id")
     java.util.Optional<RestaurantFoodItem> findLockedById(@org.springframework.data.repository.query.Param("id") Long id);
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @org.springframework.data.jpa.repository.Query("select m from RestaurantFoodItem m where m.restaurantFoodItemId=:id and m.restaurant.restaurantId=:restaurantId")
+    java.util.Optional<RestaurantFoodItem> findLockedOwnedById(@org.springframework.data.repository.query.Param("id") Long id,
+        @org.springframework.data.repository.query.Param("restaurantId") Long restaurantId);
     @org.springframework.data.jpa.repository.Modifying(flushAutomatically=true)
-    @org.springframework.data.jpa.repository.Query("update RestaurantFoodItem m set m.price=:price,m.isAvailable=:available where m.restaurantFoodItemId=:id and m.price=:expectedPrice and m.isAvailable=:expectedAvailable")
+    @org.springframework.data.jpa.repository.Query("update RestaurantFoodItem m set m.price=:price,m.isAvailable=:available,m.version=m.version+1 where m.restaurantFoodItemId=:id and m.price=:expectedPrice and m.isAvailable=:expectedAvailable")
     int compareAndUpdate(@org.springframework.data.repository.query.Param("id") Long id,
         @org.springframework.data.repository.query.Param("price") java.math.BigDecimal price,
         @org.springframework.data.repository.query.Param("available") Boolean available,
@@ -47,6 +51,8 @@ public interface RestaurantFoodItemRepository extends JpaRepository<RestaurantFo
     java.util.Optional<RestaurantFoodItem> findOwnByFoodId(
         @org.springframework.data.repository.query.Param("restaurantId") Long restaurantId,
         @org.springframework.data.repository.query.Param("foodItemId") Long foodItemId);
+
+	java.util.Optional<RestaurantFoodItem> findByCreationKey(String creationKey);
 
 	boolean existsByRestaurant_RestaurantIdAndFoodItem_ItemId(Long restaurantId, Long itemId);
 }

@@ -30,7 +30,7 @@ import vn.gaugaugau.fooddelivery.model.enums.*;
 /** Real MySQL/filter-chain tests. Concurrency fixtures commit only in the isolated test database. */
 @EnabledIfEnvironmentVariable(named = "RUN_STAGE6_MYSQL_TESTS", matches = "true")
 @SpringBootTest(properties = {
-    "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage6_e2e}?allowPublicKeyRetrieval=true&sslMode=DISABLED",
+    "spring.datasource.url=jdbc:mysql://127.0.0.1:3307/${FOOD_TEST_DB_NAME:fooddelivery_stage6_e2e}?sslMode=REQUIRED",
     "spring.datasource.username=${FOOD_TEST_DB_USERNAME:stage6_app}", "spring.datasource.password=${STAGE2_MYSQL_PASSWORD}",
     "spring.jpa.hibernate.ddl-auto=validate", "spring.jpa.open-in-view=false",
     "spring.jpa.properties.hibernate.generate_statistics=true", "spring.jpa.show-sql=false", "logging.level.root=WARN"

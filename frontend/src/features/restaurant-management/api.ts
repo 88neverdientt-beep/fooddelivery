@@ -11,12 +11,13 @@ import {
   profileInput,
   menuInput,
   menuPageSchema,
-  catalogPageSchema,
   orderPageSchema,
   analyticsSchema,
   positiveId,
   type ProfileInput,
   type MenuInput,
+  dishInput,
+  type DishInput,
 } from './model';
 type Request = (path: string, options?: RequestOptions) => Promise<unknown>;
 type Filters = Record<string, string | number | boolean | undefined>;
@@ -121,26 +122,43 @@ export function createRestaurantApi(request: Request, identity: () => Account | 
         throw new ApiError(502, 'CONTRACT');
       return result;
     },
-    catalog: (filters: Filters = {}, signal?: AbortSignal) =>
-      read(
-        `/restaurant-management/catalog?${apiQuery({ page: 0, size: 12, ...filters })}`,
-        catalogPageSchema,
-        signal,
-      ),
-    add: async (foodItemId: number, input: MenuInput) => {
-      const value = menuInput.parse(input);
+    createDish: async (input: DishInput, creationKey: string) => {
+      own();
+      const value = dishInput.parse(input);
       return menuOwner(
         parse(
           menuSchema,
-          await request('/restaurant-food-items', {
+          await request('/restaurant-management/dishes', {
             method: 'POST',
-            body: {
-              restaurantId: own(),
-              foodItemId: positiveId.parse(foodItemId),
-              price: Number(value.price),
-              isAvailable: value.isAvailable,
-            },
+            body: { ...value, price: Number(value.price), creationKey },
           }),
+        ),
+      );
+    },
+    updateDish: async (item: MenuItem, input: DishInput) => {
+      menuOwner(item);
+      const value = dishInput.parse(input);
+      return menuOwner(
+        parse(
+          menuSchema,
+          await request(`/restaurant-management/dishes/${item.restaurantFoodItemId}`, {
+            method: 'PUT',
+            body: { ...value, price: Number(value.price), expectedVersion: item.version },
+          }),
+        ),
+      );
+    },
+    uploadImage: async (item: MenuItem, file: File) => {
+      menuOwner(item);
+      const body = new FormData();
+      body.set('file', file);
+      return menuOwner(
+        parse(
+          menuSchema,
+          await request(
+            `/restaurant-management/dishes/${item.restaurantFoodItemId}/image?expectedVersion=${item.version}`,
+            { method: 'PUT', body },
+          ),
         ),
       );
     },

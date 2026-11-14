@@ -41,6 +41,7 @@ export const restaurantSchema = z.object({
 export type Restaurant = z.infer<typeof restaurantSchema>;
 export const menuSchema = z.object({
   restaurantFoodItemId: id,
+  version: z.number().int().nonnegative().optional(),
   price: z.number().nonnegative(),
   isAvailable: z.boolean().nullable(),
   restaurant: z.object({ restaurantId: id, name: z.string(), address: z.string() }),
@@ -49,6 +50,11 @@ export const menuSchema = z.object({
     name: z.string(),
     category: z.string().nullable(),
     description: z.string().nullable(),
+    imageUrl: z
+      .string()
+      .regex(/^\/uploads\/food-items\/[0-9a-f-]{36}\.png$/)
+      .nullable()
+      .optional(),
   }),
 });
 export type MenuItem = z.infer<typeof menuSchema>;

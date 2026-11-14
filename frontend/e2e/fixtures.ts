@@ -132,6 +132,7 @@ export const test = base.extend<{ consoleGuard: void }>({
           info.title.includes('network failure') &&
           (path === '/api/restaurants/search' ||
             /^\/api\/restaurant-food-items\/\d+$/.test(path) ||
+            /^\/api\/restaurant-management\/dishes\/\d+$/.test(path) ||
             /^\/api\/deliveries\/\d+\/(?:accept|status)$/.test(path) ||
             /^\/api\/driver-management\/deliveries(?:\/\d+)?$/.test(path) ||
             /^\/api\/customers\/\d+\/orders(?:\/page)?$/.test(path) ||
@@ -149,6 +150,10 @@ export const test = base.extend<{ consoleGuard: void }>({
           info.title.startsWith('admin two tabs') &&
           /^\/api\/admin\/accounts\/\d+\/status$/.test(path) &&
           /409/.test(text);
+        const restaurantConflict =
+          info.title === 'restaurant two tabs preserve stale drafts until explicit rebase' &&
+          /^\/api\/restaurant-management\/dishes\/\d+$/.test(path) &&
+          /409/.test(text);
         const record: (typeof records)[number] = {
           kind: 'console-error',
           path,
@@ -159,9 +164,11 @@ export const test = base.extend<{ consoleGuard: void }>({
               ? 'expected-network-test'
               : ownership
                 ? 'expected-ownership-404'
-                : adminConflict
-                  ? 'expected-admin-stale-409'
-                  : 'unexpected',
+                : restaurantConflict
+                  ? 'expected-restaurant-stale-409'
+                  : adminConflict
+                    ? 'expected-admin-stale-409'
+                    : 'unexpected',
         };
         records.push(record);
         inspections.push(
